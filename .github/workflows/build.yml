@@ -21,11 +21,7 @@ jobs:
           java-version: "21"
           cache: gradle
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      # Testcontainers pulls Docker images — ensure Docker daemon is running.
-      # ubuntu-latest includes Docker out of the box; no extra setup needed.
+      # ubuntu-latest ships Docker — Testcontainers works out of the box.
 
       - name: Build and test
         run: ./gradlew build --no-daemon
