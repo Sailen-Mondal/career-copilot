@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Career Copilot</title>
+    <link rel="stylesheet" href="src/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">AI Career Copilot</p>
+        <h1>Applications</h1>
+      </div>
+      <button id="killSwitch" class="danger-button" type="button">Pause all automation</button>
+    </header>
+
+    <main class="layout">
+      <section class="policy-panel" aria-labelledby="policy-title">
+        <div class="section-header">
+          <h2 id="policy-title">Policy</h2>
+          <span id="automationState" class="state-pill">Running</span>
+        </div>
+
+        <label class="control-row" for="threshold">
+          <span>Autonomy threshold</span>
+          <output id="thresholdValue" for="threshold">85</output>
+        </label>
+        <input id="threshold" type="range" min="50" max="100" value="85">
+
+        <label class="control-row" for="dailyCap">
+          <span>Daily cap</span>
+          <input id="dailyCap" type="number" min="0" max="50" value="3">
+        </label>
+
+        <div class="stats-grid" aria-label="Application stats">
+          <div>
+            <span class="stat-value">12</span>
+            <span class="stat-label">Discovered</span>
+          </div>
+          <div>
+            <span class="stat-value">4</span>
+            <span class="stat-label">Ready</span>
+          </div>
+          <div>
+            <span class="stat-value">2</span>
+            <span class="stat-label">Submitted</span>
+          </div>
+          <div>
+            <span class="stat-value">1</span>
+            <span class="stat-label">Blocked</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="feed" aria-labelledby="feed-title">
+        <div class="section-header">
+          <h2 id="feed-title">Today</h2>
+          <button id="shadowMode" class="secondary-button" type="button" aria-pressed="true">Shadow mode</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Role</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody id="applicationRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="src/app.js"></script>
+  </body>
+</html>

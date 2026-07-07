@@ -1,0 +1,11 @@
+.gradle/
+build/
+out/
+target/
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+playwright-report/
+test-results/
