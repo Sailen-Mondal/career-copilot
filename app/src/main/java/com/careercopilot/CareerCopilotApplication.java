@@ -1,10 +1,12 @@
 package com.careercopilot;
 
-public final class CareerCopilotApplication {
-    private CareerCopilotApplication() {
-    }
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CareerCopilotApplication {
 
     public static void main(String[] args) {
-        System.out.println("AI Career Copilot starter is ready.");
+        SpringApplication.run(CareerCopilotApplication.class, args);
     }
 }

@@ -1,0 +1,52 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:career_copilot}
+    username: ${POSTGRES_USER:career_copilot}
+    password: ${POSTGRES_PASSWORD:change-me}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate  # Flyway owns the schema — Hibernate must NOT create/alter
+
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+# ------------------------------------------------------------------
+# Security — API key auth (see ApiKeyAuthFilter)
+# For production, set API_KEY env var to a strong random secret.
+# ------------------------------------------------------------------
+app:
+  security:
+    api-key: ${API_KEY:dev-insecure-key}
+
+# ------------------------------------------------------------------
+# Actuator — only health and info exposed (no sensitive endpoints)
+# ------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: AI Career Copilot
+    milestone: M1
+
+# ------------------------------------------------------------------
+# Automation guardrail defaults (overridden by MasterProfile per user)
+# ------------------------------------------------------------------
+automation:
+  daily-cap: ${AUTOMATION_DAILY_CAP:3}
+  autonomy-threshold: ${AUTONOMY_THRESHOLD:85}

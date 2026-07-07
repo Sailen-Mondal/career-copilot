@@ -1,21 +1,45 @@
 plugins {
     java
-    // Upgrade the patch version when creating the real build wrapper.
-    id("org.springframework.boot") version "4.1.0" apply false
-    id("io.spring.dependency-management") version "1.1.7" apply false
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dep.mgmt)
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(25))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
+    options.compilerArgs.add("-parameters") // needed for Spring MVC param name resolution
 }
 
-tasks.register("smokeTest") {
-    group = "verification"
-    description = "Compile and run dependency-free smoke tests once a Gradle wrapper is added."
+dependencies {
+    // Web + REST
+    implementation(libs.spring.boot.starter.web)
+
+    // Persistence
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.postgres)
+    runtimeOnly(libs.postgresql)
+
+    // Security
+    implementation(libs.spring.boot.starter.security)
+
+    // Observability
+    implementation(libs.spring.boot.starter.actuator)
+
+    // Testing
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.testcontainers.postgresql)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
