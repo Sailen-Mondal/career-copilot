@@ -32,6 +32,16 @@ public class SecurityConfig {
             // Disable CSRF — stateless API, no browser form sessions
             .csrf(AbstractHttpConfigurer::disable)
 
+            // Enable CORS
+            .cors(cors -> cors.configurationSource(request -> {
+                var config = new org.springframework.web.cors.CorsConfiguration();
+                config.setAllowedOrigins(java.util.List.of("*"));
+                config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                config.setAllowedHeaders(java.util.List.of("*"));
+                config.setAllowCredentials(false);
+                return config;
+            }))
+
             // No sessions — each request is independently authenticated
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

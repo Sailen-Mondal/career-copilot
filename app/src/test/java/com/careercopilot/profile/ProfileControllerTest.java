@@ -70,7 +70,12 @@ class ProfileControllerTest {
                 "remote",
                 Set.of("Blocked Inc"),
                 10,
-                75
+                75,
+                "John Doe",
+                "john@example.com",
+                "123-456-7890",
+                "https://linkedin.com/in/johndoe",
+                "https://johndoe.com"
         );
         ResponseEntity<MasterProfile> createResponse = profileController.createOrUpdateProfile(request);
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.OK);

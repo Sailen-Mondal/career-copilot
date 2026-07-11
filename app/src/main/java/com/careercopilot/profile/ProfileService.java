@@ -36,7 +36,12 @@ public class ProfileService {
                 profile.remotePreference(),
                 profile.blocklistCompanies(),
                 profile.dailyApplicationCap(),
-                profile.autonomyThreshold()
+                profile.autonomyThreshold(),
+                profile.name(),
+                profile.email(),
+                profile.phone(),
+                profile.linkedinUrl(),
+                profile.websiteUrl()
         );
 
         MasterProfileEntity entity = new MasterProfileEntity(profileWithUser);

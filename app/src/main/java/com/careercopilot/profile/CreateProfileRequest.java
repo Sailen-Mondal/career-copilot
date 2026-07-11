@@ -10,5 +10,10 @@ public record CreateProfileRequest(
         String remotePreference,
         Set<String> blocklistCompanies,
         int dailyApplicationCap,
-        int autonomyThreshold
+        int autonomyThreshold,
+        String name,
+        String email,
+        String phone,
+        String linkedinUrl,
+        String websiteUrl
 ) {}

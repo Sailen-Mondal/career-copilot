@@ -10,5 +10,12 @@ public record AutomationCommand(
         String mode,                // "shadow" or "live"
         String profileSnapshotId,
         String resumeDocumentId,
-        String coverLetterDocumentId
+        String resumeContent,
+        String coverLetterDocumentId,
+        String coverLetterContent,
+        String candidateName,
+        String candidateEmail,
+        String candidatePhone,
+        String candidateLinkedin,
+        String candidateWebsite
 ) {}

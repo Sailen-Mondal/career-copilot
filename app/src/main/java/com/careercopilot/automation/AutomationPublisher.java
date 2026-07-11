@@ -9,6 +9,7 @@ import org.springframework.data.redis.connection.stream.StringRecord;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -47,8 +48,14 @@ public class AutomationPublisher {
             throw new IllegalStateException("Kill switch is active — cannot publish automation commands");
         }
 
-        Map<String, String> fields = objectMapper.convertValue(command,
+        Map<String, String> rawFields = objectMapper.convertValue(command,
                 new TypeReference<Map<String, String>>() {});
+        Map<String, String> fields = new HashMap<>();
+        rawFields.forEach((k, v) -> {
+            if (v != null) {
+                fields.put(k, v);
+            }
+        });
 
         StringRecord record = StringRecord.of(fields).withStreamKey(jobsStream);
         var recordId = redisTemplate.opsForStream().add(record);

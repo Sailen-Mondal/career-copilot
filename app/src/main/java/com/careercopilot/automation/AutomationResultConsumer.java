@@ -113,10 +113,10 @@ public class AutomationResultConsumer implements ApplicationListener<Application
                     // ACK the message
                     redisTemplate.opsForStream().acknowledge(resultsStream, consumerGroup, message.getId());
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
             } catch (Exception e) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
                 log.error("Error in automation result consumer: {}", e.getMessage());
                 try {
                     Thread.sleep(2000); // Back off on errors
@@ -130,11 +130,6 @@ public class AutomationResultConsumer implements ApplicationListener<Application
     }
 
     private void processMessage(MapRecord<String, Object, Object> message) {
-        if (killSwitchService.isHalted()) {
-            log.warn("Kill switch active — skipping result message {}", message.getId());
-            return;
-        }
-
         try {
             Map<String, String> fields = objectMapper.convertValue(
                     message.getValue(), new TypeReference<Map<String, String>>() {});

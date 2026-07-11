@@ -44,6 +44,21 @@ public class MasterProfileEntity {
     @Column(name = "autonomy_threshold", nullable = false)
     private int autonomyThreshold;
 
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "linkedin_url")
+    private String linkedinUrl;
+
+    @Column(name = "website_url")
+    private String websiteUrl;
+
     public MasterProfileEntity() {
     }
 
@@ -58,6 +73,11 @@ public class MasterProfileEntity {
         this.blocklistCompanies = profile.blocklistCompanies();
         this.dailyApplicationCap = profile.dailyApplicationCap();
         this.autonomyThreshold = profile.autonomyThreshold();
+        this.name = profile.name();
+        this.email = profile.email();
+        this.phone = profile.phone();
+        this.linkedinUrl = profile.linkedinUrl();
+        this.websiteUrl = profile.websiteUrl();
     }
 
     public MasterProfile toDomain() {
@@ -71,7 +91,12 @@ public class MasterProfileEntity {
                 this.remotePreference,
                 this.blocklistCompanies,
                 this.dailyApplicationCap,
-                this.autonomyThreshold
+                this.autonomyThreshold,
+                this.name,
+                this.email,
+                this.phone,
+                this.linkedinUrl,
+                this.websiteUrl
         );
     }
 
@@ -154,4 +179,19 @@ public class MasterProfileEntity {
     public void setAutonomyThreshold(int autonomyThreshold) {
         this.autonomyThreshold = autonomyThreshold;
     }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getLinkedinUrl() { return linkedinUrl; }
+    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
+
+    public String getWebsiteUrl() { return websiteUrl; }
+    public void setWebsiteUrl(String websiteUrl) { this.websiteUrl = websiteUrl; }
 }

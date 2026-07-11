@@ -38,7 +38,12 @@ class AutonomyPolicyTest {
                 "remote",
                 Set.of("BlockedCo"),
                 3,
-                85
+                85,
+                "John Doe",
+                "john@example.com",
+                "123-456-7890",
+                "https://linkedin.com/in/johndoe",
+                "https://johndoe.com"
         );
 
         goodJob = new Job(

@@ -10,7 +10,14 @@ export interface AutomationCommand {
   mode: AutomationMode;
   profileSnapshotId: string;
   resumeDocumentId: string;
+  resumeContent: string;
   coverLetterDocumentId?: string;
+  coverLetterContent?: string;
+  candidateName?: string;
+  candidateEmail?: string;
+  candidatePhone?: string;
+  candidateLinkedin?: string;
+  candidateWebsite?: string;
 }
 
 export interface AutomationResult {

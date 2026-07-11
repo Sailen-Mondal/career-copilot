@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -87,14 +88,20 @@ public class LlmGenerationService {
         // 4. Call LLM
         String content = llmClient.generate(systemPrompt, userPromptBuilder.toString());
 
-        // 5. Build GeneratedDocument
+        // 5. Build GeneratedDocument deriving sourceFactIds from content markers
+        Set<UUID> markerFactIds = groundednessVerifier.extractFactMarkers(content);
+        List<UUID> actualFactIds = facts.stream()
+                .map(ProfileFact::id)
+                .filter(markerFactIds::contains)
+                .collect(Collectors.toList());
+
         GeneratedDocument document = new GeneratedDocument(
                 UUID.randomUUID(),
                 applicationId,
                 type,
                 content,
                 Instant.now(),
-                factIds
+                actualFactIds
         );
 
         // 6. Verify groundedness

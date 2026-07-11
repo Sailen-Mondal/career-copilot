@@ -82,7 +82,7 @@ class GroundednessVerifierTest {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 DocumentType.RESUME,
-                "Some content without markers.",
+                "Some content with a marker [fact:" + unknownFactId + "]",
                 Instant.now(),
                 List.of(unknownFactId)
         );
@@ -113,8 +113,8 @@ class GroundednessVerifierTest {
     }
 
     @Test
-    @DisplayName("passes when document has no markers and no sourceFactIds")
-    void passes_whenDocumentHasNoMarkersAndNoFacts() {
+    @DisplayName("fails when document has no markers")
+    void fails_whenDocumentHasNoMarkers() {
         GeneratedDocument doc = new GeneratedDocument(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
@@ -126,6 +126,7 @@ class GroundednessVerifierTest {
 
         GroundednessReport report = verifier.verify(doc, List.of(fact));
 
-        assertThat(report.passed()).isTrue();
+        assertThat(report.passed()).isFalse();
+        assertThat(report.issues()).anyMatch(i -> i.contains("contains no fact markers"));
     }
 }

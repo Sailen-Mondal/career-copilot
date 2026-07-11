@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -48,7 +49,12 @@ public class ProfileController {
                 request.remotePreference(),
                 request.blocklistCompanies(),
                 request.dailyApplicationCap(),
-                request.autonomyThreshold()
+                request.autonomyThreshold(),
+                request.name(),
+                request.email(),
+                request.phone(),
+                request.linkedinUrl(),
+                request.websiteUrl()
         );
         MasterProfile saved = profileService.saveProfile(DEFAULT_USER_ID, profile);
         return ResponseEntity.ok(saved);
@@ -79,7 +85,12 @@ public class ProfileController {
                             null,
                             Set.of(),
                             3,
-                            85
+                            85,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null
                     );
                     return profileService.saveProfile(DEFAULT_USER_ID, newProfile);
                 });
@@ -133,5 +144,56 @@ public class ProfileController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PatchMapping("/default/autonomy-threshold")
+    public ResponseEntity<Map<String, Object>> updateAutonomyThreshold(@RequestBody Map<String, Integer> request) {
+        Integer threshold = request.get("threshold");
+        if (threshold == null || threshold < 0 || threshold > 100) {
+            return ResponseEntity.badRequest().build();
+        }
+        Optional<MasterProfile> profileOpt = profileService.getProfileByUserId(DEFAULT_USER_ID);
+        MasterProfile old;
+        if (profileOpt.isEmpty()) {
+            UUID profileId = UUID.randomUUID();
+            old = new MasterProfile(
+                    profileId,
+                    DEFAULT_USER_ID,
+                    WorkAuthorization.OTHER,
+                    false,
+                    null,
+                    java.util.Set.of(),
+                    null,
+                    java.util.Set.of(),
+                    3,
+                    threshold,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+        } else {
+            old = profileOpt.get();
+        }
+        MasterProfile updated = new MasterProfile(
+                old.id(),
+                old.userId(),
+                old.workAuthorization(),
+                old.visaSponsorshipNeeded(),
+                old.salaryFloor(),
+                old.locations(),
+                old.remotePreference(),
+                old.blocklistCompanies(),
+                old.dailyApplicationCap(),
+                threshold,
+                old.name(),
+                old.email(),
+                old.phone(),
+                old.linkedinUrl(),
+                old.websiteUrl()
+        );
+        profileService.saveProfile(DEFAULT_USER_ID, updated);
+        return ResponseEntity.ok(Map.of("threshold", threshold));
     }
 }

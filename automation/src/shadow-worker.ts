@@ -31,27 +31,26 @@ function ensureScreenshotsDir(): void {
 }
 
 /**
- * Build a simple stub resume payload from the command's profile/document IDs.
- * In a real implementation these would be fetched from the profile service.
+ * Build real resume/profile payload from the command's fields.
  */
-function buildStubResumeData(command: AutomationCommand): Record<string, string> {
-  const namePrefix = command.profileSnapshotId.substring(0, 8);
+function buildRealResumeData(command: AutomationCommand): Record<string, string> {
+  const fullName = command.candidateName || 'Candidate';
+  const nameParts = fullName.split(' ');
+  const firstName = nameParts[0] || 'Candidate';
+  const lastName = nameParts.slice(1).join(' ') || 'Name';
+
   return {
-    name: `Candidate ${namePrefix}`,
-    firstName: `Candidate`,
-    lastName: namePrefix,
-    fullName: `Candidate ${namePrefix}`,
-    email: `candidate-${namePrefix}@example.com`,
-    phone: '+1-555-000-0000',
+    name: fullName,
+    firstName: firstName,
+    lastName: lastName,
+    fullName: fullName,
+    email: command.candidateEmail || '',
+    phone: command.candidatePhone || '',
     address: '123 Main St, Springfield, USA',
-    linkedIn: `https://linkedin.com/in/candidate-${namePrefix}`,
-    website: `https://portfolio-${namePrefix}.example.com`,
-    coverLetter: `I am writing to express my strong interest in this position. ` +
-      `My profile (ref: ${command.profileSnapshotId}) and resume ` +
-      `(ref: ${command.resumeDocumentId}) demonstrate the skills required. ` +
-      `I look forward to discussing how I can contribute to your team.`,
-    summary: `Experienced professional (profile: ${command.profileSnapshotId}) ` +
-      `seeking to bring value through technical and collaborative skills.`,
+    linkedIn: command.candidateLinkedin || '',
+    website: command.candidateWebsite || '',
+    coverLetter: command.coverLetterContent || '',
+    summary: command.resumeContent || '',
   };
 }
 
@@ -169,7 +168,7 @@ export async function runShadowCommand(command: AutomationCommand): Promise<Auto
 
   ensureScreenshotsDir();
   const screenshotPath = path.join(SCREENSHOTS_DIR, `${command.applicationId}.png`);
-  const resume = buildStubResumeData(command);
+  const resume = buildRealResumeData(command);
 
   let browser = null;
   let context: BrowserContext | null = null;

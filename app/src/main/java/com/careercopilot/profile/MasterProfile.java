@@ -13,7 +13,12 @@ public record MasterProfile(
         String remotePreference,
         Set<String> blocklistCompanies,
         int dailyApplicationCap,
-        int autonomyThreshold
+        int autonomyThreshold,
+        String name,
+        String email,
+        String phone,
+        String linkedinUrl,
+        String websiteUrl
 ) {
     public MasterProfile {
         if (id == null) {

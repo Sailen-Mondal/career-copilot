@@ -58,7 +58,14 @@ function deserializeCommand(fields: Record<string, string>): AutomationCommand {
     mode: (fields['mode'] as AutomationCommand['mode']) ?? 'shadow',
     profileSnapshotId: fields['profileSnapshotId'] ?? '',
     resumeDocumentId: fields['resumeDocumentId'] ?? '',
+    resumeContent: fields['resumeContent'] ?? '',
     coverLetterDocumentId: fields['coverLetterDocumentId'] || undefined,
+    coverLetterContent: fields['coverLetterContent'] || undefined,
+    candidateName: fields['candidateName'] || undefined,
+    candidateEmail: fields['candidateEmail'] || undefined,
+    candidatePhone: fields['candidatePhone'] || undefined,
+    candidateLinkedin: fields['candidateLinkedin'] || undefined,
+    candidateWebsite: fields['candidateWebsite'] || undefined,
   };
 }
 
@@ -118,6 +125,14 @@ export async function startConsuming(): Promise<void> {
       for (const [messageId, fieldArray] of messages) {
         log(`Received message id=${messageId}`);
         const fieldMap = parseStreamFields(fieldArray);
+
+        // Check Redis key first
+        const isHalted = await readClient.get('cc:automation:halted');
+        if (isHalted === 'true') {
+          log('Halted state detected from Redis key — skipping job processing and exiting consumer.');
+          process.exitCode = 0;
+          return;
+        }
 
         // HALT sentinel — used in testing / graceful drain
         if ('HALT' in fieldMap) {

@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/jobs")
 public class GreenhouseSyncController {
 
     private final JobDiscoveryService jobDiscoveryService;
@@ -14,13 +13,13 @@ public class GreenhouseSyncController {
         this.jobDiscoveryService = jobDiscoveryService;
     }
 
-    @PostMapping("/sync")
+    @PostMapping({"/api/jobs/sync", "/api/sources/greenhouse/sync"})
     public ResponseEntity<List<Job>> syncJobs(@RequestParam(value = "board", defaultValue = "google") String board) {
         List<Job> synced = jobDiscoveryService.syncBoard(board);
         return ResponseEntity.ok(synced);
     }
 
-    @GetMapping
+    @GetMapping("/api/jobs")
     public ResponseEntity<List<Job>> getJobs() {
         List<Job> jobs = jobDiscoveryService.getAllJobs();
         return ResponseEntity.ok(jobs);
