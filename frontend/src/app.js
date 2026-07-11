@@ -679,7 +679,6 @@ function handleNavigation(viewId) {
     window.location.hash = viewId;
   }
 }
-
 // ── Sidebar Collapse/Expand handlers ──────────────────────────────────────────
 function collapseSidebar() {
   const shell = document.querySelector('.app-shell');
@@ -687,13 +686,24 @@ function collapseSidebar() {
   els.sidebarExpandBtn.hidden = false;
 }
 
-// ── Sidebar Collapse/Expand handlers ──────────────────────────────────────────
 function expandSidebar() {
   const shell = document.querySelector('.app-shell');
-  shell.classList.remove('sidebar-collapsed');
-  els.sidebarExpandBtn.hidden = true;
+  if (window.innerWidth <= 768) {
+    shell.classList.add('sidebar-open');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (backdrop) backdrop.hidden = false;
+  } else {
+    shell.classList.remove('sidebar-collapsed');
+    els.sidebarExpandBtn.hidden = true;
+  }
 }
 
+function closeSidebarMobile() {
+  const shell = document.querySelector('.app-shell');
+  shell.classList.remove('sidebar-open');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (backdrop) backdrop.hidden = true;
+}
 // ── Command Palette handlers (Raycast spotlight styling groups) ───────────────
 function showCommandPalette() {
   els.commandPaletteOverlay.hidden = false;
@@ -807,16 +817,20 @@ async function init() {
   els.commandPaletteInput.addEventListener('input', (e) => {
     renderCommandPaletteResults(e.target.value);
   });
-
   // Sidebar navigation routes click handlers
   document.querySelectorAll('.nav-item').forEach((item) => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const viewId = item.getAttribute('data-view');
       handleNavigation(viewId);
+      closeSidebarMobile();
     });
   });
 
+  const mobileBackdrop = $('sidebarBackdrop');
+  if (mobileBackdrop) {
+    mobileBackdrop.addEventListener('click', closeSidebarMobile);
+  }
   // Topbar navigation tabs click handlers
   document.querySelectorAll('.topbar-tab').forEach((tab) => {
     tab.addEventListener('click', (e) => {
@@ -879,6 +893,12 @@ async function init() {
     } else {
       els.shadowMode.innerHTML = `<i data-lucide="sun" class="icon-sm"></i> Active Autopilot`;
     }
+  }
+
+
+  // Handle mobile startup state
+  if (window.innerWidth <= 768) {
+    document.querySelector('.app-shell').classList.add('inspector-collapsed');
   }
 
   // Handle Initial Route from Location Hash

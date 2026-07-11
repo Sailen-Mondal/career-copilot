@@ -530,7 +530,6 @@ a {
   color: var(--bg-app);
 }
 
-/* ── Content Viewport ── */
 .content {
   flex-grow: 1;
   overflow-y: auto;
@@ -540,6 +539,9 @@ a {
   gap: var(--space-24);
 }
 
+.content > * {
+  flex-shrink: 0;
+}
 /* Compact Page Header */
 .page-header {
   display: flex;
@@ -1594,10 +1596,27 @@ tbody tr.selected td:first-child {
   letter-spacing: 0.05em;
   opacity: 0.8;
 }
-
 /* ═══════════════════════════════════════
-   RESPONSIVE DESIGN
+   RESPONSIVE DESIGN (Mobile/Smartphones)
    ═══════════════════════════════════════ */
+
+/* Mobile backdrop dim overlay */
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 150;
+  animation: fade-in-backdrop 200ms ease-out;
+}
+
+@keyframes fade-in-backdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @media (max-width: 1200px) {
   .app-shell {
     grid-template-columns: 260px 1fr 0px;
@@ -1605,16 +1624,177 @@ tbody tr.selected td:first-child {
   .app-shell.sidebar-collapsed {
     grid-template-columns: 0px 1fr 0px;
   }
-}
-
-@media (max-width: 900px) {
-  .app-shell {
-    grid-template-columns: 0px 1fr 0px;
+  /* Show detail panel as drawer overlay if selection active */
+  .app-shell:not(.inspector-collapsed) .inspector {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 340px;
+    z-index: 180;
+    border-left: 1px solid var(--border-color);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 768px) {
+  .app-shell {
+    display: block;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  /* Main content fills screen */
+  .main-wrapper {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  /* Hamburger Menu visible on mobile */
+  .sidebar-expand-btn {
+    display: flex !important; /* Force visible */
+  }
+
+  /* Hide sidebar default desktop layout */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    height: 100%;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Slide in sidebar when open */
+  .app-shell.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+
+  /* Slide in Inspector details from right on select */
+  .inspector {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 340px;
+    max-width: 85vw;
+    height: 100%;
+    z-index: 200;
+    transform: translateX(100%);
+    transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  }
+  .app-shell:not(.inspector-collapsed) .inspector {
+    transform: translateX(0);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 340px;
+    max-width: 85vw;
+    z-index: 200;
+  }
+
+  /* Flexible wrapped topbar layout to prevent overlap on mobile */
+  .topbar {
+    height: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: var(--space-12) var(--space-16);
+    gap: var(--space-12);
+  }
+  .content {
+    padding: var(--space-20) var(--space-16) var(--space-32);
+  }
+  .topbar-left {
+    order: 1;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-12);
+    min-width: 0;
+  }
+
+  .topbar-right {
+    order: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-12);
+  }
+
   .topbar-center {
+    order: 3;
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-4) 0;
+  }
+
+  .topbar-center::-webkit-scrollbar {
     display: none;
+  }
+  /* Compact titles sizes */
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 12px;
+  }
+
+  /* Stacking controls widgets */
+  .controls-panel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-16);
+  }
+
+  .controls-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn {
+    flex-grow: 1;
+    justify-content: center;
+  }
+  /* Wrap Metric Cards Grid layout */
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-12);
+  }
+
+  /* Hide verbose table columns on tiny screens (headers + cells) */
+  #applicationsTable th:nth-child(5),
+  #applicationsTable td:nth-child(5),
+  #applicationsTable th:nth-child(6),
+  #applicationsTable td:nth-child(6) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-center {
+    max-width: 35vw;
+  }
+
+  /* Title breadcrumbs compress */
+  .breadcrumbs ol li a, .breadcrumbs ol li span {
+    font-size: 11px;
   }
 }
