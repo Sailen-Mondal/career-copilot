@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.spring.boot.starter.flyway)
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgres)
-    runtimeOnly(libs.postgresql)
+    implementation(libs.postgresql)
     implementation(libs.spring.boot.starter.data.redis)
 
     // Security

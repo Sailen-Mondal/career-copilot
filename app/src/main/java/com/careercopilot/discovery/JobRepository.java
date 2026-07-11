@@ -13,5 +13,5 @@ public interface JobRepository extends JpaRepository<JobEntity, UUID> {
     Optional<JobEntity> findByDedupKey(String dedupKey);
 
     @Query(value = "SELECT * FROM job j WHERE j.embedding_vector IS NOT NULL AND (1.0 - (j.embedding_vector <=> CAST(:embedding AS vector))) > :threshold ORDER BY j.embedding_vector <=> CAST(:embedding AS vector) ASC LIMIT 1", nativeQuery = true)
-    Optional<JobEntity> findNearestSemanticMatch(@Param("embedding") float[] embedding, @Param("threshold") double threshold);
+    Optional<JobEntity> findNearestSemanticMatch(@Param("embedding") String embedding, @Param("threshold") double threshold);
 }

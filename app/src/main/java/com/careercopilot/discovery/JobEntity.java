@@ -73,8 +73,9 @@ public class JobEntity {
     @Column(name = "dedup_key", unique = true)
     private String dedupKey;
 
+    @JdbcTypeCode(SqlTypes.OTHER)
     @Column(name = "embedding_vector", columnDefinition = "vector(1536)")
-    private float[] embeddingVector;
+    private Object embeddingVector;
 
     public JobEntity() {
     }
@@ -102,7 +103,7 @@ public class JobEntity {
         this.lastVerifiedAt = job.lastVerifiedAt();
         this.status = job.status() != null ? job.status() : JobStatus.ACTIVE;
         this.dedupKey = job.dedupKey();
-        this.embeddingVector = job.embeddingVector();
+        this.embeddingVector = serializeVector(job.embeddingVector());
     }
 
     public Job toDomain() {
@@ -127,7 +128,7 @@ public class JobEntity {
                 this.lastVerifiedAt,
                 this.status,
                 this.dedupKey,
-                this.embeddingVector
+                deserializeVector(this.embeddingVector)
         );
     }
 
@@ -292,11 +293,77 @@ public class JobEntity {
         this.dedupKey = dedupKey;
     }
 
+    public static String serializeVectorToString(float[] vector) {
+        if (vector == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int i = 0; i < vector.length; i++) {
+            sb.append(vector[i]);
+            if (i < vector.length - 1) {
+                sb.append(",");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public static Object serializeVector(float[] vector) {
+        if (vector == null) {
+            return null;
+        }
+        try {
+            org.postgresql.util.PGobject pgObject = new org.postgresql.util.PGobject();
+            pgObject.setType("vector");
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            for (int i = 0; i < vector.length; i++) {
+                sb.append(vector[i]);
+                if (i < vector.length - 1) {
+                    sb.append(",");
+                }
+            }
+            sb.append("]");
+            pgObject.setValue(sb.toString());
+            return pgObject;
+        } catch (java.sql.SQLException e) {
+            throw new RuntimeException("Failed to serialize vector", e);
+        }
+    }
+
+    public static float[] deserializeVector(Object dbData) {
+        if (dbData == null) {
+            return null;
+        }
+        String value;
+        if (dbData instanceof org.postgresql.util.PGobject pgObject) {
+            value = pgObject.getValue();
+        } else {
+            value = dbData.toString();
+        }
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        if (value.startsWith("[") && value.endsWith("]")) {
+            value = value.substring(1, value.length() - 1);
+        }
+        if (value.isEmpty()) {
+            return new float[0];
+        }
+        String[] parts = value.split(",");
+        float[] result = new float[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            result[i] = Float.parseFloat(parts[i].trim());
+        }
+        return result;
+    }
+
     public float[] getEmbeddingVector() {
-        return embeddingVector;
+        return deserializeVector(this.embeddingVector);
     }
 
     public void setEmbeddingVector(float[] embeddingVector) {
-        this.embeddingVector = embeddingVector;
+        this.embeddingVector = serializeVector(embeddingVector);
     }
 }
