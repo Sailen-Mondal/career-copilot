@@ -3,78 +3,441 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AI Career Copilot</title>
+    <title>Career Copilot — AI Job Application Dashboard</title>
+    <meta name="description" content="Career Copilot: AI-powered autonomous job application dashboard. Monitor, control, and audit your automated job search in real time.">
+    <meta name="theme-color" content="#0B0B0C">
+    <!-- Preconnect for Google Fonts performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="src/styles.css">
   </head>
   <body>
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">AI Career Copilot</p>
-        <h1>Applications</h1>
+
+    <div class="app-shell">
+
+      <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect width="24" height="24" rx="6" fill="#5B8CFF"/>
+              <path d="M7 15 L12 7 L17 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="18" r="1.5" fill="white"/>
+            </svg>
+          </div>
+          <div class="sidebar-brand-text">
+            <span class="sidebar-brand-name">Career Copilot</span>
+            <span class="sidebar-brand-plan">AI Autopilot Active</span>
+          </div>
+          <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse sidebar" title="Collapse sidebar">
+            <i data-lucide="panel-left-close" class="icon-sm"></i>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" id="sidebarNav" aria-label="Main navigation">
+          <!-- Overview -->
+          <div class="nav-section">
+            <span class="nav-section-header">Overview</span>
+            <a class="nav-item active" data-view="dashboard" href="#dashboard" id="nav-dashboard">
+              <i data-lucide="layout-dashboard" class="nav-icon"></i>
+              <span>Dashboard</span>
+            </a>
+            <a class="nav-item" data-view="applications" href="#applications" id="nav-applications">
+              <i data-lucide="file-text" class="nav-icon"></i>
+              <span>Applications</span>
+              <span class="nav-badge" id="navAppCount">5</span>
+            </a>
+          </div>
+
+          <!-- Pipeline -->
+          <div class="nav-section">
+            <span class="nav-section-header">Pipeline</span>
+            <a class="nav-item" data-view="discovery" href="#discovery" id="nav-discovery">
+              <i data-lucide="search" class="nav-icon"></i>
+              <span>Discovery</span>
+            </a>
+            <a class="nav-item" data-view="matching" href="#matching" id="nav-matching">
+              <i data-lucide="git-compare-arrows" class="nav-icon"></i>
+              <span>Matching</span>
+            </a>
+            <a class="nav-item" data-view="generation" href="#generation" id="nav-generation">
+              <i data-lucide="sparkles" class="nav-icon"></i>
+              <span>Generation</span>
+            </a>
+          </div>
+
+          <!-- System -->
+          <div class="nav-section">
+            <span class="nav-section-header">System</span>
+            <a class="nav-item" data-view="automation" href="#automation" id="nav-automation">
+              <i data-lucide="bot" class="nav-icon"></i>
+              <span>Automation</span>
+            </a>
+            <a class="nav-item" data-view="audit" href="#audit" id="nav-audit">
+              <i data-lucide="scroll-text" class="nav-icon"></i>
+              <span>Audit Log</span>
+            </a>
+            <a class="nav-item" data-view="settings" href="#settings" id="nav-settings">
+              <i data-lucide="settings" class="nav-icon"></i>
+              <span>Settings</span>
+            </a>
+          </div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-status">
+            <span class="status-dot-sm" id="sidebarStatusDot"></span>
+            <span class="sidebar-status-text" id="sidebarStatusText">Autopilot Active</span>
+          </div>
+          <span class="sidebar-version" id="sidebarVersion">v1.0.0</span>
+        </div>
+      </aside>
+
+      <!-- ═══════════════════════ MAIN WRAPPER ═══════════════════════ -->
+      <div class="main-wrapper" id="mainWrapper">
+
+        <!-- ── Top Bar ── -->
+        <header class="topbar" role="banner">
+          <div class="topbar-left">
+            <button class="sidebar-expand-btn" id="sidebarExpandBtn" aria-label="Expand sidebar" title="Expand sidebar" hidden>
+              <i data-lucide="panel-left-open" class="icon-sm"></i>
+            </button>
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+              <ol>
+                <li><a href="#dashboard">Career Copilot</a></li>
+                <li class="breadcrumb-separator" aria-hidden="true">
+                  <i data-lucide="chevron-right" class="icon-xs"></i>
+                </li>
+                <li><span id="breadcrumbCurrent" aria-current="page">Dashboard</span></li>
+              </ol>
+            </nav>
+          </div>
+
+          <div class="topbar-center">
+            <nav class="topbar-tabs" aria-label="Quick navigation">
+              <button class="topbar-tab active" data-view="dashboard">Dashboard</button>
+              <button class="topbar-tab" data-view="applications">Applications</button>
+              <button class="topbar-tab" data-view="automation">Automation</button>
+              <button class="topbar-tab" data-view="audit">Audit Log</button>
+            </nav>
+          </div>
+
+          <div class="topbar-right">
+            <button class="topbar-search-btn" id="searchBtn" aria-label="Search (Ctrl+K)" title="Search (Ctrl+K)">
+              <i data-lucide="search" class="icon-sm"></i>
+              <span class="search-label">Search</span>
+              <kbd class="search-kbd">Ctrl K</kbd>
+            </button>
+
+            <div class="automation-status" id="automationStatusBadge">
+              <span class="status-dot animate-pulse" id="statusDot" aria-hidden="true"></span>
+              <span id="automationState" class="automation-state-label">RUNNING</span>
+            </div>
+
+            <time id="lastRefreshed" class="last-refreshed" datetime="" title="Last data refresh"></time>
+
+            <div class="user-avatar" id="userAvatar" title="User Settings">
+              <span>S</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- ── Content ── -->
+        <main class="content" id="mainContent">
+
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-meta">
+              <h1 class="page-title" id="pageTitle">Dashboard</h1>
+              <div class="page-header-stats" id="pageHeaderStats">
+                <span class="header-stat"><strong id="hdrDiscovered">47</strong> discovered</span>
+                <span class="header-stat-dot">&middot;</span>
+                <span class="header-stat"><strong id="hdrApplied">3</strong> applied</span>
+                <span class="header-stat-dot">&middot;</span>
+                <span class="header-stat"><strong id="hdrScore">84</strong> match score</span>
+              </div>
+            </div>
+            <p class="page-subtitle" id="pageSubtitle">Monitor your automated job search pipeline</p>
+          </div>
+
+          <!-- ── Stats Row ── -->
+          <section class="stats-row" aria-label="Key metrics">
+            <article class="stat-card" id="stat-discovered">
+              <div class="stat-card-header">
+                <div class="stat-icon-wrap">
+                  <i data-lucide="telescope" class="stat-icon"></i>
+                </div>
+                <span class="stat-trend trend-up"><i data-lucide="arrow-up-right" class="icon-xs"></i> 12%</span>
+              </div>
+              <div class="stat-card-body">
+                <p class="stat-value" id="val-discovered">&mdash;</p>
+                <p class="stat-label">Jobs Discovered</p>
+              </div>
+              <div class="stat-card-chart">
+                <svg class="sparkline" viewBox="0 0 100 24" width="100%" height="24">
+                  <path d="M 0 18 Q 20 6, 40 14 T 80 4 T 100 8" fill="none" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+            </article>
+
+            <article class="stat-card" id="stat-applied">
+              <div class="stat-card-header">
+                <div class="stat-icon-wrap stat-icon-green">
+                  <i data-lucide="check-circle-2" class="stat-icon"></i>
+                </div>
+                <span class="stat-trend trend-up-green"><i data-lucide="arrow-up-right" class="icon-xs"></i> 3 today</span>
+              </div>
+              <div class="stat-card-body">
+                <p class="stat-value" id="val-applied">&mdash;</p>
+                <p class="stat-label">Applied Today</p>
+              </div>
+              <div class="stat-card-chart">
+                <svg class="sparkline" viewBox="0 0 100 24" width="100%" height="24">
+                  <path d="M 0 20 Q 20 18, 40 8 T 80 12 T 100 4" fill="none" stroke="var(--accent-green)" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+            </article>
+
+            <article class="stat-card" id="stat-avg-score">
+              <div class="stat-card-header">
+                <div class="stat-icon-wrap stat-icon-blue">
+                  <i data-lucide="star" class="stat-icon"></i>
+                </div>
+                <span class="stat-trend"><i data-lucide="trending-up" class="icon-xs"></i> Optimal</span>
+              </div>
+              <div class="stat-card-body">
+                <p class="stat-value" id="val-avg-score">&mdash;</p>
+                <p class="stat-label">Avg Match Score</p>
+              </div>
+              <div class="stat-card-chart">
+                <svg class="sparkline" viewBox="0 0 100 24" width="100%" height="24">
+                  <path d="M 0 10 Q 20 10, 40 8 T 80 6 T 100 4" fill="none" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+            </article>
+
+            <article class="stat-card" id="stat-success-rate">
+              <div class="stat-card-header">
+                <div class="stat-icon-wrap stat-icon-yellow">
+                  <i data-lucide="bar-chart-3" class="stat-icon"></i>
+                </div>
+                <span class="stat-trend"><i data-lucide="activity" class="icon-xs"></i> Constant</span>
+              </div>
+              <div class="stat-card-body">
+                <p class="stat-value" id="val-success-rate">&mdash;</p>
+                <p class="stat-label">Success Rate</p>
+              </div>
+              <div class="stat-card-chart">
+                <svg class="sparkline" viewBox="0 0 100 24" width="100%" height="24">
+                  <path d="M 0 12 Q 20 16, 40 12 T 80 8 T 100 10" fill="none" stroke="var(--accent-yellow)" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+            </article>
+          </section>
+
+          <!-- ── Controls Panel ── -->
+          <section id="controls" class="card controls-panel" aria-label="Automation controls">
+            <div class="controls-group">
+              <label class="control-label" for="threshold">
+                <i data-lucide="sliders-horizontal" class="icon-sm" aria-hidden="true"></i>
+                Autonomy Threshold
+              </label>
+              <div class="slider-row">
+                <input type="range" id="threshold" min="0" max="100" value="85" aria-label="Autonomy threshold percentage">
+                <output id="thresholdValue" for="threshold" class="threshold-output">85</output>
+              </div>
+              <p class="control-hint">Applications scoring below this value will be skipped.</p>
+            </div>
+
+            <div class="controls-divider" aria-hidden="true"></div>
+
+            <div class="controls-group controls-actions">
+              <button id="killSwitch" type="button" class="btn btn-primary" aria-label="Toggle automation kill switch">
+                <i data-lucide="pause" class="icon-sm" aria-hidden="true"></i>
+                Pause Automation
+              </button>
+
+              <button id="shadowMode" type="button" role="switch" aria-pressed="true" class="btn btn-secondary">
+                <i data-lucide="moon" class="icon-sm" aria-hidden="true"></i>
+                Shadow Mode
+              </button>
+            </div>
+          </section>
+
+          <!-- ── Applications Table ── -->
+          <section id="applications-section" class="card" aria-label="Job applications">
+            <div class="section-header">
+              <div class="section-title-group">
+                <h2 class="section-title">Applications</h2>
+                <span id="applicationCount" class="record-count">Loading…</span>
+              </div>
+              <div class="section-header-actions">
+                <span class="refresh-indicator" id="refreshIndicator" aria-label="Refreshing" hidden>
+                  <span class="spinner"></span>
+                </span>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table id="applicationsTable" aria-label="Job applications list">
+                <thead>
+                  <tr>
+                    <th scope="col">Company</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Reason</th>
+                    <th scope="col">Time</th>
+                  </tr>
+                </thead>
+                <tbody id="applicationRows">
+                  <!-- Populated by app.js -->
+                  <tr class="loading-row">
+                    <td colspan="6">
+                      <div class="loading-shimmer"></div>
+                      <div class="loading-shimmer" style="width:70%;margin-top:8px"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- ── Audit Log ── -->
+          <section id="audit-section" class="card audit-panel" aria-label="Automation audit log">
+            <button id="auditToggle" type="button" class="audit-toggle" aria-expanded="false" aria-controls="auditLogWrap">
+              <div class="audit-toggle-label">
+                <i data-lucide="scroll-text" class="icon-sm" aria-hidden="true"></i>
+                Audit Log
+                <span id="auditCount" class="audit-count-badge">0</span>
+              </div>
+              <i data-lucide="chevron-down" class="chevron-icon icon-sm" aria-hidden="true"></i>
+            </button>
+
+            <div id="auditLogWrap" class="audit-log-wrap" hidden>
+              <ul id="auditLog" class="audit-list" aria-live="polite" aria-label="Audit events">
+                <li class="audit-empty">No events recorded yet.</li>
+              </ul>
+            </div>
+          </section>
+
+        </main>
       </div>
-      <button id="killSwitch" class="danger-button" type="button">Pause all automation</button>
-    </header>
 
-    <main class="layout">
-      <section class="policy-panel" aria-labelledby="policy-title">
-        <div class="section-header">
-          <h2 id="policy-title">Policy</h2>
-          <span id="automationState" class="state-pill">Running</span>
+      <!-- ═══════════════════════ INSPECTOR ═══════════════════════ -->
+      <aside class="inspector" id="inspector">
+        <div class="inspector-header">
+          <h3 class="inspector-title" id="inspectorTitle">Details</h3>
+          <button class="inspector-close-btn" id="inspectorCloseBtn" aria-label="Close inspector" title="Close inspector">
+            <i data-lucide="x" class="icon-sm"></i>
+          </button>
         </div>
+        <div class="inspector-body" id="inspectorBody">
+          
+          <!-- Dynamic Empty State Panel (AI branding, shortcuts, decisions timeline) -->
+          <div class="inspector-empty" id="inspectorEmpty">
+            <div class="ai-brand-badge">
+              <div class="ai-pulse-ring"></div>
+              <div class="ai-icon-circle">
+                <i data-lucide="bot-message-square" class="ai-badge-icon"></i>
+              </div>
+            </div>
+            <p class="inspector-empty-title">AI Autopilot Active</p>
+            <p class="inspector-empty-desc">Form-filler is monitoring the Greenhouse stream. Click any application row for full matching audit.</p>
+            
+            <div class="inspector-shortcuts">
+              <div class="shortcut-row">
+                <span class="shortcut-label">Command Palette</span>
+                <kbd class="shortcut-key">Ctrl K</kbd>
+              </div>
+            </div>
 
-        <label class="control-row" for="threshold">
-          <span>Autonomy threshold</span>
-          <output id="thresholdValue" for="threshold">85</output>
-        </label>
-        <input id="threshold" type="range" min="50" max="100" value="85">
+            <div class="inspector-empty-section">
+              <span class="inspector-empty-section-title">Live AI Reasoning Stream</span>
+              <div class="live-timeline" id="liveTimeline">
+                <!-- Populated dynamically by app.js -->
+              </div>
+            </div>
+          </div>
 
-        <label class="control-row" for="dailyCap">
-          <span>Daily cap</span>
-          <input id="dailyCap" type="number" min="0" max="50" value="3">
-        </label>
+          <!-- Dynamic Detail Panel -->
+          <div class="inspector-detail" id="inspectorDetail" hidden>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Company</span>
+              <span class="inspector-field-value" id="inspectorCompany">—</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Role</span>
+              <span class="inspector-field-value" id="inspectorRole">—</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Match Confidence</span>
+              <div class="inspector-score-wrap" id="inspectorScoreWrap">—</div>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Autopilot Status</span>
+              <span class="inspector-field-value" id="inspectorStatus">—</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Automation Log</span>
+              <span class="inspector-field-value inspector-field-reason" id="inspectorReason">—</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Timestamp</span>
+              <span class="inspector-field-value" id="inspectorTime">—</span>
+            </div>
 
-        <div class="stats-grid" aria-label="Application stats">
-          <div>
-            <span class="stat-value">12</span>
-            <span class="stat-label">Discovered</span>
-          </div>
-          <div>
-            <span class="stat-value">4</span>
-            <span class="stat-label">Ready</span>
-          </div>
-          <div>
-            <span class="stat-value">2</span>
-            <span class="stat-label">Submitted</span>
-          </div>
-          <div>
-            <span class="stat-value">1</span>
-            <span class="stat-label">Blocked</span>
+            <div class="inspector-separator"></div>
+
+            <div class="inspector-section">
+              <span class="inspector-section-title">AI Generated Materials</span>
+              <div class="inspector-docs" id="inspectorDocs">
+                <div class="inspector-doc-item">
+                  <i data-lucide="file-text" class="icon-sm"></i>
+                  <span>Tailored Resume</span>
+                  <span class="inspector-doc-status">Pending</span>
+                </div>
+                <div class="inspector-doc-item">
+                  <i data-lucide="mail" class="icon-sm"></i>
+                  <span>Cover Letter</span>
+                  <span class="inspector-doc-status">Pending</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="inspector-separator"></div>
+
+            <div class="inspector-section">
+              <span class="inspector-section-title">Verified Profile Facts</span>
+              <div class="inspector-facts-list" id="inspectorFacts">
+                <div class="fact-tag"><i data-lucide="check" class="icon-xs"></i> 3+ yrs Java Exp</div>
+                <div class="fact-tag"><i data-lucide="check" class="icon-xs"></i> Distributed Monoliths</div>
+                <div class="fact-tag"><i data-lucide="check" class="icon-xs"></i> Redis Streams</div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </aside>
 
-      <section class="feed" aria-labelledby="feed-title">
-        <div class="section-header">
-          <h2 id="feed-title">Today</h2>
-          <button id="shadowMode" class="secondary-button" type="button" aria-pressed="true">Shadow mode</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th>Role</th>
-                <th>Score</th>
-                <th>Status</th>
-                <th>Reason</th>
-              </tr>
-            </thead>
-            <tbody id="applicationRows"></tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+    </div><!-- /.app-shell -->
 
+    <!-- ═══════════════════════ COMMAND PALETTE ═══════════════════════ -->
+    <div class="command-palette-overlay" id="commandPaletteOverlay" hidden>
+      <div class="command-palette" id="commandPalette" role="dialog" aria-label="Command palette">
+        <div class="command-palette-input-wrap">
+          <i data-lucide="search" class="icon-sm command-palette-search-icon"></i>
+          <input type="text" class="command-palette-input" id="commandPaletteInput" placeholder="Search applications, commands…" autocomplete="off" spellcheck="false">
+          <button class="command-palette-close-btn" id="commandPaletteCloseBtn" title="Close command palette">Close</button>
+        </div>
+        <div class="command-palette-results" id="commandPaletteResults">
+          <!-- Populated by app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
     <script src="src/app.js"></script>
   </body>
 </html>

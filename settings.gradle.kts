@@ -9,6 +9,8 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenCentral()
+        maven { url = uri("https://repo.spring.io/milestone") }
+        maven { url = uri("https://repo.spring.io/release") }
     }
     // libs.versions.toml is auto-discovered by Gradle 8.x from gradle/libs.versions.toml
 }

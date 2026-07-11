@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgres)
     runtimeOnly(libs.postgresql)
+    implementation(libs.spring.boot.starter.data.redis)
 
     // Security
     implementation(libs.spring.boot.starter.security)
@@ -31,10 +32,15 @@ dependencies {
     // Observability
     implementation(libs.spring.boot.starter.actuator)
 
+    // Spring AI
+    implementation(platform(libs.spring.ai.bom))
+    implementation(libs.spring.ai.vertex.ai.gemini.spring.boot.starter)
+
     // Testing
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.redis)
 }
 
 tasks.withType<Test>().configureEach {

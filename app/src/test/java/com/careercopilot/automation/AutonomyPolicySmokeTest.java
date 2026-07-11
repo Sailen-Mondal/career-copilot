@@ -16,6 +16,7 @@ public final class AutonomyPolicySmokeTest {
     public static void main(String[] args) {
         MasterProfile profile = new MasterProfile(
                 UUID.randomUUID(),
+                "user-123",
                 WorkAuthorization.H1B,
                 true,
                 130000,
@@ -33,9 +34,21 @@ public final class AutonomyPolicySmokeTest {
                 URI.create("https://example.com/jobs/staff-backend"),
                 "GoodCo",
                 "Staff Backend Engineer",
+                "Remote",
+                "remote",
+                null,
+                null,
                 Set.of("Java", "PostgreSQL"),
+                null,
+                null,
+                null,
                 true,
-                JobStatus.ACTIVE
+                null,
+                null,
+                null,
+                JobStatus.ACTIVE,
+                null,
+                null
         );
 
         AutonomyPolicy policy = new AutonomyPolicy();

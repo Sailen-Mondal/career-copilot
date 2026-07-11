@@ -5,9 +5,10 @@ import java.util.UUID;
 
 public record MasterProfile(
         UUID id,
+        String userId,
         WorkAuthorization workAuthorization,
         boolean visaSponsorshipNeeded,
-        int salaryFloor,
+        Integer salaryFloor,
         Set<String> locations,
         String remotePreference,
         Set<String> blocklistCompanies,
@@ -17,6 +18,9 @@ public record MasterProfile(
     public MasterProfile {
         if (id == null) {
             throw new IllegalArgumentException("MasterProfile id is required.");
+        }
+        if (userId == null || userId.isBlank()) {
+            throw new IllegalArgumentException("User ID is required.");
         }
         if (dailyApplicationCap < 0) {
             throw new IllegalArgumentException("Daily application cap cannot be negative.");

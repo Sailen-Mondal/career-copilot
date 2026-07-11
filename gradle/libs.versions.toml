@@ -4,6 +4,7 @@ spring-dep-mgmt    = "1.1.7"
 flyway             = "11.9.1"
 postgresql-driver  = "42.7.5"
 testcontainers     = "1.21.1"
+spring-ai          = "1.0.0"
 
 [libraries]
 # Spring Boot starters
@@ -11,6 +12,7 @@ spring-boot-starter-web      = { module = "org.springframework.boot:spring-boot-
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 spring-boot-starter-test     = { module = "org.springframework.boot:spring-boot-starter-test" }
 
 # Database
@@ -18,9 +20,14 @@ flyway-core        = { module = "org.flywaydb:flyway-core",              version
 flyway-postgres    = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 postgresql         = { module = "org.postgresql:postgresql",              version.ref = "postgresql-driver" }
 
+# Spring AI
+spring-ai-bom                              = { module = "org.springframework.ai:spring-ai-bom",                              version.ref = "spring-ai" }
+spring-ai-vertex-ai-gemini-spring-boot-starter = { module = "org.springframework.ai:spring-ai-vertex-ai-gemini-spring-boot-starter", version.ref = "spring-ai" }
+
 # Testcontainers
 testcontainers-junit       = { module = "org.testcontainers:junit-jupiter",  version.ref = "testcontainers" }
 testcontainers-postgresql  = { module = "org.testcontainers:postgresql",     version.ref = "testcontainers" }
+testcontainers-redis       = { module = "com.redis:testcontainers-redis",     version = "2.2.2" }
 
 [plugins]
 spring-boot            = { id = "org.springframework.boot",       version.ref = "spring-boot" }

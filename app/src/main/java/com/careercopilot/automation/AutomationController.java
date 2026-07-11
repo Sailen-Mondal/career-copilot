@@ -1,0 +1,94 @@
+package com.careercopilot.automation;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * REST controller for automation management: kill switch, status, and event log.
+ *
+ * <p>All routes require a valid {@code X-API-Key} header.
+ */
+@RestController
+@RequestMapping("/api/automation")
+public class AutomationController {
+
+    private static final Logger log = LoggerFactory.getLogger(AutomationController.class);
+
+    private final KillSwitchService killSwitchService;
+    private final StringRedisTemplate redisTemplate;
+    private final String resultsStream;
+
+    public AutomationController(
+            KillSwitchService killSwitchService,
+            StringRedisTemplate redisTemplate,
+            @Value("${automation.streams.results-stream:cc:automation:results}") String resultsStream) {
+        this.killSwitchService = killSwitchService;
+        this.redisTemplate = redisTemplate;
+        this.resultsStream = resultsStream;
+    }
+
+    /**
+     * Activates or deactivates the global kill switch.
+     *
+     * @param request body with {@code action}: "halt" or "resume"
+     */
+    @PostMapping("/kill-switch")
+    public ResponseEntity<Map<String, Object>> killSwitch(@RequestBody KillSwitchRequest request) {
+        if ("halt".equalsIgnoreCase(request.action())) {
+            killSwitchService.halt();
+        } else if ("resume".equalsIgnoreCase(request.action())) {
+            killSwitchService.resume();
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Invalid action. Use 'halt' or 'resume'."));
+        }
+        return ResponseEntity.ok(Map.of("halted", killSwitchService.isHalted()));
+    }
+
+    /** Returns the current automation status. */
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> status() {
+        return ResponseEntity.ok(Map.of("halted", killSwitchService.isHalted()));
+    }
+
+    /**
+     * Returns the last 20 events from the automation results stream.
+     * Each event is a map of the stream message fields.
+     */
+    @GetMapping("/events")
+    public ResponseEntity<List<Map<String, Object>>> events() {
+        List<Map<String, Object>> events = new ArrayList<>();
+        try {
+            @SuppressWarnings("unchecked")
+            List<MapRecord<String, Object, Object>> records =
+                    redisTemplate.opsForStream().reverseRange(resultsStream,
+                            org.springframework.data.domain.Range.unbounded(),
+                            org.springframework.data.redis.connection.Limit.limit().count(20));
+
+            if (records != null) {
+                for (MapRecord<String, Object, Object> record : records) {
+                    Map<String, Object> event = new HashMap<>(record.getValue());
+                    event.put("messageId", record.getId().getValue());
+                    events.add(event);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch automation events (Redis may be unavailable): {}",
+                    e.getMessage());
+        }
+        return ResponseEntity.ok(events);
+    }
+
+    /** Request body for the kill-switch endpoint. */
+    public record KillSwitchRequest(String action) {}
+}

@@ -1,0 +1,46 @@
+{
+  "jobs": [
+    {
+      "id": 4029103,
+      "title": "Software Engineer II, Backend",
+      "absolute_url": "https://boards.greenhouse.io/mockcompany/jobs/4029103",
+      "updated_at": "2026-07-08T10:15:30Z",
+      "content": "<h3>Role Description</h3><p>We are looking for a Software Engineer II with experience in Spring Boot, PostgreSQL, and Redis.</p>",
+      "offices": [
+        {
+          "id": 2048,
+          "name": "San Francisco, CA",
+          "location": "San Francisco, CA, USA"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 11223,
+          "name": "Sponsorship Available",
+          "value": "Yes"
+        }
+      ]
+    },
+    {
+      "id": 4029104,
+      "title": "Frontend Developer",
+      "absolute_url": "https://boards.greenhouse.io/mockcompany/jobs/4029104",
+      "updated_at": "2026-07-08T11:20:00Z",
+      "content": "<h3>Role Description</h3><p>We are looking for a Frontend Developer with React experience.</p>",
+      "offices": [
+        {
+          "id": 2049,
+          "name": "Remote",
+          "location": "Remote, USA"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 11224,
+          "name": "Sponsorship Available",
+          "value": "No"
+        }
+      ]
+    }
+  ]
+}

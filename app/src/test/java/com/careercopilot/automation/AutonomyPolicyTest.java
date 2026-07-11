@@ -30,6 +30,7 @@ class AutonomyPolicyTest {
 
         profile = new MasterProfile(
                 UUID.randomUUID(),
+                "user-123",
                 WorkAuthorization.H1B,
                 true,
                 130_000,
@@ -47,9 +48,21 @@ class AutonomyPolicyTest {
                 URI.create("https://example.com/jobs/staff-backend"),
                 "GoodCo",
                 "Staff Backend Engineer",
+                "Remote",
+                "remote",
+                null,
+                null,
                 Set.of("Java", "PostgreSQL"),
+                null,
+                null,
+                null,
                 true,
-                JobStatus.ACTIVE
+                null,
+                null,
+                null,
+                JobStatus.ACTIVE,
+                null,
+                null
         );
     }
 
@@ -91,7 +104,7 @@ class AutonomyPolicyTest {
         Job blockedJob = new Job(
                 UUID.randomUUID(), "greenhouse", "some-role",
                 URI.create("https://example.com/jobs/some-role"),
-                "BlockedCo", "Engineer", Set.of(), false, JobStatus.ACTIVE);
+                "BlockedCo", "Engineer", "Remote", "remote", null, null, Set.of(), null, null, null, false, null, null, null, JobStatus.ACTIVE, null, null);
         ApplicationCandidate candidate = new ApplicationCandidate(blockedJob, 99, true, false, false, 0);
 
         ApplicationDecision decision = policy.decide(profile, candidate);
@@ -106,7 +119,7 @@ class AutonomyPolicyTest {
         Job closedJob = new Job(
                 UUID.randomUUID(), "greenhouse", "closed-role",
                 URI.create("https://example.com/jobs/closed-role"),
-                "GoodCo", "Engineer", Set.of(), false, JobStatus.EXPIRED);
+                "GoodCo", "Engineer", "Remote", "remote", null, null, Set.of(), null, null, null, false, null, null, null, JobStatus.EXPIRED, null, null);
         ApplicationCandidate candidate = new ApplicationCandidate(closedJob, 99, true, false, false, 0);
 
         ApplicationDecision decision = policy.decide(profile, candidate);

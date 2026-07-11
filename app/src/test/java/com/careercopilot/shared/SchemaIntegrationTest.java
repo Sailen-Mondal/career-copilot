@@ -82,8 +82,8 @@ class SchemaIntegrationTest {
     }
 
     @Test
-    @DisplayName("pgvector extension is installed and job.embedding_vector column has correct type")
-    void pgvectorExtensionAndVectorColumnExist() {
+    @DisplayName("pgvector extension is installed and job.embedding_vector and location columns exist")
+    void pgvectorExtensionAndColumnsExist() {
         Integer extCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM pg_extension WHERE extname = 'vector'",
                 Integer.class);
@@ -94,14 +94,20 @@ class SchemaIntegrationTest {
                 "WHERE table_name = 'job' AND column_name = 'embedding_vector'",
                 Integer.class);
         assertThat(colCount).as("job.embedding_vector column should exist").isEqualTo(1);
+
+        Integer locCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.columns " +
+                "WHERE table_name = 'job' AND column_name = 'location'",
+                Integer.class);
+        assertThat(locCount).as("job.location column should exist").isEqualTo(1);
     }
 
     @Test
-    @DisplayName("Flyway schema_history table has exactly one applied migration")
-    void flywayAppliedExactlyOneMigration() {
+    @DisplayName("Flyway schema_history table has exactly three applied migrations")
+    void flywayAppliedExactlyThreeMigrations() {
         Integer migrationCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM flyway_schema_history WHERE success = true",
                 Integer.class);
-        assertThat(migrationCount).as("Expected exactly one successful Flyway migration").isEqualTo(1);
+        assertThat(migrationCount).as("Expected exactly three successful Flyway migrations").isEqualTo(3);
     }
 }

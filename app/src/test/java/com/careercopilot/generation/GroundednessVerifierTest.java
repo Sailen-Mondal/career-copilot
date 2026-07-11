@@ -27,6 +27,7 @@ class GroundednessVerifierTest {
         factId = UUID.randomUUID();
         fact = new ProfileFact(
                 factId,
+                UUID.randomUUID(),
                 FactType.EXPERIENCE,
                 "ExampleCo",
                 "Backend Engineer",

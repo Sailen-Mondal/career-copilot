@@ -19,9 +19,13 @@ test-results/
 
 # Logs
 *.log
-
 # IDEs
 .idea/
 *.iml
 .vscode/
 *.class
+
+# Agents & Temp files
+.agents/
+app/bin/
+automation/screenshot.png

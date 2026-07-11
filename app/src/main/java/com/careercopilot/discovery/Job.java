@@ -1,6 +1,7 @@
 package com.careercopilot.discovery;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -11,9 +12,21 @@ public record Job(
         URI url,
         String company,
         String title,
+        String location,
+        String locationType,
+        String descriptionRaw,
+        String descriptionClean,
         Set<String> requiredSkills,
+        String seniority,
+        SalaryRange salaryRange,
+        String workAuthRequired,
         boolean sponsorshipAvailable,
-        JobStatus status
+        Instant postedAt,
+        Instant scrapedAt,
+        Instant lastVerifiedAt,
+        JobStatus status,
+        String dedupKey,
+        float[] embeddingVector
 ) {
     public Job {
         if (id == null) {

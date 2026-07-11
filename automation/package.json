@@ -1,0 +1,21 @@
+{
+  "name": "career-copilot-automation",
+  "version": "1.0.0",
+  "description": "Shadow-mode Playwright form-filling worker for Career Copilot",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "install:browsers": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.49.0",
+    "ioredis": "^5.4.1",
+    "playwright": "^1.49.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2"
+  }
+}

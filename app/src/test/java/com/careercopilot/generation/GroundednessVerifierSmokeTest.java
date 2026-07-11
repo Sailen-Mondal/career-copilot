@@ -14,6 +14,7 @@ public final class GroundednessVerifierSmokeTest {
         UUID factId = UUID.randomUUID();
         ProfileFact fact = new ProfileFact(
                 factId,
+                UUID.randomUUID(),
                 FactType.EXPERIENCE,
                 "ExampleCo",
                 "Backend Engineer",

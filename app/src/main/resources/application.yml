@@ -16,6 +16,21 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: false
 
+  ai:
+    vertex:
+      ai:
+        gemini:
+          project-id: ${VERTEX_PROJECT_ID:career-copilot-dev}
+          location: ${VERTEX_LOCATION:us-central1}
+          chat:
+            options:
+              model: ${VERTEX_MODEL:gemini-2.0-flash}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
 # ------------------------------------------------------------------
 # Security — API key auth (see ApiKeyAuthFilter)
 # For production, set API_KEY env var to a strong random secret.
@@ -23,6 +38,8 @@ spring:
 app:
   security:
     api-key: ${API_KEY:dev-insecure-key}
+  ai:
+    client-type: ${AI_CLIENT_TYPE:mock}   # mock | vertex
 
 # ------------------------------------------------------------------
 # Actuator — only health and info exposed (no sensitive endpoints)
@@ -50,3 +67,8 @@ info:
 automation:
   daily-cap: ${AUTOMATION_DAILY_CAP:3}
   autonomy-threshold: ${AUTONOMY_THRESHOLD:85}
+  streams:
+    jobs-stream: cc:automation:jobs
+    results-stream: cc:automation:results
+    consumer-group: spring-consumers
+    consumer-name: ${HOSTNAME:app-1}
