@@ -791,6 +791,8 @@ async function init() {
     if (e.target === els.commandPaletteOverlay) hideCommandPalette();
   });
 
+
+
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
@@ -798,13 +800,6 @@ async function init() {
         showCommandPalette();
       } else {
         hideCommandPalette();
-      }
-    }
-    if (e.key === 'Escape') {
-      if (!els.commandPaletteOverlay.hidden) {
-        hideCommandPalette();
-      } else if (appState.selectedApplicationId) {
-        clearInspector();
       }
     }
   });
