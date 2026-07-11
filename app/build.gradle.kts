@@ -21,7 +21,7 @@ dependencies {
 
     // Persistence
     implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.spring.boot-starter-flyway)
+    implementation(libs.spring.boot.starter.flyway)
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgres)
     runtimeOnly(libs.postgresql)
