@@ -48,8 +48,8 @@ public class SecurityConfig {
 
             // Route authorization
             .authorizeHttpRequests(auth -> auth
-                // Health check — public (load balancers, Docker healthchecks)
-                .requestMatchers("/actuator/health").permitAll()
+                // Health check & Error path — public
+                .requestMatchers("/actuator/health", "/error").permitAll()
                 // Everything else requires a valid API key
                 .anyRequest().hasRole("API"))
 
