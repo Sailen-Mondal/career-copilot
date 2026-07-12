@@ -302,6 +302,158 @@
             </div>
           </section>
 
+          <!-- ── Discovery Section ── -->
+          <section id="discovery-section" class="card" aria-label="Job Discovery Rules" style="display: none;">
+            <div class="section-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color);">
+              <div class="section-title-group">
+                <h2 class="section-title">Job Ingestion Feeds</h2>
+                <p class="control-hint">Sync and monitor raw crawled jobs from Greenhouse public feeds.</p>
+              </div>
+            </div>
+            <div class="controls-panel" style="border-bottom: 1px solid var(--border-color); gap: 16px; padding: 20px 24px;">
+              <div class="controls-group" style="flex-grow: 1; max-width: 400px;">
+                <label class="control-label" for="syncBoardInput">Greenhouse Board Token</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="syncBoardInput" value="google" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 6px 12px; color: var(--text-primary); outline: none; flex-grow: 1;">
+                  <button id="triggerSyncBtn" type="button" class="btn btn-primary" style="padding: 6px 16px;">Sync Feed</button>
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap" style="padding: 20px 24px;">
+              <table aria-label="Discovered jobs list">
+                <thead>
+                  <tr>
+                    <th scope="col">Company</th>
+                    <th scope="col">Job Title</th>
+                    <th scope="col">Required Skills</th>
+                    <th scope="col">Seniority</th>
+                    <th scope="col">Location Type</th>
+                  </tr>
+                </thead>
+                <tbody id="discoveredJobRows">
+                  <tr>
+                    <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">
+                      No discovered jobs in database. Click Sync Feed to retrieve.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- ── Matching Section ── -->
+          <section id="matching-section" class="card" aria-label="Matching Engine Rules" style="display: none; padding: 24px;">
+            <h2 class="section-title" style="margin-bottom: 16px;">AI Match Constraints & Rules</h2>
+            <div class="controls-group" style="margin-bottom: 24px;">
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--accent-blue);">Rule-Based Pre-Filters</h3>
+              <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: var(--text-secondary);">
+                <li style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="check-circle-2" class="icon-sm" style="color: var(--accent-green);"></i>
+                  <strong>Work Authorization Check:</strong> Hard pre-filter matches candidate nationality and authorization categories.
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="check-circle-2" class="icon-sm" style="color: var(--accent-green);"></i>
+                  <strong>Visa Sponsorship Check:</strong> If visa sponsorship is not offered but required, application is automatically blocked.
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="check-circle-2" class="icon-sm" style="color: var(--accent-green);"></i>
+                  <strong>Seniority Matching:</strong> JUNIOR roles restrict candidate experience up to 8 years; SENIOR roles require at least 3 years.
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="check-circle-2" class="icon-sm" style="color: var(--accent-green);"></i>
+                  <strong>Location Pref Match:</strong> Automatically verifies onsite, hybrid, and remote preferences against job locations.
+                </li>
+              </ul>
+            </div>
+            
+            <div class="controls-group">
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--accent-blue);">Semantic Vector Similarity</h3>
+              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                The matching score is computed dynamically out of 100 points, consisting of:
+              </p>
+              <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-secondary); margin-top: 8px;">
+                <li>🔥 <strong>Vector Cosine Distance (50%):</strong> Evaluated using Gemini text embeddings of job descriptions against your resume bullet points.</li>
+                <li>🎯 <strong>Keyword Overlap (50%):</strong> Direct intersection of technical skill tags extracted from the job description and your facts profile.</li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- ── Generation Section ── -->
+          <section id="generation-section" class="card" aria-label="Tailored Materials Generation" style="display: none; padding: 24px;">
+            <h2 class="section-title" style="margin-bottom: 16px;">Tailored Document Generation</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+              For every application scoring above the autonomy threshold, Career Copilot automatically compiles personalized materials grounded strictly in your facts:
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="card" style="padding: 16px; background-color: var(--bg-hover);">
+                <h3 style="font-size: 14px; font-weight: 600; color: var(--accent-blue); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="file-text" class="icon-sm"></i> Resume Tailoring
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                  Reranks and emphasizes your verified facts that directly align with the job description requirements. Never invents or hallucinates skills.
+                </p>
+              </div>
+              <div class="card" style="padding: 16px; background-color: var(--bg-hover);">
+                <h3 style="font-size: 14px; font-weight: 600; color: var(--accent-blue); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="mail" class="icon-sm"></i> Cover Letter Synthesizer
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                  Generates professional cover letters emphasizing your core projects and certifications matching the specific role, validated by the Groundedness Verifier.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── Settings Section ── -->
+          <section id="settings-section" class="card" aria-label="Candidate Settings" style="display: none; padding: 24px;">
+            <h2 class="section-title" style="margin-bottom: 20px;">Candidate Profile Settings</h2>
+            
+            <form id="profileForm" style="display: flex; flex-direction: column; gap: 16px; max-width: 600px; margin-bottom: 32px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="profileName">Full Name</label>
+                  <input type="text" id="profileName" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="profileEmail">Email</label>
+                  <input type="email" id="profileEmail" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                </div>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="profilePhone">Phone</label>
+                  <input type="text" id="profilePhone" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="profileWorkAuth">Work Authorization</label>
+                  <select id="profileWorkAuth" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                    <option value="US_CITIZEN">US Citizen</option>
+                    <option value="GREEN_CARD">Green Card Holder</option>
+                    <option value="H1B">H1B Visa Holder</option>
+                    <option value="OPT">OPT (Student/Graduate)</option>
+                    <option value="CPT">CPT</option>
+                    <option value="OTHER">Other (e.g. India Authorized)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label class="control-label" for="profileLocations">Preferred Locations (Comma separated)</label>
+                <input type="text" id="profileLocations" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="align-self: flex-start; padding: 8px 24px;">Save Profile</button>
+            </form>
+
+            <div class="controls-divider" style="height: 1px; width: 100%; margin: 24px 0; background-color: var(--border-color);"></div>
+
+            <h3 class="section-title" style="font-size: 16px; margin-bottom: 12px;">Verified Resume Facts</h3>
+            <div id="settingsFactsList" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+
           <!-- ── Audit Log ── -->
           <section id="audit-section" class="card audit-panel" aria-label="Automation audit log">
             <button id="auditToggle" type="button" class="audit-toggle" aria-expanded="false" aria-controls="auditLogWrap">

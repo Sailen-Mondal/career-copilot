@@ -170,7 +170,23 @@ const els = {
   commandPalette:         $('commandPalette'),
   commandPaletteInput:    $('commandPaletteInput'),
   commandPaletteResults:  $('commandPaletteResults'),
-  commandPaletteCloseBtn: $('commandPaletteCloseBtn')
+  commandPaletteCloseBtn: $('commandPaletteCloseBtn'),
+
+  // New views elements
+  discoverySection:       $('discovery-section'),
+  matchingSection:        $('matching-section'),
+  generationSection:      $('generation-section'),
+  settingsSection:        $('settings-section'),
+  discoveredJobRows:      $('discoveredJobRows'),
+  syncBoardInput:         $('syncBoardInput'),
+  triggerSyncBtn:         $('triggerSyncBtn'),
+  profileForm:            $('profileForm'),
+  profileName:            $('profileName'),
+  profileEmail:           $('profileEmail'),
+  profilePhone:           $('profilePhone'),
+  profileWorkAuth:        $('profileWorkAuth'),
+  profileLocations:       $('profileLocations'),
+  settingsFactsList:      $('settingsFactsList')
 };
 
 // ── API helpers ───────────────────────────────────────────────────────────────
@@ -612,6 +628,114 @@ async function refreshApplications() {
   }
 }
 
+// ── Discovery: sync and render jobs ──────────────────────────────────────────
+async function refreshDiscoveredJobs() {
+  els.discoveredJobRows.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">Loading jobs...</td></tr>`;
+  try {
+    const jobs = await apiFetch('/api/jobs');
+    if (!jobs || jobs.length === 0) {
+      els.discoveredJobRows.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">No discovered jobs in database. Click Sync Feed to retrieve.</td></tr>`;
+      return;
+    }
+    els.discoveredJobRows.innerHTML = jobs.map(job => `
+      <tr>
+        <td class="td-company">${escHtml(job.company ?? '—')}</td>
+        <td class="td-role">${escHtml(job.title ?? '—')}</td>
+        <td><span style="font-size:11px;color:var(--text-secondary);">${escHtml(job.skillsRequired ? job.skillsRequired.join(', ') : '—')}</span></td>
+        <td>${escHtml(job.seniority ?? '—')}</td>
+        <td>${escHtml(job.locationType ?? '—')}</td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('Failed to load discovered jobs:', err);
+    els.discoveredJobRows.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--accent-red)">Error loading jobs. Backend might be down.</td></tr>`;
+  }
+}
+
+async function triggerDiscoverySync() {
+  const board = els.syncBoardInput.value.trim() || 'google';
+  els.triggerSyncBtn.disabled = true;
+  els.triggerSyncBtn.textContent = 'Syncing...';
+  try {
+    await apiFetch(`/api/sources/greenhouse/sync?board=${encodeURIComponent(board)}`, { method: 'POST' });
+    await refreshDiscoveredJobs();
+  } catch (err) {
+    console.error('Sync failed:', err);
+    alert('Sync failed. Please check backend logs.');
+  } finally {
+    els.triggerSyncBtn.disabled = false;
+    els.triggerSyncBtn.textContent = 'Sync Feed';
+  }
+}
+
+// ── Settings: load and save profile/facts ──────────────────────────────────
+async function loadProfileAndFacts() {
+  try {
+    const profile = await apiFetch('/api/profile');
+    if (profile) {
+      els.profileName.value = profile.name ?? '';
+      els.profileEmail.value = profile.email ?? '';
+      els.profilePhone.value = profile.phone ?? '';
+      els.profileWorkAuth.value = profile.workAuthorization ?? 'OTHER';
+      els.profileLocations.value = profile.locations ? Array.from(profile.locations).join(', ') : '';
+    }
+  } catch (err) {
+    console.warn('Failed to load master profile:', err);
+  }
+
+  try {
+    const facts = await apiFetch('/api/profile/facts');
+    if (!facts || facts.length === 0) {
+      els.settingsFactsList.innerHTML = `<p style="font-size:13px;color:var(--text-muted);">No facts uploaded yet.</p>`;
+      return;
+    }
+    els.settingsFactsList.innerHTML = facts.map(fact => `
+      <div class="card" style="padding:16px;background-color:var(--bg-hover);border:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="width: 100%;">
+          <span style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--accent-blue);letter-spacing:0.05em;">${escHtml(fact.type)}</span>
+          <h4 style="font-size:14px;font-weight:600;margin:4px 0 2px;">${escHtml(fact.title)}</h4>
+          <p style="font-size:12px;color:var(--text-muted);font-style:italic;">${escHtml(fact.employer)} (${escHtml(fact.startDate)} - ${escHtml(fact.endDate ?? 'Present')})</p>
+          <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">${escHtml(fact.bulletText)}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+            ${fact.skills ? fact.skills.map(s => `<span style="font-size:10px;background-color:var(--bg-panel);border:1px solid var(--border-color);border-radius:4px;padding:2px 6px;color:var(--text-muted);">${escHtml(s)}</span>`).join('') : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.warn('Failed to load profile facts:', err);
+  }
+}
+
+async function saveProfile(e) {
+  e.preventDefault();
+  const locs = els.profileLocations.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  const body = {
+    name: els.profileName.value,
+    email: els.profileEmail.value,
+    phone: els.profilePhone.value,
+    workAuthorization: els.profileWorkAuth.value,
+    locations: locs,
+    visaSponsorshipNeeded: false,
+    salaryFloor: 0,
+    remotePreference: 'HYBRID',
+    blocklistCompanies: ['BlockedCo'],
+    dailyApplicationCap: 5,
+    autonomyThreshold: appState.threshold
+  };
+
+  try {
+    await apiFetch('/api/profile', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    alert('Profile saved successfully!');
+  } catch (err) {
+    console.error('Failed to save profile:', err);
+    alert('Failed to save profile.');
+  }
+}
+
 // ── Navigation Router ─────────────────────────────────────────────────────────
 function handleNavigation(viewId) {
   appState.currentView = viewId;
@@ -621,26 +745,38 @@ function handleNavigation(viewId) {
   els.breadcrumbCurrent.textContent = viewName === 'Audit' ? 'Audit Log' : viewName;
   els.pageTitle.textContent = viewName === 'Audit' ? 'Audit Log' : viewName;
 
+  // Helper to hide all custom views
+  const hideCustomViews = () => {
+    els.discoverySection.style.display = 'none';
+    els.matchingSection.style.display = 'none';
+    els.generationSection.style.display = 'none';
+    els.settingsSection.style.display = 'none';
+  };
+
   // Hide/show elements based on active view
   if (viewId === 'dashboard') {
     els.pageSubtitle.textContent = 'Monitor your automated job search pipeline';
+    hideCustomViews();
     document.querySelectorAll('.stats-row, .controls-panel, #applications-section, #audit-section').forEach(e => {
       e.style.display = '';
     });
   } else if (viewId === 'applications') {
     els.pageSubtitle.textContent = 'Manage and audit your active applications';
+    hideCustomViews();
     document.querySelector('.stats-row').style.display = 'none';
     document.querySelector('.controls-panel').style.display = 'none';
     document.querySelector('#applications-section').style.display = '';
     document.querySelector('#audit-section').style.display = 'none';
   } else if (viewId === 'automation') {
     els.pageSubtitle.textContent = 'Configure automation threshold and state';
+    hideCustomViews();
     document.querySelector('.stats-row').style.display = 'none';
     document.querySelector('.controls-panel').style.display = '';
     document.querySelector('#applications-section').style.display = 'none';
     document.querySelector('#audit-section').style.display = 'none';
   } else if (viewId === 'audit') {
     els.pageSubtitle.textContent = 'System events and execution logs';
+    hideCustomViews();
     document.querySelector('.stats-row').style.display = 'none';
     document.querySelector('.controls-panel').style.display = 'none';
     document.querySelector('#applications-section').style.display = 'none';
@@ -648,9 +784,40 @@ function handleNavigation(viewId) {
     // Expand audit log if switching to this view
     els.auditToggle.setAttribute('aria-expanded', 'true');
     els.auditLogWrap.hidden = false;
+  } else if (viewId === 'discovery') {
+    els.pageSubtitle.textContent = 'Ingest and monitor synced jobs';
+    hideCustomViews();
+    document.querySelectorAll('.stats-row, .controls-panel, #applications-section, #audit-section').forEach(e => {
+      e.style.display = 'none';
+    });
+    els.discoverySection.style.display = '';
+    refreshDiscoveredJobs();
+  } else if (viewId === 'matching') {
+    els.pageSubtitle.textContent = 'Configure matching rules and pre-filters';
+    hideCustomViews();
+    document.querySelectorAll('.stats-row, .controls-panel, #applications-section, #audit-section').forEach(e => {
+      e.style.display = 'none';
+    });
+    els.matchingSection.style.display = '';
+  } else if (viewId === 'generation') {
+    els.pageSubtitle.textContent = 'View Tailoring and Generation rules';
+    hideCustomViews();
+    document.querySelectorAll('.stats-row, .controls-panel, #applications-section, #audit-section').forEach(e => {
+      e.style.display = 'none';
+    });
+    els.generationSection.style.display = '';
+  } else if (viewId === 'settings') {
+    els.pageSubtitle.textContent = 'Edit candidate profile and verified facts';
+    hideCustomViews();
+    document.querySelectorAll('.stats-row, .controls-panel, #applications-section, #audit-section').forEach(e => {
+      e.style.display = 'none';
+    });
+    els.settingsSection.style.display = '';
+    loadProfileAndFacts();
   } else {
     // Settings or other stub views
     els.pageSubtitle.textContent = `Configure your system settings.`;
+    hideCustomViews();
     document.querySelectorAll('.stats-row, .controls-panel, #applications-section, #audit-section').forEach(e => {
       e.style.display = 'none';
     });
@@ -785,6 +952,10 @@ async function init() {
   els.threshold.addEventListener('input',  onThresholdInput);
   els.threshold.addEventListener('change', onThresholdChange);
   els.auditToggle.addEventListener('click', toggleAuditLog);
+
+  // New views event listeners
+  if (els.triggerSyncBtn) els.triggerSyncBtn.addEventListener('click', triggerDiscoverySync);
+  if (els.profileForm) els.profileForm.addEventListener('submit', saveProfile);
 
   // Layout actions
   els.sidebarCollapseBtn.addEventListener('click', collapseSidebar);
