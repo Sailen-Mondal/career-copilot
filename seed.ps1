@@ -28,7 +28,7 @@ Write-Host "Profile created with ID: $profileId" -ForegroundColor Green
 
 Write-Host "`n2. Adding profile facts (so groundedness passes)..." -ForegroundColor Cyan
 $fact1 = @{
-    type = "WORK_EXPERIENCE"
+    type = "EXPERIENCE"
     employer = "Tech Corp"
     title = "Senior Software Engineer"
     startDate = "2020-01-01"
@@ -53,10 +53,16 @@ Write-Host "Profile facts added successfully." -ForegroundColor Green
 
 Write-Host "`n3. Triggering Greenhouse job sync..." -ForegroundColor Cyan
 $jobs = Invoke-RestMethod -Uri "http://localhost:8080/api/sources/greenhouse/sync?board=google" -Method Post -Headers $headers
-Write-Host "Synced $($jobs.Count) jobs from Greenhouse feed." -ForegroundColor Green
+Write-Host "Synced $($jobs.Count) new jobs from Greenhouse feed." -ForegroundColor Green
 
 if ($jobs.Count -eq 0) {
-    Write-Host "No jobs were imported. Please check if backend is running." -ForegroundColor Red
+    Write-Host "No new jobs synced. Fetching existing jobs from the database..." -ForegroundColor Yellow
+    $jobs = Invoke-RestMethod -Uri "http://localhost:8080/api/jobs" -Method Get -Headers $headers
+    Write-Host "Found $($jobs.Count) existing jobs in the database." -ForegroundColor Green
+}
+
+if ($jobs.Count -eq 0) {
+    Write-Host "No jobs found in the database. Please check if backend is running." -ForegroundColor Red
     exit
 }
 
