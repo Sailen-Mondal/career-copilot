@@ -48,6 +48,10 @@
               <span>Applications</span>
               <span class="nav-badge" id="navAppCount">5</span>
             </a>
+            <a class="nav-item" data-view="profile" href="#profile" id="nav-profile">
+              <i data-lucide="user" class="nav-icon"></i>
+              <span>Profile</span>
+            </a>
           </div>
 
           <!-- Pipeline -->
@@ -404,8 +408,8 @@
             </div>
           </section>
 
-          <!-- ── Settings Section ── -->
-          <section id="settings-section" class="card" aria-label="Candidate Settings" style="display: none; padding: 24px;">
+          <!-- ── Profile Section ── -->
+          <section id="profile-section" class="card" aria-label="Candidate Profile" style="display: none; padding: 24px;">
             <h2 class="section-title" style="margin-bottom: 20px;">Candidate Profile Settings</h2>
             
             <form id="profileForm" style="display: flex; flex-direction: column; gap: 16px; max-width: 600px; margin-bottom: 32px;">
@@ -452,6 +456,41 @@
             <div id="settingsFactsList" style="display: flex; flex-direction: column; gap: 12px;">
               <!-- Dynamically populated -->
             </div>
+          </section>
+
+          <!-- ── Settings Section ── -->
+          <section id="settings-section" class="card" aria-label="System Settings" style="display: none; padding: 24px;">
+            <h2 class="section-title" style="margin-bottom: 20px;">System Settings</h2>
+            
+            <form id="settingsForm" style="display: flex; flex-direction: column; gap: 16px; max-width: 600px; margin-bottom: 32px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="settingsThreshold">Autonomy Threshold (0-100)</label>
+                  <input type="number" id="settingsThreshold" min="0" max="100" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="settingsCap">Daily Application Cap</label>
+                  <input type="number" id="settingsCap" min="1" max="100" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label class="control-label" for="settingsBlocklist">Blocklist Companies (Comma separated)</label>
+                <textarea id="settingsBlocklist" rows="3" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none; resize: vertical;"></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="align-self: flex-start; padding: 8px 24px;">Save System Settings</button>
+            </form>
+
+            <div class="controls-divider" style="height: 1px; width: 100%; margin: 24px 0; background-color: var(--border-color);"></div>
+
+            <h3 class="section-title" style="font-size: 16px; margin-bottom: 12px;">Autopilot Circuit Breakers</h3>
+            <div id="settingsBreakersList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+              <!-- Dynamically populated, e.g. Greenhouse: CLOSED -->
+            </div>
+            <button id="resetBreakersBtn" class="btn btn-secondary" type="button" style="padding: 8px 20px; color: var(--accent-red); border-color: var(--accent-red); display: inline-flex; align-items: center; gap: 8px;">
+              <i data-lucide="refresh-cw" class="icon-sm"></i> Reset All Circuit Breakers
+            </button>
           </section>
 
           <!-- ── Audit Log ── -->

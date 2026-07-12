@@ -133,4 +133,10 @@ public class PolicyController {
 
         return getPolicy();
     }
+
+    @PostMapping("/breakers/reset")
+    public ResponseEntity<Void> resetBreakers() {
+        circuitBreakerStateRepository.deleteAll();
+        return ResponseEntity.ok().build();
+    }
 }

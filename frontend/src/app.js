@@ -176,6 +176,7 @@ const els = {
   discoverySection:       $('discovery-section'),
   matchingSection:        $('matching-section'),
   generationSection:      $('generation-section'),
+  profileSection:         $('profile-section'),
   settingsSection:        $('settings-section'),
   discoveredJobRows:      $('discoveredJobRows'),
   syncBoardInput:         $('syncBoardInput'),
@@ -186,7 +187,14 @@ const els = {
   profilePhone:           $('profilePhone'),
   profileWorkAuth:        $('profileWorkAuth'),
   profileLocations:       $('profileLocations'),
-  settingsFactsList:      $('settingsFactsList')
+  settingsFactsList:      $('settingsFactsList'),
+  settingsForm:           $('settingsForm'),
+  settingsThreshold:      $('settingsThreshold'),
+  settingsCap:            $('settingsCap'),
+  settingsBlocklist:      $('settingsBlocklist'),
+  settingsBreakersList:   $('settingsBreakersList'),
+  resetBreakersBtn:       $('resetBreakersBtn'),
+  navProfile:             $('nav-profile')
 };
 
 // ── API helpers ───────────────────────────────────────────────────────────────
@@ -736,6 +744,81 @@ async function saveProfile(e) {
   }
 }
 
+// ── System Settings: load and save policy ────────────────────────────────────
+async function loadSystemSettings() {
+  try {
+    const policy = await apiFetch('/api/policy');
+    if (policy) {
+      els.settingsThreshold.value = policy.autonomyThreshold ?? 85;
+      els.settingsCap.value = policy.dailyApplicationCap ?? 3;
+      els.settingsBlocklist.value = policy.blocklistCompanies ? Array.from(policy.blocklistCompanies).join(', ') : '';
+
+      // Render circuit breakers list
+      if (els.settingsBreakersList && policy.platformBreakerStates) {
+        els.settingsBreakersList.innerHTML = Object.entries(policy.platformBreakerStates).map(([scope, status]) => {
+          const isClosed = status === 'CLOSED';
+          const statusColor = isClosed ? 'var(--accent-green)' : 'var(--accent-red)';
+          return `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background-color:var(--bg-hover);border:1px solid var(--border-color);border-radius:var(--radius-btn);">
+              <span style="font-weight:600;font-size:13px;text-transform:capitalize;">${escHtml(scope)} crawler stream</span>
+              <span class="status" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background-color:var(--bg-panel);color:${statusColor};border:1px solid ${statusColor};">
+                ${escHtml(status)}
+              </span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load system settings:', err);
+  }
+}
+
+async function saveSystemSettings(e) {
+  e.preventDefault();
+  const blocklist = els.settingsBlocklist.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  const body = {
+    autonomyThreshold: Number(els.settingsThreshold.value),
+    dailyApplicationCap: Number(els.settingsCap.value),
+    blocklistCompanies: blocklist
+  };
+
+  try {
+    const updated = await apiFetch('/api/policy', {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+    // Sync slider value as well
+    if (updated && typeof updated.autonomyThreshold === 'number') {
+      appState.threshold = updated.autonomyThreshold;
+      els.threshold.value = updated.autonomyThreshold;
+      els.thresholdValue.value = updated.autonomyThreshold;
+    }
+    alert('System settings saved successfully!');
+    loadSystemSettings();
+  } catch (err) {
+    console.error('Failed to save system settings:', err);
+    alert('Failed to save system settings.');
+  }
+}
+
+async function resetCircuitBreakers() {
+  els.resetBreakersBtn.disabled = true;
+  els.resetBreakersBtn.textContent = 'Resetting...';
+  try {
+    await apiFetch('/api/policy/breakers/reset', { method: 'POST' });
+    alert('All circuit breakers reset successfully!');
+    await loadSystemSettings();
+  } catch (err) {
+    console.error('Failed to reset breakers:', err);
+    alert('Failed to reset circuit breakers.');
+  } finally {
+    els.resetBreakersBtn.disabled = false;
+    els.resetBreakersBtn.innerHTML = `<i data-lucide="refresh-cw" class="icon-sm"></i> Reset All Circuit Breakers`;
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
 // ── Navigation Router ─────────────────────────────────────────────────────────
 function handleNavigation(viewId) {
   appState.currentView = viewId;
@@ -750,6 +833,7 @@ function handleNavigation(viewId) {
     els.discoverySection.style.display = 'none';
     els.matchingSection.style.display = 'none';
     els.generationSection.style.display = 'none';
+    els.profileSection.style.display = 'none';
     els.settingsSection.style.display = 'none';
   };
 
@@ -806,14 +890,22 @@ function handleNavigation(viewId) {
       e.style.display = 'none';
     });
     els.generationSection.style.display = '';
-  } else if (viewId === 'settings') {
+  } else if (viewId === 'profile') {
     els.pageSubtitle.textContent = 'Edit candidate profile and verified facts';
     hideCustomViews();
     document.querySelectorAll('.stats-row, .controls-panel, #applications-section, #audit-section').forEach(e => {
       e.style.display = 'none';
     });
-    els.settingsSection.style.display = '';
+    els.profileSection.style.display = '';
     loadProfileAndFacts();
+  } else if (viewId === 'settings') {
+    els.pageSubtitle.textContent = 'Configure autopilot system settings and limits';
+    hideCustomViews();
+    document.querySelectorAll('.stats-row, .controls-panel, #applications-section, #audit-section').forEach(e => {
+      e.style.display = 'none';
+    });
+    els.settingsSection.style.display = '';
+    loadSystemSettings();
   } else {
     // Settings or other stub views
     els.pageSubtitle.textContent = `Configure your system settings.`;
@@ -956,6 +1048,8 @@ async function init() {
   // New views event listeners
   if (els.triggerSyncBtn) els.triggerSyncBtn.addEventListener('click', triggerDiscoverySync);
   if (els.profileForm) els.profileForm.addEventListener('submit', saveProfile);
+  if (els.settingsForm) els.settingsForm.addEventListener('submit', saveSystemSettings);
+  if (els.resetBreakersBtn) els.resetBreakersBtn.addEventListener('click', resetCircuitBreakers);
 
   // Layout actions
   els.sidebarCollapseBtn.addEventListener('click', collapseSidebar);
@@ -1074,7 +1168,7 @@ async function init() {
 
   // Handle Initial Route from Location Hash
   const initialHash = window.location.hash.substring(1);
-  if (initialHash && ['dashboard', 'applications', 'discovery', 'matching', 'generation', 'automation', 'audit', 'settings'].includes(initialHash)) {
+  if (initialHash && ['dashboard', 'applications', 'discovery', 'matching', 'generation', 'automation', 'audit', 'settings', 'profile'].includes(initialHash)) {
     handleNavigation(initialHash);
   } else {
     handleNavigation('dashboard');
