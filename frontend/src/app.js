@@ -194,7 +194,20 @@ const els = {
   settingsBlocklist:      $('settingsBlocklist'),
   settingsBreakersList:   $('settingsBreakersList'),
   resetBreakersBtn:       $('resetBreakersBtn'),
-  navProfile:             $('nav-profile')
+  navProfile:             $('nav-profile'),
+  factModalOverlay:       $('factModalOverlay'),
+  factModalTitle:         $('factModalTitle'),
+  factForm:               $('factForm'),
+  factId:                 $('factId'),
+  factType:               $('factType'),
+  factTitle:              $('factTitle'),
+  factEmployer:           $('factEmployer'),
+  factStartDate:          $('factStartDate'),
+  factEndDate:            $('factEndDate'),
+  factBulletText:         $('factBulletText'),
+  factSkills:             $('factSkills'),
+  factCancelBtn:          $('factCancelBtn'),
+  addFactBtn:             $('addFactBtn')
 };
 
 // ── API helpers ───────────────────────────────────────────────────────────────
@@ -676,6 +689,9 @@ async function triggerDiscoverySync() {
   }
 }
 
+// Fact State
+let currentFacts = [];
+
 // ── Settings: load and save profile/facts ──────────────────────────────────
 async function loadProfileAndFacts() {
   try {
@@ -693,6 +709,7 @@ async function loadProfileAndFacts() {
 
   try {
     const facts = await apiFetch('/api/profile/facts');
+    currentFacts = facts || [];
     if (!facts || facts.length === 0) {
       els.settingsFactsList.innerHTML = `<p style="font-size:13px;color:var(--text-muted);">No facts uploaded yet.</p>`;
       return;
@@ -708,11 +725,25 @@ async function loadProfileAndFacts() {
             ${fact.skills ? fact.skills.map(s => `<span style="font-size:10px;background-color:var(--bg-panel);border:1px solid var(--border-color);border-radius:4px;padding:2px 6px;color:var(--text-muted);">${escHtml(s)}</span>`).join('') : ''}
           </div>
         </div>
+        <div style="display:flex; gap:8px; margin-left: 12px; align-self: flex-start;">
+          <button class="edit-fact-btn btn" data-id="${fact.id}" style="padding:4px;" title="Edit Fact"><i data-lucide="pencil" class="icon-sm" style="color:var(--text-secondary);"></i></button>
+          <button class="delete-fact-btn btn" data-id="${fact.id}" style="padding:4px;" title="Delete Fact"><i data-lucide="trash-2" class="icon-sm" style="color:var(--accent-red);"></i></button>
+        </div>
       </div>
     `).join('');
+
+    // Wire up fact card actions
+    els.settingsFactsList.querySelectorAll('.edit-fact-btn').forEach(btn => {
+      btn.addEventListener('click', () => openFactEditor(btn.getAttribute('data-id')));
+    });
+    els.settingsFactsList.querySelectorAll('.delete-fact-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteFact(btn.getAttribute('data-id')));
+    });
+
   } catch (err) {
     console.warn('Failed to load profile facts:', err);
   }
+  if (window.lucide) window.lucide.createIcons();
 }
 
 async function saveProfile(e) {
@@ -741,6 +772,91 @@ async function saveProfile(e) {
   } catch (err) {
     console.error('Failed to save profile:', err);
     alert('Failed to save profile.');
+  }
+}
+
+// ── Facts Editor Overlay logic ────────────────────────────────────────────────
+async function openFactEditor(factId = null) {
+  els.factModalOverlay.hidden = false;
+  
+  if (factId) {
+    els.factModalTitle.textContent = 'Edit Profile Fact';
+    const fact = currentFacts.find(f => f.id === factId);
+    if (fact) {
+      els.factId.value = fact.id;
+      els.factType.value = fact.type;
+      els.factTitle.value = fact.title ?? '';
+      els.factEmployer.value = fact.employer ?? '';
+      els.factStartDate.value = fact.startDate ?? '';
+      els.factEndDate.value = fact.endDate ?? '';
+      els.factBulletText.value = fact.bulletText ?? '';
+      els.factSkills.value = fact.skills ? fact.skills.join(', ') : '';
+    }
+  } else {
+    els.factModalTitle.textContent = 'Add Profile Fact';
+    els.factId.value = '';
+    els.factType.value = 'EXPERIENCE';
+    els.factTitle.value = '';
+    els.factEmployer.value = '';
+    els.factStartDate.value = '';
+    els.factEndDate.value = '';
+    els.factBulletText.value = '';
+    els.factSkills.value = '';
+  }
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function closeFactEditor() {
+  els.factModalOverlay.hidden = true;
+}
+
+async function saveFact(e) {
+  e.preventDefault();
+  const id = els.factId.value;
+  const skills = els.factSkills.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  const body = {
+    type: els.factType.value,
+    employer: els.factEmployer.value,
+    title: els.factTitle.value,
+    startDate: els.factStartDate.value,
+    endDate: els.factEndDate.value || null,
+    bulletText: els.factBulletText.value,
+    skills: skills
+  };
+
+  try {
+    if (id) {
+      // Update
+      await apiFetch(`/api/profile/facts/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body)
+      });
+      alert('Fact updated successfully!');
+    } else {
+      // Create
+      await apiFetch('/api/profile/facts', {
+        method: 'POST',
+        body: JSON.stringify(body)
+      });
+      alert('Fact added successfully!');
+    }
+    closeFactEditor();
+    await loadProfileAndFacts();
+  } catch (err) {
+    console.error('Failed to save fact:', err);
+    alert('Failed to save fact.');
+  }
+}
+
+async function deleteFact(factId) {
+  if (!confirm('Are you sure you want to delete this profile fact?')) return;
+  try {
+    await apiFetch(`/api/profile/facts/${factId}`, { method: 'DELETE' });
+    alert('Fact deleted successfully!');
+    await loadProfileAndFacts();
+  } catch (err) {
+    console.error('Failed to delete fact:', err);
+    alert('Failed to delete fact.');
   }
 }
 
@@ -1050,6 +1166,9 @@ async function init() {
   if (els.profileForm) els.profileForm.addEventListener('submit', saveProfile);
   if (els.settingsForm) els.settingsForm.addEventListener('submit', saveSystemSettings);
   if (els.resetBreakersBtn) els.resetBreakersBtn.addEventListener('click', resetCircuitBreakers);
+  if (els.addFactBtn) els.addFactBtn.addEventListener('click', () => openFactEditor());
+  if (els.factCancelBtn) els.factCancelBtn.addEventListener('click', closeFactEditor);
+  if (els.factForm) els.factForm.addEventListener('submit', saveFact);
 
   // Layout actions
   els.sidebarCollapseBtn.addEventListener('click', collapseSidebar);

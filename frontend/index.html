@@ -452,7 +452,12 @@
 
             <div class="controls-divider" style="height: 1px; width: 100%; margin: 24px 0; background-color: var(--border-color);"></div>
 
-            <h3 class="section-title" style="font-size: 16px; margin-bottom: 12px;">Verified Resume Facts</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="section-title" style="font-size: 16px; margin-bottom: 0;">Verified Resume Facts</h3>
+              <button id="addFactBtn" type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                <i data-lucide="plus" class="icon-sm"></i> Add Fact
+              </button>
+            </div>
             <div id="settingsFactsList" style="display: flex; flex-direction: column; gap: 12px;">
               <!-- Dynamically populated -->
             </div>
@@ -622,6 +627,61 @@
         <div class="command-palette-results" id="commandPaletteResults">
           <!-- Populated by app.js -->
         </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ FACT MODAL ═══════════════════════ -->
+    <div class="command-palette-overlay" id="factModalOverlay" hidden>
+      <div class="command-palette" id="factModal" role="dialog" aria-label="Fact Editor" style="max-width: 500px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <h3 id="factModalTitle" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Add/Edit Fact</h3>
+        
+        <form id="factForm" style="display: flex; flex-direction: column; gap: 12px;">
+          <input type="hidden" id="factId">
+          
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factType">Fact Type</label>
+            <select id="factType" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+              <option value="EXPERIENCE">Experience</option>
+              <option value="EDUCATION">Education</option>
+            </select>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factTitle">Title / Degree</label>
+            <input type="text" id="factTitle" required style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factEmployer">Employer / School</label>
+            <input type="text" id="factEmployer" required style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <label class="control-label" for="factStartDate">Start Date (YYYY-MM-DD)</label>
+              <input type="text" id="factStartDate" placeholder="YYYY-MM-DD" required style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <label class="control-label" for="factEndDate">End Date (Optional)</label>
+              <input type="text" id="factEndDate" placeholder="YYYY-MM-DD or present" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factBulletText">Description / Details</label>
+            <textarea id="factBulletText" rows="3" required style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none; resize: vertical;"></textarea>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factSkills">Skills (Comma separated)</label>
+            <input type="text" id="factSkills" placeholder="Java, Spring Boot, React" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 12px;">
+            <button type="button" id="factCancelBtn" class="btn btn-secondary" style="padding: 8px 16px;">Cancel</button>
+            <button type="submit" class="btn btn-primary" style="padding: 8px 24px;">Save Fact</button>
+          </div>
+        </form>
       </div>
     </div>
 
