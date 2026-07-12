@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgres)
     implementation(libs.postgresql)
+    implementation(libs.hibernate.vector)
     implementation(libs.spring.boot.starter.data.redis)
 
     // Security

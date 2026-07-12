@@ -5,6 +5,7 @@ flyway             = "11.9.1"
 postgresql-driver  = "42.7.5"
 testcontainers     = "1.21.1"
 spring-ai          = "1.0.0-M1"
+hibernate          = "7.4.1.Final"
 
 [libraries]
 # Spring Boot starters
@@ -20,6 +21,9 @@ spring-boot-starter-test     = { module = "org.springframework.boot:spring-boot-
 flyway-core        = { module = "org.flywaydb:flyway-core",              version.ref = "flyway" }
 flyway-postgres    = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 postgresql         = { module = "org.postgresql:postgresql",              version.ref = "postgresql-driver" }
+
+# Hibernate Vector
+hibernate-vector   = { module = "org.hibernate.orm:hibernate-vector", version.ref = "hibernate" }
 
 # Spring AI
 spring-ai-bom                              = { module = "org.springframework.ai:spring-ai-bom",                              version.ref = "spring-ai" }

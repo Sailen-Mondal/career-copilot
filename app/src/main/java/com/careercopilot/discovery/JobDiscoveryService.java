@@ -69,8 +69,7 @@ public class JobDiscoveryService {
                 float[] embedding = embeddingClient.getEmbedding(descriptionClean);
 
                 // 6. Check embedding similarity duplication (> 0.98)
-                String embeddingStr = JobEntity.serializeVectorToString(embedding);
-                Optional<JobEntity> semanticMatch = jobRepository.findNearestSemanticMatch(embeddingStr, 0.98);
+                Optional<JobEntity> semanticMatch = jobRepository.findNearestSemanticMatch(embedding, 0.98);
                 if (semanticMatch.isPresent()) {
                     log.info("Job skipped (semantic duplicate with similarity > 0.98): {}", gJob.title());
                     continue;

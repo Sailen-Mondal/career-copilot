@@ -81,8 +81,7 @@ class JobDeduplicationIntegrationTest {
         jobRepository.save(new JobEntity(job1));
 
         // 1. Exact match query
-        String embedding1Str = JobEntity.serializeVectorToString(embedding1);
-        Optional<JobEntity> match1 = jobRepository.findNearestSemanticMatch(embedding1Str, 0.98);
+        Optional<JobEntity> match1 = jobRepository.findNearestSemanticMatch(embedding1, 0.98);
         assertThat(match1).isPresent();
         assertThat(match1.get().getTitle()).isEqualTo(title);
 
@@ -98,15 +97,13 @@ class JobDeduplicationIntegrationTest {
             perturbedEmbedding[i] = (float) (perturbedEmbedding[i] / magnitude);
         }
 
-        String perturbedEmbeddingStr = JobEntity.serializeVectorToString(perturbedEmbedding);
-        Optional<JobEntity> match2 = jobRepository.findNearestSemanticMatch(perturbedEmbeddingStr, 0.98);
+        Optional<JobEntity> match2 = jobRepository.findNearestSemanticMatch(perturbedEmbedding, 0.98);
         assertThat(match2).isPresent();
 
         // 3. Different embedding query (similarity will be low)
         String differentDesc = "We are seeking a graphic designer for marketing campaigns.";
         float[] embeddingDiff = embeddingClient.getEmbedding(differentDesc);
-        String embeddingDiffStr = JobEntity.serializeVectorToString(embeddingDiff);
-        Optional<JobEntity> matchDiff = jobRepository.findNearestSemanticMatch(embeddingDiffStr, 0.98);
+        Optional<JobEntity> matchDiff = jobRepository.findNearestSemanticMatch(embeddingDiff, 0.98);
         assertThat(matchDiff).isEmpty();
     }
 }
