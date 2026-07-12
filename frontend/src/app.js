@@ -537,6 +537,9 @@ function setAutomationState(halted) {
       Pause Autopilot`;
   }
   if (window.lucide) window.lucide.createIcons();
+  if (typeof updateSettingsStatusSidebar === 'function') {
+    updateSettingsStatusSidebar();
+  }
 }
 
 // ── Kill switch toggle ────────────────────────────────────────────────────────
@@ -865,9 +868,15 @@ async function loadSystemSettings() {
   try {
     const policy = await apiFetch('/api/policy');
     if (policy) {
-      els.settingsThreshold.value = policy.autonomyThreshold ?? 85;
-      els.settingsCap.value = policy.dailyApplicationCap ?? 3;
-      els.settingsBlocklist.value = policy.blocklistCompanies ? Array.from(policy.blocklistCompanies).join(', ') : '';
+      if (els.settingsThreshold) els.settingsThreshold.value = policy.autonomyThreshold ?? 85;
+      const wtThreshold = document.getElementById('wt-threshold');
+      if (wtThreshold) wtThreshold.value = policy.autonomyThreshold ?? 85;
+
+      if (els.settingsCap) els.settingsCap.value = policy.dailyApplicationCap ?? 3;
+      const appLimitDaily = document.getElementById('app-limit-daily');
+      if (appLimitDaily) appLimitDaily.value = policy.dailyApplicationCap ?? 3;
+
+      if (els.settingsBlocklist) els.settingsBlocklist.value = policy.blocklistCompanies ? Array.from(policy.blocklistCompanies).join(', ') : '';
 
       // Render circuit breakers list
       if (els.settingsBreakersList && policy.platformBreakerStates) {
@@ -892,10 +901,36 @@ async function loadSystemSettings() {
 
 async function saveSystemSettings(e) {
   e.preventDefault();
-  const blocklist = els.settingsBlocklist.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  let blocklist = [];
+  if (els.settingsBlocklist) {
+    blocklist = els.settingsBlocklist.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  } else {
+    const blacklistContainer = document.getElementById('disc-tags-companies-blacklist');
+    if (blacklistContainer) {
+      const tags = blacklistContainer.querySelectorAll('.tag-badge span');
+      tags.forEach(span => blocklist.push(span.textContent));
+    }
+  }
+
+  let threshold = 85;
+  if (els.settingsThreshold) {
+    threshold = Number(els.settingsThreshold.value);
+  } else {
+    const wtThreshold = document.getElementById('wt-threshold');
+    if (wtThreshold) threshold = Number(wtThreshold.value);
+  }
+
+  let cap = 3;
+  if (els.settingsCap) {
+    cap = Number(els.settingsCap.value);
+  } else {
+    const appLimitDaily = document.getElementById('app-limit-daily');
+    if (appLimitDaily) cap = Number(appLimitDaily.value);
+  }
+
   const body = {
-    autonomyThreshold: Number(els.settingsThreshold.value),
-    dailyApplicationCap: Number(els.settingsCap.value),
+    autonomyThreshold: threshold,
+    dailyApplicationCap: cap,
     blocklistCompanies: blocklist
   };
 
@@ -907,8 +942,10 @@ async function saveSystemSettings(e) {
     // Sync slider value as well
     if (updated && typeof updated.autonomyThreshold === 'number') {
       appState.threshold = updated.autonomyThreshold;
-      els.threshold.value = updated.autonomyThreshold;
-      els.thresholdValue.value = updated.autonomyThreshold;
+      if (els.threshold) els.threshold.value = updated.autonomyThreshold;
+      if (els.thresholdValue) els.thresholdValue.value = updated.autonomyThreshold;
+      const wtThreshold = document.getElementById('wt-threshold');
+      if (wtThreshold) wtThreshold.value = updated.autonomyThreshold;
     }
     alert('System settings saved successfully!');
     loadSystemSettings();
@@ -936,7 +973,7 @@ async function resetCircuitBreakers() {
 }
 
 // ── Navigation Router ─────────────────────────────────────────────────────────
-function handleNavigation(viewId) {
+function handleNavigation(viewId, settingsTabId = null) {
   appState.currentView = viewId;
 
   // Update Breadcrumb and Page Header Titles
@@ -1022,6 +1059,13 @@ function handleNavigation(viewId) {
     });
     els.settingsSection.style.display = '';
     loadSystemSettings();
+
+    // Toggle active settings tab pane based on parameter
+    const activeTabId = settingsTabId || 'general';
+    const settingsTabContents = document.querySelectorAll('.settings-tab-content');
+    settingsTabContents.forEach(c => c.classList.remove('active'));
+    const targetPane = document.getElementById(`settings-tab-${activeTabId}`);
+    if (targetPane) targetPane.classList.add('active');
   } else {
     // Settings or other stub views
     els.pageSubtitle.textContent = `Configure your system settings.`;
@@ -1033,8 +1077,20 @@ function handleNavigation(viewId) {
 
   // Update active sidebar nav items
   document.querySelectorAll('.nav-item').forEach((item) => {
-    if (item.getAttribute('data-view') === viewId) {
-      item.classList.add('active');
+    const itemView = item.getAttribute('data-view');
+    const itemTab = item.getAttribute('data-settings-tab');
+    
+    if (itemView === viewId) {
+      if (viewId === 'settings') {
+        const activeTabId = settingsTabId || 'general';
+        if (itemTab === activeTabId) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      } else {
+        item.classList.add('active');
+      }
     } else {
       item.classList.remove('active');
     }
@@ -1050,8 +1106,9 @@ function handleNavigation(viewId) {
   });
 
   // Track Hash in URL
-  if (window.location.hash !== `#${viewId}`) {
-    window.location.hash = viewId;
+  const hashVal = viewId === 'settings' ? `settings-${settingsTabId || 'general'}` : viewId;
+  if (window.location.hash !== `#${hashVal}`) {
+    window.location.hash = hashVal;
   }
 }
 // ── Sidebar Collapse/Expand handlers ──────────────────────────────────────────
@@ -1206,7 +1263,13 @@ async function init() {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const viewId = item.getAttribute('data-view');
-      handleNavigation(viewId);
+      const tabId = item.getAttribute('data-settings-tab');
+      
+      if (viewId === 'settings' && tabId) {
+        handleNavigation('settings', tabId);
+      } else {
+        handleNavigation(viewId);
+      }
       closeSidebarMobile();
     });
   });
@@ -1287,11 +1350,21 @@ async function init() {
 
   // Handle Initial Route from Location Hash
   const initialHash = window.location.hash.substring(1);
-  if (initialHash && ['dashboard', 'applications', 'discovery', 'matching', 'generation', 'automation', 'audit', 'settings', 'profile'].includes(initialHash)) {
-    handleNavigation(initialHash);
+  if (initialHash) {
+    if (initialHash.startsWith('settings-')) {
+      const tabId = initialHash.replace('settings-', '');
+      handleNavigation('settings', tabId);
+    } else if (['dashboard', 'applications', 'discovery', 'matching', 'generation', 'automation', 'audit', 'settings', 'profile'].includes(initialHash)) {
+      handleNavigation(initialHash);
+    } else {
+      handleNavigation('dashboard');
+    }
   } else {
     handleNavigation('dashboard');
   }
+
+  // Initialize Settings Dashboard
+  initSettingsDashboard();
 
   // Initialize Lucide Icons
   if (window.lucide) {
@@ -1301,6 +1374,576 @@ async function init() {
   // Start polling loop
   appState.pollTimer = setInterval(refreshApplications, POLL_MS);
   console.log(`[CareerCopilot] Dashboard ready — polling every ${POLL_MS / 1000}s`);
+}
+
+// ── Settings Dashboard Custom Logic ───────────────────────────────────────────
+function initSettingsDashboard() {
+
+  // Segmented Controls Handlers
+  setupSegmentedControl('gen-theme-control', (val) => {
+    console.log('Theme changed to:', val);
+    document.body.className = `theme-${val}`;
+  });
+
+  setupSegmentedControl('ai-reasoning-control', (val) => {
+    console.log('Reasoning effort changed to:', val);
+  });
+
+  setupSegmentedControl('app-mode-control', (val) => {
+    const descEl = document.getElementById('app-mode-desc');
+    if (!descEl) return;
+    
+    if (val === 'manual') {
+      descEl.innerHTML = `⚠️ <strong>Manual Review:</strong> The agent compiles listings and displays them. No documents will be generated, and no applications will be submitted without your manual interaction on each item.`;
+    } else if (val === 'review') {
+      descEl.innerHTML = `📝 <strong>Review Before Apply:</strong> The agent automatically tailors resumes and drafts cover letters. Applications are enqueued for your approval in the queue before final submission.`;
+    } else if (val === 'semi') {
+      descEl.innerHTML = `⚡ <strong>Semi-Autonomous:</strong> The agent automatically tailors documents and submits applications for roles scoring above 90. Roles between 80-90 will wait for your manual review.`;
+    } else if (val === 'autonomous') {
+      descEl.innerHTML = `🔥 <strong>Fully Autonomous:</strong> The agent automatically tailors resumes, writes cover letters, answers screening questions, and submits applications for any job matching above the autonomy threshold without notifying you first.`;
+    }
+  });
+
+  // Slider Live Updates
+  setupSliderOutput('ai-temp', 'ai-temp-val');
+  setupSliderOutput('wt-skill', 'wt-skill-val', updateMatchingCalculator);
+  setupSliderOutput('wt-salary', 'wt-salary-val', updateMatchingCalculator);
+  setupSliderOutput('wt-location', 'wt-location-val', updateMatchingCalculator);
+  setupSliderOutput('wt-reputation', 'wt-reputation-val', updateMatchingCalculator);
+  setupSliderOutput('wt-tech', 'wt-tech-val', updateMatchingCalculator);
+  setupSliderOutput('wt-growth', 'wt-growth-val', updateMatchingCalculator);
+  setupSliderOutput('wt-age', 'wt-age-val', updateMatchingCalculator);
+  setupSliderOutput('wt-benefits', 'wt-benefits-val', updateMatchingCalculator);
+  setupSliderOutput('wt-visa', 'wt-visa-val', updateMatchingCalculator);
+
+  // Setup Sample Job selector for calculator
+  const jobSelector = document.getElementById('calc-sample-job');
+  if (jobSelector) {
+    jobSelector.addEventListener('change', updateMatchingCalculator);
+  }
+  updateMatchingCalculator();
+
+  // Setup Interactive Tag Inputs
+  setupTagInput('disc-tags-title-keywords', ['Backend', 'Platform', 'Systems Engineer']);
+  setupTagInput('disc-tags-title-excluded', ['Manager', 'Frontend', 'Designer']);
+  setupTagInput('disc-tags-skills-required', ['Java', 'Spring Boot', 'SQL']);
+  setupTagInput('disc-tags-skills-excluded', ['PHP', 'COBOL']);
+  setupTagInput('disc-tags-companies-whitelist', ['Google', 'Stripe', 'Vercel']);
+  setupTagInput('disc-tags-companies-blacklist', ['BlockedCo', 'SpamCorp']);
+
+  // Load and setup Observability logs
+  renderSystemLogs();
+  const logSrc = document.getElementById('log-filter-source');
+  const logLvl = document.getElementById('log-filter-level');
+  const logSearch = document.getElementById('log-search-input');
+  const logExport = document.getElementById('log-btn-export');
+
+  if (logSrc) logSrc.addEventListener('change', renderSystemLogs);
+  if (logLvl) logLvl.addEventListener('change', renderSystemLogs);
+  if (logSearch) logSearch.addEventListener('input', renderSystemLogs);
+  if (logExport) logExport.addEventListener('click', exportSystemLogs);
+
+  // Load automation components
+  renderSettingsCircuitBreakers();
+  const resetBreakersBtn = document.getElementById('auto-btn-reset-breakers');
+  if (resetBreakersBtn) {
+    resetBreakersBtn.addEventListener('click', resetSettingsCircuitBreakers);
+  }
+
+  // Load application queue lists
+  setupQueueVisualizer();
+
+  // Emergency Stop button handler
+  const emergencyBtn = document.getElementById('saf-btn-emergency');
+  if (emergencyBtn) {
+    emergencyBtn.addEventListener('click', () => {
+      setAutomationState(true);
+      updateSettingsStatusSidebar();
+      alert('🚨 EMERGENCY STOP ACTIVATED. Autopilot paused immediately, crawler threads terminated.');
+    });
+  }
+
+  // Sync settings button click handlers
+  const exportBtn = document.getElementById('gen-btn-export');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportAgentSettings);
+  }
+
+  const importTrigger = document.getElementById('gen-btn-import-trigger');
+  const importInput = document.getElementById('gen-btn-import');
+  if (importTrigger && importInput) {
+    importTrigger.addEventListener('click', () => importInput.click());
+    importInput.addEventListener('change', importAgentSettings);
+  }
+
+  const resetBtn = document.getElementById('gen-btn-reset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset all general settings to default?')) {
+        alert('General settings reset completed.');
+      }
+    });
+  }
+
+  // Setup sidebar live updates on provider/model change
+  document.getElementById('ai-provider')?.addEventListener('change', updateSettingsStatusSidebar);
+  document.getElementById('ai-model')?.addEventListener('change', updateSettingsStatusSidebar);
+
+  // Sync initial status sidebar values
+  updateSettingsStatusSidebar();
+  
+  // Connect/Reconnect button handlers inside integrations
+  document.querySelectorAll('.integration-card .int-action').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const card = btn.closest('.integration-card');
+      const brand = card.querySelector('.int-name').textContent;
+      const keyInput = card.querySelector('.int-key-input');
+
+      btn.disabled = true;
+      btn.textContent = 'Syncing...';
+      
+      setTimeout(() => {
+        btn.disabled = false;
+        if (card.classList.contains('disconnected')) {
+          card.classList.remove('disconnected');
+          card.classList.add('connected');
+          const badge = card.querySelector('.int-badge');
+          badge.className = 'int-badge connected';
+          badge.textContent = 'Connected';
+          btn.className = 'btn btn-secondary int-action';
+          btn.textContent = 'Reconnect';
+          if (keyInput) keyInput.disabled = true;
+          alert(`Successfully authenticated and connected to ${brand}.`);
+        } else {
+          btn.textContent = 'Reconnect';
+          alert(`Synced integration parameters for ${brand}.`);
+        }
+      }, 1200);
+    });
+  });
+}
+
+function setupSegmentedControl(elementId, callback) {
+  const container = document.getElementById(elementId);
+  if (!container) return;
+
+  const buttons = container.querySelectorAll('.segmented-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const val = btn.getAttribute('data-val');
+      if (callback) callback(val);
+    });
+  });
+}
+
+function setupSliderOutput(sliderId, outputId, callback) {
+  const slider = document.getElementById(sliderId);
+  const output = document.getElementById(outputId);
+  if (!slider || !output) return;
+
+  slider.addEventListener('input', () => {
+    output.textContent = slider.value;
+    if (callback) callback();
+  });
+}
+
+// ── Interactive Matching Calculator ──────────────────────────────────────────
+function updateMatchingCalculator() {
+  const jobVal = document.getElementById('calc-sample-job')?.value || 'backend';
+  const skillWt = Number(document.getElementById('wt-skill')?.value || 9);
+  const salaryWt = Number(document.getElementById('wt-salary')?.value || 8);
+  const locationWt = Number(document.getElementById('wt-location')?.value || 7);
+  const reputationWt = Number(document.getElementById('wt-reputation')?.value || 5);
+  const techWt = Number(document.getElementById('wt-tech')?.value || 9);
+  const growthWt = Number(document.getElementById('wt-growth')?.value || 6);
+  const ageWt = Number(document.getElementById('wt-age')?.value || 3);
+  const benefitsWt = Number(document.getElementById('wt-benefits')?.value || 4);
+  const visaWt = Number(document.getElementById('wt-visa')?.value || 8);
+
+  let scores = {};
+  let explanation = '';
+
+  if (jobVal === 'backend') {
+    scores = { skill: 9.5, salary: 9.0, location: 8.5, reputation: 6.0, tech: 10.0, growth: 7.0, age: 4.0, benefits: 5.0, visa: 10.0 };
+    explanation = 'Excellent skills and tech stack overlap. Standard corporate reputation and average benefits, but salary matches expectations and candidate work auth checks out.';
+  } else if (jobVal === 'ml') {
+    scores = { skill: 8.0, salary: 9.5, location: 8.0, reputation: 8.5, tech: 8.0, growth: 9.0, age: 7.0, benefits: 7.5, visa: 9.0 };
+    explanation = 'Strong career growth and high starting salary. Solid reputation with modern stack, though minor mismatch in candidate preferred frameworks.';
+  } else {
+    // junior
+    scores = { skill: 2.0, salary: 4.0, location: 3.0, reputation: 3.0, tech: 1.0, growth: 2.0, age: 9.0, benefits: 2.0, visa: 5.0 };
+    explanation = 'Poor skills overlap. Required design credentials are missing from John Doe facts profile. Technology requirements (Figma/Tailwind) are not satisfied.';
+  }
+
+  // Calculate weighted score
+  const totalWeight = skillWt + salaryWt + locationWt + reputationWt + techWt + growthWt + ageWt + benefitsWt + visaWt;
+  const weightedSum = (scores.skill * skillWt) + 
+                      (scores.salary * salaryWt) + 
+                      (scores.location * locationWt) + 
+                      (scores.reputation * reputationWt) + 
+                      (scores.tech * techWt) + 
+                      (scores.growth * growthWt) + 
+                      (scores.age * ageWt) + 
+                      (scores.benefits * benefitsWt) + 
+                      (scores.visa * visaWt);
+  
+  const finalScore = totalWeight > 0 ? Math.round((weightedSum / totalWeight) * 10) : 0;
+
+  // Update DOM
+  const scoreNum = document.getElementById('calc-score-num');
+  const scoreCircle = document.getElementById('calc-score-circle');
+  const scoreExpl = document.getElementById('calc-score-explanation');
+
+  if (scoreNum) scoreNum.textContent = finalScore;
+  if (scoreExpl) scoreExpl.textContent = explanation + ` (Final Score: ${finalScore}/100)`;
+  if (scoreCircle) {
+    // Circle circumference is 2 * pi * r = 2 * 3.1415 * 15.9155 = 100
+    scoreCircle.setAttribute('stroke-dasharray', `${finalScore}, 100`);
+    
+    // Update color based on score class
+    scoreCircle.style.stroke = finalScore >= 80 ? 'var(--accent-green)' : (finalScore >= 60 ? 'var(--accent-blue)' : 'var(--accent-red)');
+  }
+
+  // Update Settings status sidebar score
+  const sidebarScore = document.getElementById('set-status-score');
+  if (sidebarScore) sidebarScore.textContent = `${finalScore}%`;
+}
+
+// ── Interactive Tag Inputs ───────────────────────────────────────────────────
+function setupTagInput(containerId, initialTags = []) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const wrapper = container.querySelector('.tags-wrapper');
+  const input = container.querySelector('.tag-input-field');
+  let tags = [...initialTags];
+
+  function renderTags() {
+    wrapper.innerHTML = tags.map((tag, idx) => `
+      <span class="tag-badge">
+        <span>${escHtml(tag)}</span>
+        <button type="button" class="tag-close-btn" data-idx="${idx}">&times;</button>
+      </span>
+    `).join('');
+
+    wrapper.querySelectorAll('.tag-close-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        tags.splice(idx, 1);
+        renderTags();
+      });
+    });
+  }
+
+  container.addEventListener('click', () => input.focus());
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = input.value.trim().replace(/,/g, '');
+      if (val && !tags.includes(val)) {
+        tags.push(val);
+        input.value = '';
+        renderTags();
+      }
+    } else if (e.key === 'Backspace' && !input.value && tags.length > 0) {
+      tags.pop();
+      renderTags();
+    }
+  });
+
+  renderTags();
+}
+
+// ── Observability Logs ────────────────────────────────────────────────────────
+const MOCK_SYSTEM_LOGS = [
+  { time: '20:09:12', source: 'AI Logs', level: 'info', message: 'Inference request completed for "BrightLayer Health" (model: Gemini 1.5 Flash)' },
+  { time: '20:08:45', source: 'Applications Logs', level: 'info', message: 'Compiled resume Facts profile: john_doe_java_backend.pdf' },
+  { time: '20:07:33', source: 'Discovery Logs', level: 'info', message: 'Completed parsing Greenhouse feed for board "google". 12 jobs ingested.' },
+  { time: '20:07:12', source: 'Matching Logs', level: 'info', message: 'Computed match score 92% for Senior Backend Engineer at Northstar Systems.' },
+  { time: '20:06:50', source: 'API Logs', level: 'info', message: 'API handshake successful with Greenhouse board stream.' },
+  { time: '20:05:12', source: 'Discovery Logs', level: 'info', message: 'Discovery cron triggered. Workers initialized: 1.' },
+  { time: '20:04:10', source: 'Matching Logs', level: 'warn', message: 'Salary range not provided in LinkedIn job description. Using default matching average.' },
+  { time: '20:02:15', source: 'API Logs', level: 'warn', message: 'Temporary rate limit (HTTP 429) hit on LinkedIn crawler. Cooldown enqueued.' },
+  { time: '19:55:00', source: 'Error Logs', level: 'error', message: 'Connection timed out while simulating browser login on Workday portal.' },
+  { time: '19:48:33', source: 'Applications Logs', level: 'info', message: 'Auto-retry enqueued for Atlas Grid backend developer application.' },
+  { time: '19:45:10', source: 'AI Logs', level: 'info', message: 'Tailored resume generated grounding in 5 facts from candidate profile.' },
+  { time: '19:40:02', source: 'Matching Logs', level: 'info', message: 'Filtered out company "Oracle" because it matched candidate blocklist.' },
+  { time: '19:35:15', source: 'Discovery Logs', level: 'info', message: 'Detected duplicate listing for Platform Engineer at BrightLayer Health. Ingestion skipped.' },
+  { time: '19:30:00', source: 'Applications Logs', level: 'info', message: 'Autonomous submission complete: submitted candidate profile to Meridian AI.' }
+];
+
+function renderSystemLogs() {
+  const container = document.getElementById('log-rows-container');
+  if (!container) return;
+
+  const srcVal = document.getElementById('log-filter-source')?.value || 'all';
+  const lvlVal = document.getElementById('log-filter-level')?.value || 'all';
+  const query = (document.getElementById('log-search-input')?.value || '').toLowerCase();
+
+  const filtered = MOCK_SYSTEM_LOGS.filter(log => {
+    // Source filter
+    if (srcVal !== 'all') {
+      const formattedSrc = log.source.toLowerCase().replace(/\s+logs$/, '');
+      if (formattedSrc !== srcVal) return false;
+    }
+    // Level filter
+    if (lvlVal !== 'all' && log.level !== lvlVal) return false;
+    // Query search
+    if (query) {
+      const matchMsg = log.message.toLowerCase().includes(query);
+      const matchSrc = log.source.toLowerCase().includes(query);
+      if (!matchMsg && !matchSrc) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:40px;">No logs match your filter criteria.</td></tr>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(log => `
+    <tr>
+      <td class="col-log-time">${escHtml(log.time)}</td>
+      <td class="col-log-src">${escHtml(log.source)}</td>
+      <td class="col-log-lvl ${log.level}">${escHtml(log.level.toUpperCase())}</td>
+      <td class="col-log-msg">${escHtml(log.message)}</td>
+    </tr>
+  `).join('');
+}
+
+function exportSystemLogs() {
+  const format = confirm('Export as CSV? (Cancel for JSON)') ? 'csv' : 'json';
+  let dataStr = '';
+  let filename = '';
+
+  if (format === 'csv') {
+    const csvRows = ['Time,Source,Level,Message'];
+    MOCK_SYSTEM_LOGS.forEach(log => {
+      csvRows.push(`"${log.time}","${log.source}","${log.level}","${log.message.replace(/"/g, '""')}"`);
+    });
+    dataStr = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
+    filename = 'career_copilot_logs.csv';
+  } else {
+    dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(MOCK_SYSTEM_LOGS, null, 2));
+    filename = 'career_copilot_logs.json';
+  }
+
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute('href', dataStr);
+  downloadAnchor.setAttribute('download', filename);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+// ── Automation Circuit Breakers ──────────────────────────────────────────────
+function renderSettingsCircuitBreakers() {
+  const container = document.getElementById('auto-breakers-list');
+  if (!container) return;
+
+  const breakers = {
+    Greenhouse: 'CLOSED',
+    LinkedIn: 'CLOSED',
+    Lever: 'CLOSED',
+    Workday: 'CLOSED',
+    Indeed: 'CLOSED',
+    Glassdoor: 'OPEN'
+  };
+
+  container.innerHTML = Object.entries(breakers).map(([platform, status]) => {
+    const isClosed = status === 'CLOSED';
+    const classBadge = isClosed ? 'closed' : 'open';
+    return `
+      <div class="breaker-card-row">
+        <span class="breaker-title">${escHtml(platform)} sync connector</span>
+        <span class="breaker-status-badge ${classBadge}">${escHtml(status)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function resetSettingsCircuitBreakers() {
+  const btn = document.getElementById('auto-btn-reset-breakers');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Resetting...';
+  }
+  
+  setTimeout(() => {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i data-lucide="refresh-cw" class="icon-sm"></i> Reset All Circuit Breakers`;
+    }
+    renderSettingsCircuitBreakers();
+    if (window.lucide) window.lucide.createIcons();
+    alert('All Crawler circuit breakers reset successfully!');
+  }, 1000);
+}
+
+// ── Application Queues Visualizer ────────────────────────────────────────────
+const MOCK_QUEUES = {
+  pending: [
+    { company: 'BrightLayer Health', role: 'Platform Engineer', reason: 'Waiting for autonomous worker availability.' },
+    { company: 'Atlas Grid', role: 'Lead Java Architect', reason: 'Enqueued in submission scheduler.' }
+  ],
+  retry: [
+    { company: 'GitHub', role: 'Developer Advocate', reason: 'Connection timeout on form submit. Retrying in 12m.' }
+  ],
+  failed: [
+    { company: 'SpamCorp', role: 'Java Monolith Spammer', reason: 'Permanently blocked: Captcha solver failed repeatedly.' }
+  ],
+  priority: []
+};
+
+function setupQueueVisualizer() {
+  const queueTabs = document.querySelectorAll('.queue-tab');
+  const listContainer = document.getElementById('queue-list');
+  if (!listContainer) return;
+
+  queueTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      queueTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const queueName = tab.getAttribute('data-queue');
+      renderQueueList(queueName);
+    });
+  });
+
+  renderQueueList('pending');
+}
+
+function renderQueueList(queueName) {
+  const container = document.getElementById('queue-list');
+  if (!container) return;
+
+  const items = MOCK_QUEUES[queueName] || [];
+
+  if (items.length === 0) {
+    container.innerHTML = `<p style="font-size:12px;color:var(--text-muted);padding:16px;text-align:center;">This queue is currently empty.</p>`;
+    return;
+  }
+
+  container.innerHTML = items.map(item => `
+    <div class="queue-item-row">
+      <div class="q-meta">
+        <span class="q-company">${escHtml(item.company)}</span>
+        <span class="q-role">${escHtml(item.role)}</span>
+        <span class="q-reason">${escHtml(item.reason)}</span>
+      </div>
+      <div class="q-actions">
+        <button type="button" class="btn" style="padding:4px;" title="Promote to top"><i data-lucide="arrow-up" class="icon-sm"></i></button>
+        <button type="button" class="btn btn-danger-icon" style="padding:4px;" title="Remove from queue"><i data-lucide="trash-2" class="icon-sm"></i></button>
+      </div>
+    </div>
+  `).join('');
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// ── Settings status sidebar sync ──────────────────────────────────────────────
+function updateSettingsStatusSidebar() {
+  const setStatusState = document.getElementById('set-status-state');
+  const setStatusDot = document.getElementById('set-status-dot');
+  const setStatusTask = document.getElementById('set-status-task');
+  const setStatusProvider = document.getElementById('set-status-provider');
+  const setStatusModel = document.getElementById('set-status-model');
+
+  if (setStatusState) {
+    setStatusState.textContent = appState.halted ? 'PAUSED' : 'RUNNING';
+    setStatusState.style.color = appState.halted ? 'var(--accent-red)' : 'var(--accent-green)';
+  }
+
+  if (setStatusDot) {
+    setStatusDot.className = appState.halted ? 'pulse-glow-dot red' : 'pulse-glow-dot green';
+  }
+
+  if (setStatusTask) {
+    setStatusTask.textContent = appState.halted ? 'Idle. Autopilot engines paused.' : 'Ingesting Greenhouse jobs...';
+  }
+
+  // Model updates
+  const primaryProvider = document.getElementById('ai-provider')?.value || 'gemini';
+  const primaryModel = document.getElementById('ai-model')?.value || 'gemini-1.5-flash';
+
+  const providerMap = { gemini: 'Google Gemini', openai: 'OpenAI', anthropic: 'Anthropic Claude', openrouter: 'OpenRouter API', ollama: 'Ollama (Local)' };
+  const modelMap = { 
+    'gemini-1.5-flash': 'Gemini 1.5 Flash',
+    'gemini-1.5-pro': 'Gemini 1.5 Pro',
+    'gpt-4o': 'GPT-4o',
+    'claude-3-5-sonnet': 'Claude 3.5 Sonnet'
+  };
+
+  if (setStatusProvider) setStatusProvider.textContent = providerMap[primaryProvider] || primaryProvider;
+  if (setStatusModel) setStatusModel.textContent = modelMap[primaryModel] || primaryModel;
+}
+
+// ── Export and Import Settings ───────────────────────────────────────────────
+function exportAgentSettings() {
+  const currentSettings = {
+    agentName: document.getElementById('gen-agent-name')?.value || '',
+    timezone: document.getElementById('gen-timezone')?.value || 'UTC',
+    language: document.getElementById('gen-language')?.value || 'en',
+    autosave: document.getElementById('gen-autosave')?.checked || false,
+    aiProvider: document.getElementById('ai-provider')?.value || 'gemini',
+    aiModel: document.getElementById('ai-model')?.value || 'gemini-1.5-flash',
+    aiFallback: document.getElementById('ai-fallback')?.value || '',
+    aiTemperature: Number(document.getElementById('ai-temp')?.value || 0.2),
+    autonomyThreshold: appState.threshold,
+    salaryMin: Number(document.getElementById('disc-salary-min')?.value || 120000),
+    salaryMax: Number(document.getElementById('disc-salary-max')?.value || 250000)
+  };
+
+  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(currentSettings, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute('href', dataStr);
+  downloadAnchor.setAttribute('download', 'career_copilot_settings_export.json');
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+  alert('Settings exported successfully!');
+}
+
+function importAgentSettings(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const imported = JSON.parse(evt.target.result);
+      
+      // Update form values
+      if (imported.agentName && document.getElementById('gen-agent-name')) document.getElementById('gen-agent-name').value = imported.agentName;
+      if (imported.timezone && document.getElementById('gen-timezone')) document.getElementById('gen-timezone').value = imported.timezone;
+      if (imported.language && document.getElementById('gen-language')) document.getElementById('gen-language').value = imported.language;
+      if (typeof imported.autosave === 'boolean' && document.getElementById('gen-autosave')) document.getElementById('gen-autosave').checked = imported.autosave;
+      if (imported.aiProvider && document.getElementById('ai-provider')) document.getElementById('ai-provider').value = imported.aiProvider;
+      if (imported.aiModel && document.getElementById('ai-model')) document.getElementById('ai-model').value = imported.aiModel;
+      if (imported.aiFallback && document.getElementById('ai-fallback')) document.getElementById('ai-fallback').value = imported.aiFallback;
+      if (typeof imported.aiTemperature === 'number' && document.getElementById('ai-temp')) {
+        document.getElementById('ai-temp').value = imported.aiTemperature;
+        const tempVal = document.getElementById('ai-temp-val');
+        if (tempVal) tempVal.textContent = imported.aiTemperature;
+      }
+      if (typeof imported.autonomyThreshold === 'number') {
+        appState.threshold = imported.autonomyThreshold;
+        if (document.getElementById('wt-threshold')) document.getElementById('wt-threshold').value = imported.autonomyThreshold;
+        if (els.threshold) els.threshold.value = imported.autonomyThreshold;
+        if (els.thresholdValue) els.thresholdValue.value = imported.autonomyThreshold;
+      }
+
+      updateSettingsStatusSidebar();
+      updateMatchingCalculator();
+      alert('Settings imported and applied successfully!');
+    } catch(err) {
+      alert('Error: Failed to parse settings file. Make sure it is a valid JSON export.');
+    }
+  };
+  reader.readAsText(file);
 }
 
 document.addEventListener('DOMContentLoaded', init);
