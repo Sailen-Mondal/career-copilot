@@ -20,11 +20,11 @@ The system is built as a Spring Boot modular monolith, talking to a separate Typ
 
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| M1 | E2E Testing Track Setup | Setup opaque-box E2E test harness, tiers 1-4 tests | None | PLANNED |
-| M2 | Core Backend & Discovery | Ingest from Greenhouse, composite key & embedding dedup, persist to DB, API Key Auth, Profile REST API | None | PLANNED |
-| M3 | Matching & Generation | Production & mock LlmClient/EmbeddingClient, Matcher, Tailored Generator & GroundednessVerifier | M2 | PLANNED |
-| M4 | Automation Engine | Redis Stream publisher/consumer, TypeScript Playwright shadow-worker, circuit breakers, rate limits | M3 | PLANNED |
-| M5 | Frontend Dashboard | HTML/JS frontend connected to REST APIs, status/audit logs, kill switch, autonomy slider | M4 | PLANNED |
+| M1 | E2E Testing Track Setup | Setup E2E testing framework, tiers 1-4 tests | None | COMPLETED |
+| M2 | Core Backend & Discovery | Ingest from Greenhouse, composite key & embedding dedup, persist to DB, API Key Auth, Profile REST API | None | COMPLETED |
+| M3 | Matching & Generation | Production & mock LlmClient/EmbeddingClient, Matcher, Tailored Generator & GroundednessVerifier | M2 | COMPLETED |
+| M4 | Automation Engine | Redis Stream publisher/consumer, TypeScript Playwright shadow-worker, circuit breakers, rate limits | M3 | COMPLETED |
+| M5 | Frontend Dashboard | HTML/JS frontend connected to REST APIs, status/audit logs, kill switch, autonomy slider | M4 | COMPLETED |
 
 ## Code Layout
 - `app/src/main/java/com/careercopilot/` - Spring Boot backend Java files

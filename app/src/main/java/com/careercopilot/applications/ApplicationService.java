@@ -49,6 +49,7 @@ public class ApplicationService {
         entity.setStatus(ApplicationStatus.QUEUED.name());
         entity.setGroundednessCheckPassed(false);
         entity.setGroundednessReport(Map.of());
+        entity.setCreatedAt(Instant.now());
         entity.setAuditTrail(new ArrayList<>(List.of(
                 timestamp() + " Application created with match score " + matchScore
         )));
@@ -117,7 +118,14 @@ public class ApplicationService {
      * Returns all applications ordered by newest first.
      */
     public List<ApplicationEntity> findAll() {
-        return applicationRepository.findAll();
+        return applicationRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null && b.getCreatedAt() == null) return 0;
+                    if (a.getCreatedAt() == null) return 1;
+                    if (b.getCreatedAt() == null) return -1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     // ---- Private helpers ----

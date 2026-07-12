@@ -37,6 +37,8 @@ class ApplicationWorkflowServiceTest {
     @Mock private CircuitBreakerStateRepository circuitBreakerStateRepository;
     @Mock private AutomationPublisher automationPublisher;
     @Mock private KillSwitchService killSwitchService;
+    @Mock private org.springframework.transaction.PlatformTransactionManager transactionManager;
+    @Mock private org.springframework.transaction.TransactionStatus transactionStatus;
 
     @InjectMocks
     private ApplicationWorkflowService workflowService;
@@ -49,6 +51,7 @@ class ApplicationWorkflowServiceTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(transactionManager.getTransaction(any())).thenReturn(transactionStatus);
         jobId = UUID.randomUUID();
         profileId = UUID.randomUUID();
 
@@ -104,7 +107,7 @@ class ApplicationWorkflowServiceTest {
         when(llmGenerationService.generate(any(), any(), any(), eq(DocumentType.COVER_LETTER), any())).thenReturn(cover);
 
         when(circuitBreakerStateRepository.findByScope(any())).thenReturn(Optional.empty());
-        when(applicationRepository.countBySubmittedAtAfter(any())).thenReturn(0L);
+        when(applicationRepository.findAll()).thenReturn(List.of());
         when(killSwitchService.isHalted()).thenReturn(false);
 
         // Act
@@ -138,7 +141,7 @@ class ApplicationWorkflowServiceTest {
         when(llmGenerationService.generate(any(), any(), any(), eq(DocumentType.COVER_LETTER), any())).thenReturn(cover);
 
         when(circuitBreakerStateRepository.findByScope(any())).thenReturn(Optional.empty());
-        when(applicationRepository.countBySubmittedAtAfter(any())).thenReturn(0L);
+        when(applicationRepository.findAll()).thenReturn(List.of());
 
         // Act
         ApplicationEntity result = workflowService.runWorkflow(jobId, profileId);

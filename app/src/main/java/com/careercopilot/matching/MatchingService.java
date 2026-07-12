@@ -1,5 +1,4 @@
 package com.careercopilot.matching;
-
 import com.careercopilot.discovery.EmbeddingClient;
 import com.careercopilot.discovery.JobEntity;
 import com.careercopilot.discovery.JobRepository;
@@ -8,10 +7,12 @@ import com.careercopilot.profile.MasterProfileEntity;
 import com.careercopilot.profile.MasterProfileRepository;
 import com.careercopilot.profile.ProfileFactEntity;
 import com.careercopilot.profile.ProfileFactRepository;
+import com.careercopilot.profile.WorkAuthorization;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -67,15 +68,31 @@ public class MatchingService {
         List<ProfileFactEntity> facts = profileFactRepository.findByMasterProfileId(profileId);
 
         // ---- ELIGIBILITY PRE-FILTERS ----
-        if (job.getWorkAuthRequired() != null &&
-                !job.getWorkAuthRequired().equalsIgnoreCase(
-                        profile.getWorkAuthorization() != null
-                                ? profile.getWorkAuthorization().name()
-                                : "")) {
-            return ineligible("Work authorization requirement not met: "
-                    + job.getWorkAuthRequired());
+        // 1. Work authorization
+        if (job.getWorkAuthRequired() != null) {
+            String required = job.getWorkAuthRequired();
+            WorkAuthorization candidateAuth = profile.getWorkAuthorization();
+            if (required.equalsIgnoreCase("US_CITIZEN")) {
+                if (candidateAuth != WorkAuthorization.US_CITIZEN) {
+                    return ineligible("Work authorization requirement not met: " + required);
+                }
+            } else if (required.equalsIgnoreCase("GREEN_CARD")) {
+                if (candidateAuth != WorkAuthorization.US_CITIZEN && candidateAuth != WorkAuthorization.GREEN_CARD) {
+                    return ineligible("Work authorization requirement not met: " + required);
+                }
+            } else {
+                if (!required.equalsIgnoreCase(candidateAuth != null ? candidateAuth.name() : "")) {
+                    return ineligible("Work authorization requirement not met: " + required);
+                }
+            }
         }
 
+        // 2. Visa sponsorship needed vs available
+        if (profile.isVisaSponsorshipNeeded() && !job.isSponsorshipAvailable()) {
+            return ineligible("Visa sponsorship needed but not available for this job.");
+        }
+
+        // 3. Blocklist
         Set<String> blocklist = profile.getBlocklistCompanies();
         if (blocklist != null) {
             String jobCompany = job.getCompany();
@@ -86,8 +103,54 @@ public class MatchingService {
             }
         }
 
+        // 4. Job status
         if (job.getStatus() != JobStatus.ACTIVE) {
             return ineligible("Job is not active (status=" + job.getStatus() + ")");
+        }
+
+        // 5. Seniority Filter
+        if (job.getSeniority() != null) {
+            double totalYears = 0.0;
+            for (ProfileFactEntity fact : facts) {
+                if (fact.getType() == com.careercopilot.profile.FactType.EXPERIENCE && fact.getStartDate() != null) {
+                    LocalDate start = fact.getStartDate();
+                    LocalDate end = fact.getEndDate() != null ? fact.getEndDate() : LocalDate.now();
+                    long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
+                    totalYears += days / 365.25;
+                }
+            }
+            if (job.getSeniority().equalsIgnoreCase("SENIOR") && totalYears < 3.0) {
+                return ineligible("Seniority filter: Job requires SENIOR experience, candidate has " + String.format("%.2f", totalYears) + " years.");
+            }
+            if (job.getSeniority().equalsIgnoreCase("JUNIOR") && totalYears > 8.0) {
+                return ineligible("Seniority filter: Job requires JUNIOR experience, candidate has " + String.format("%.2f", totalYears) + " years (overqualified).");
+            }
+        }
+
+        // 6. Location Filter
+        String jobLocType = job.getLocationType() != null ? job.getLocationType().toLowerCase() : "";
+        String prefRemote = profile.getRemotePreference() != null ? profile.getRemotePreference().toLowerCase() : "";
+
+        if (jobLocType.equals("remote") && prefRemote.equals("onsite")) {
+            return ineligible("Location filter: Job is remote, but candidate preference is onsite.");
+        }
+        if ((jobLocType.equals("onsite") || jobLocType.equals("hybrid")) && prefRemote.equals("remote")) {
+            return ineligible("Location filter: Job is " + jobLocType + ", but candidate preference is remote.");
+        }
+
+        if ((jobLocType.equals("onsite") || jobLocType.equals("hybrid")) && profile.getLocations() != null && !profile.getLocations().isEmpty()) {
+            boolean locationMatched = false;
+            String jobLoc = job.getLocation() != null ? job.getLocation().toLowerCase() : "";
+            for (String prefLoc : profile.getLocations()) {
+                String normalizedPref = prefLoc.toLowerCase().trim();
+                if (jobLoc.contains(normalizedPref) || normalizedPref.contains(jobLoc)) {
+                    locationMatched = true;
+                    break;
+                }
+            }
+            if (!locationMatched) {
+                return ineligible("Location filter: Job location '" + job.getLocation() + "' does not match preferred locations: " + profile.getLocations());
+            }
         }
 
         // ---- EMBEDDING SCORE (0–50) ----

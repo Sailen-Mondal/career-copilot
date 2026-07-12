@@ -83,6 +83,51 @@ public class JobDiscoveryService {
                             .anyMatch(m -> m.value() != null && m.value().toLowerCase().contains("yes"));
                 }
 
+                // Extract required skills
+                java.util.Set<String> skillsRequired = new java.util.HashSet<>();
+                String textForSkills = (gJob.title() + " " + descriptionClean).toLowerCase();
+                java.util.List<String> commonSkills = java.util.List.of("java", "spring boot", "postgresql", "redis", "react", "docker", "kubernetes", "aws", "sql", "gcp", "python", "javascript", "typescript", "c++", "golang");
+                for (String skill : commonSkills) {
+                    if (textForSkills.contains(skill)) {
+                        String normalizedSkill = switch (skill) {
+                            case "spring boot" -> "Spring Boot";
+                            case "postgresql" -> "PostgreSQL";
+                            case "redis" -> "Redis";
+                            case "react" -> "React";
+                            case "docker" -> "Docker";
+                            case "kubernetes" -> "Kubernetes";
+                            case "aws" -> "AWS";
+                            case "sql" -> "SQL";
+                            case "gcp" -> "GCP";
+                            case "python" -> "Python";
+                            case "javascript" -> "JavaScript";
+                            case "typescript" -> "TypeScript";
+                            case "c++" -> "C++";
+                            case "golang" -> "Go";
+                            default -> skill.substring(0, 1).toUpperCase() + skill.substring(1);
+                        };
+                        skillsRequired.add(normalizedSkill);
+                    }
+                }
+
+                // Extract seniority
+                String titleLower = gJob.title().toLowerCase();
+                String seniority = "MID";
+                if (titleLower.contains("senior") || titleLower.contains("sr") || titleLower.contains("lead") || titleLower.contains("staff") || titleLower.contains("principal") || titleLower.contains(" ii") || titleLower.contains(" iii") || titleLower.contains(" iv") || titleLower.contains(" v") || titleLower.contains("l3") || titleLower.contains("l4") || titleLower.contains("l5") || titleLower.contains("l6")) {
+                    seniority = "SENIOR";
+                } else if (titleLower.contains("junior") || titleLower.contains("jr") || titleLower.contains("entry") || titleLower.contains("associate") || titleLower.contains("intern") || titleLower.contains(" i")) {
+                    seniority = "JUNIOR";
+                }
+
+                // Extract work authorization required
+                String descLower = descriptionClean.toLowerCase();
+                String workAuthRequired = null;
+                if (descLower.contains("us citizen") || descLower.contains("u.s. citizen") || descLower.contains("citizenship required") || descLower.contains("clearance required") || descLower.contains("must be a citizen")) {
+                    workAuthRequired = "US_CITIZEN";
+                } else if (descLower.contains("green card") || descLower.contains("permanent resident")) {
+                    workAuthRequired = "GREEN_CARD";
+                }
+
                 // 8. Determine postedAt timestamp
                 Instant postedAt = Instant.now();
                 if (gJob.updatedAt() != null) {
@@ -108,10 +153,10 @@ public class JobDiscoveryService {
                         location.toLowerCase().contains("remote") ? "remote" : "onsite",
                         gJob.content(),
                         descriptionClean,
-                        java.util.Set.of(),
+                        skillsRequired,
+                        seniority,
                         null,
-                        null,
-                        null,
+                        workAuthRequired,
                         sponsorship,
                         postedAt,
                         Instant.now(),

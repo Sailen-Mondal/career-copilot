@@ -63,6 +63,7 @@ The source of truth for generated content.
 - `automation_tier`
 - `status`
 - `submitted_at`
+- `created_at`
 - `platform`
 - `external_application_id`
 - `groundedness_check_passed`

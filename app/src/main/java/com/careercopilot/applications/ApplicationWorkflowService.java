@@ -14,7 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
@@ -36,6 +37,7 @@ public class ApplicationWorkflowService {
     private final CircuitBreakerStateRepository circuitBreakerStateRepository;
     private final AutomationPublisher automationPublisher;
     private final KillSwitchService killSwitchService;
+    private final TransactionTemplate transactionTemplate;
 
     public ApplicationWorkflowService(
             ApplicationRepository applicationRepository,
@@ -46,7 +48,8 @@ public class ApplicationWorkflowService {
             GeneratedDocumentRepository generatedDocumentRepository,
             CircuitBreakerStateRepository circuitBreakerStateRepository,
             AutomationPublisher automationPublisher,
-            KillSwitchService killSwitchService) {
+            KillSwitchService killSwitchService,
+            PlatformTransactionManager transactionManager) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.masterProfileRepository = masterProfileRepository;
@@ -56,9 +59,9 @@ public class ApplicationWorkflowService {
         this.circuitBreakerStateRepository = circuitBreakerStateRepository;
         this.automationPublisher = automationPublisher;
         this.killSwitchService = killSwitchService;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
-    @Transactional
     public ApplicationEntity runWorkflow(UUID jobId, UUID profileId) {
         log.info("Running application workflow for jobId={}, profileId={}", jobId, profileId);
 
@@ -73,25 +76,29 @@ public class ApplicationWorkflowService {
         log.info("Scored job: eligible={}, score={}", matchResult.eligible(), matchResult.score());
 
         // 3. Create application entity (status GENERATING, backend-driven score)
-        ApplicationEntity application = new ApplicationEntity();
         UUID applicationId = UUID.randomUUID();
-        application.setId(applicationId);
-        application.setJobId(jobId);
-        application.setProfileId(profileId);
-        application.setMatchScore(matchResult.score());
-        application.setMatchScoreBreakdown(matchResult.breakdown());
-        application.setStatus(ApplicationStatus.GENERATING.name());
-        application.setAutomationTier(AutomationTier.AUTO.name());
-        application.setGroundednessCheckPassed(false);
-        application.setGroundednessReport(Map.of());
-        
         List<String> auditTrail = new ArrayList<>();
         auditTrail.add(timestamp() + " Workflow started. Match score computed: " + matchResult.score());
         if (!matchResult.eligible()) {
             auditTrail.add(timestamp() + " Matcher marked job ineligible: " + matchResult.ineligibilityReason());
         }
-        application.setAuditTrail(auditTrail);
-        application = applicationRepository.save(application);
+
+        final ApplicationEntity[] appContainer = new ApplicationEntity[1];
+        appContainer[0] = transactionTemplate.execute(status -> {
+            ApplicationEntity app = new ApplicationEntity();
+            app.setId(applicationId);
+            app.setJobId(jobId);
+            app.setProfileId(profileId);
+            app.setMatchScore(matchResult.score());
+            app.setMatchScoreBreakdown(matchResult.breakdown());
+            app.setStatus(ApplicationStatus.GENERATING.name());
+            app.setAutomationTier(AutomationTier.AUTO.name());
+            app.setGroundednessCheckPassed(false);
+            app.setGroundednessReport(Map.of());
+            app.setAuditTrail(new ArrayList<>(auditTrail));
+            app.setCreatedAt(Instant.now());
+            return applicationRepository.save(app);
+        });
 
         // 4. Generate documents and check groundedness
         boolean groundednessPassed = true;
@@ -102,10 +109,14 @@ public class ApplicationWorkflowService {
         // Verify if candidate has facts at all
         try {
             resumeDoc = llmGenerationService.generate(applicationId, profileId, jobId, DocumentType.RESUME, jobEntity.getDescriptionClean());
-            GeneratedDocumentEntity resumeEntity = new GeneratedDocumentEntity(resumeDoc);
-            generatedDocumentRepository.save(resumeEntity);
-            application.setResumeVersionId(resumeEntity.getId());
-            groundednessReport.put("resume", Map.of("passed", true, "documentId", resumeEntity.getId()));
+            final GeneratedDocument finalResume = resumeDoc;
+            UUID resumeEntityId = transactionTemplate.execute(status -> {
+                GeneratedDocumentEntity resumeEntity = new GeneratedDocumentEntity(finalResume);
+                generatedDocumentRepository.save(resumeEntity);
+                return resumeEntity.getId();
+            });
+            appContainer[0].setResumeVersionId(resumeEntityId);
+            groundednessReport.put("resume", Map.of("passed", true, "documentId", resumeEntityId));
             auditTrail.add(timestamp() + " Tailored resume generated and verified successfully.");
         } catch (GroundednessException e) {
             groundednessPassed = false;
@@ -119,10 +130,14 @@ public class ApplicationWorkflowService {
 
         try {
             coverLetterDoc = llmGenerationService.generate(applicationId, profileId, jobId, DocumentType.COVER_LETTER, jobEntity.getDescriptionClean());
-            GeneratedDocumentEntity coverLetterEntity = new GeneratedDocumentEntity(coverLetterDoc);
-            generatedDocumentRepository.save(coverLetterEntity);
-            application.setCoverLetterVersionId(coverLetterEntity.getId());
-            groundednessReport.put("coverLetter", Map.of("passed", true, "documentId", coverLetterEntity.getId()));
+            final GeneratedDocument finalCover = coverLetterDoc;
+            UUID coverEntityId = transactionTemplate.execute(status -> {
+                GeneratedDocumentEntity coverLetterEntity = new GeneratedDocumentEntity(finalCover);
+                generatedDocumentRepository.save(coverLetterEntity);
+                return coverLetterEntity.getId();
+            });
+            appContainer[0].setCoverLetterVersionId(coverEntityId);
+            groundednessReport.put("coverLetter", Map.of("passed", true, "documentId", coverEntityId));
             auditTrail.add(timestamp() + " Tailored cover letter generated and verified successfully.");
         } catch (GroundednessException e) {
             groundednessPassed = false;
@@ -134,12 +149,16 @@ public class ApplicationWorkflowService {
             auditTrail.add(timestamp() + " Cover letter generation failed with unexpected error: " + e.getMessage());
         }
 
-        application.setGroundednessCheckPassed(groundednessPassed);
-        application.setGroundednessReport(groundednessReport);
+        final boolean finalGroundednessPassed = groundednessPassed;
+        final Map<String, Object> finalGroundednessReport = groundednessReport;
 
-        // Update status to VERIFYING during policy decision
-        application.setStatus(ApplicationStatus.VERIFYING.name());
-        applicationRepository.save(application);
+        appContainer[0] = transactionTemplate.execute(status -> {
+            appContainer[0].setGroundednessCheckPassed(finalGroundednessPassed);
+            appContainer[0].setGroundednessReport(finalGroundednessReport);
+            appContainer[0].setStatus(ApplicationStatus.VERIFYING.name());
+            appContainer[0].setAuditTrail(new ArrayList<>(auditTrail));
+            return applicationRepository.save(appContainer[0]);
+        });
 
         // 5. Autonomy Policy decision
         MasterProfile profile = profileEntity.toDomain();
@@ -151,9 +170,17 @@ public class ApplicationWorkflowService {
                 .map(status -> status == CircuitBreakerStatus.OPEN)
                 .orElse(false);
 
-        // Count submitted today
+        // Count enqueued today
         Instant startOfDay = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC).toInstant();
-        int submittedToday = (int) applicationRepository.countBySubmittedAtAfter(startOfDay);
+        long submittedToday = applicationRepository.findAll().stream()
+                .filter(app -> app.getProfileId().equals(profileId) && app.getCreatedAt() != null && app.getCreatedAt().isAfter(startOfDay))
+                .filter(app -> {
+                    String status = app.getStatus();
+                    return ApplicationStatus.QUEUED.name().equals(status) ||
+                           ApplicationStatus.READY.name().equals(status) ||
+                           ApplicationStatus.SUBMITTED.name().equals(status);
+                })
+                .count();
 
         // Custom fields check (can be extended, defaults to false)
         boolean hasUnsupportedCustomFields = false;
@@ -161,32 +188,46 @@ public class ApplicationWorkflowService {
         ApplicationCandidate candidate = new ApplicationCandidate(
                 job,
                 matchResult.score(),
-                groundednessPassed,
+                finalGroundednessPassed,
                 hasUnsupportedCustomFields,
                 circuitBreakerOpen,
-                submittedToday
+                (int) submittedToday
         );
 
         AutonomyPolicy autonomyPolicy = new AutonomyPolicy();
         ApplicationDecision decision = autonomyPolicy.decide(profile, candidate);
 
-        application.setAutomationTier(decision.tier().name());
         auditTrail.add(timestamp() + " Autonomy policy check: " + decision.reason());
 
-        if (decision.shouldSubmit()) {
-            application.setStatus(ApplicationStatus.QUEUED.name());
-            auditTrail.add(timestamp() + " Application approved for automation queue.");
-            applicationRepository.save(application);
+        final GeneratedDocument finalResumeDoc = resumeDoc;
+        final GeneratedDocument finalCoverDoc = coverLetterDoc;
 
-            // 6. Redis Queue Publishing (if kill switch is not active)
+        appContainer[0] = transactionTemplate.execute(status -> {
+            appContainer[0].setAutomationTier(decision.tier().name());
+            if (decision.shouldSubmit()) {
+                appContainer[0].setStatus(ApplicationStatus.QUEUED.name());
+                auditTrail.add(timestamp() + " Application approved for automation queue.");
+            } else {
+                appContainer[0].setStatus(ApplicationStatus.BLOCKED.name());
+                auditTrail.add(timestamp() + " Application skipped/blocked: " + decision.reason());
+            }
+            appContainer[0].setAuditTrail(new ArrayList<>(auditTrail));
+            return applicationRepository.save(appContainer[0]);
+        });
+
+        if (decision.shouldSubmit()) {
             if (killSwitchService.isHalted()) {
-                application.setStatus(ApplicationStatus.BLOCKED.name());
-                auditTrail.add(timestamp() + " Publish skipped: kill switch is active.");
-                applicationRepository.save(application);
+                appContainer[0] = transactionTemplate.execute(status -> {
+                    appContainer[0].setStatus(ApplicationStatus.BLOCKED.name());
+                    List<String> trail = appContainer[0].getAuditTrail();
+                    trail.add(timestamp() + " Publish skipped: kill switch is active.");
+                    appContainer[0].setAuditTrail(trail);
+                    return applicationRepository.save(appContainer[0]);
+                });
             } else {
                 try {
-                    String resumeIdStr = application.getResumeVersionId() != null ? application.getResumeVersionId().toString() : "";
-                    String coverLetterIdStr = application.getCoverLetterVersionId() != null ? application.getCoverLetterVersionId().toString() : "";
+                    String resumeIdStr = appContainer[0].getResumeVersionId() != null ? appContainer[0].getResumeVersionId().toString() : "";
+                    String coverLetterIdStr = appContainer[0].getCoverLetterVersionId() != null ? appContainer[0].getCoverLetterVersionId().toString() : "";
                     
                     AutomationCommand command = new AutomationCommand(
                             applicationId.toString(),
@@ -194,9 +235,9 @@ public class ApplicationWorkflowService {
                             "shadow",
                             profileId.toString(),
                             resumeIdStr,
-                            resumeDoc != null ? resumeDoc.content() : "",
+                            finalResumeDoc != null ? finalResumeDoc.content() : "",
                             coverLetterIdStr,
-                            coverLetterDoc != null ? coverLetterDoc.content() : "",
+                            finalCoverDoc != null ? finalCoverDoc.content() : "",
                             profile.name(),
                             profile.email(),
                             profile.phone(),
@@ -204,20 +245,26 @@ public class ApplicationWorkflowService {
                             profile.websiteUrl()
                     );
                     automationPublisher.publish(command);
-                    auditTrail.add(timestamp() + " Dispatched to Redis automation stream.");
+                    appContainer[0] = transactionTemplate.execute(status -> {
+                        List<String> trail = appContainer[0].getAuditTrail();
+                        trail.add(timestamp() + " Dispatched to Redis automation stream.");
+                        appContainer[0].setAuditTrail(trail);
+                        return applicationRepository.save(appContainer[0]);
+                    });
                 } catch (Exception e) {
                     log.error("Failed to publish automation command to Redis", e);
-                    application.setStatus(ApplicationStatus.FAILED.name());
-                    auditTrail.add(timestamp() + " Failed to dispatch to Redis stream: " + e.getMessage());
+                    appContainer[0] = transactionTemplate.execute(status -> {
+                        appContainer[0].setStatus(ApplicationStatus.FAILED.name());
+                        List<String> trail = appContainer[0].getAuditTrail();
+                        trail.add(timestamp() + " Failed to dispatch to Redis stream: " + e.getMessage());
+                        appContainer[0].setAuditTrail(trail);
+                        return applicationRepository.save(appContainer[0]);
+                    });
                 }
             }
-        } else {
-            // Skipped or blocked by autonomy policy
-            application.setStatus(ApplicationStatus.BLOCKED.name());
-            auditTrail.add(timestamp() + " Application skipped/blocked: " + decision.reason());
         }
 
-        return applicationRepository.save(application);
+        return appContainer[0];
     }
 
     private String timestamp() {

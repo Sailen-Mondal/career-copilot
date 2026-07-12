@@ -1,7 +1,9 @@
 package com.careercopilot.automation;
 
+import com.careercopilot.applications.ApplicationRepository;
 import com.careercopilot.applications.ApplicationService;
 import com.careercopilot.applications.ApplicationStatus;
+import com.careercopilot.discovery.JobRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -12,6 +14,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
 import java.util.List;
@@ -34,6 +38,10 @@ public class AutomationResultConsumer implements ApplicationListener<Application
     private final ObjectMapper objectMapper;
     private final ApplicationService applicationService;
     private final KillSwitchService killSwitchService;
+    private final ApplicationRepository applicationRepository;
+    private final JobRepository jobRepository;
+    private final CircuitBreakerStateRepository circuitBreakerStateRepository;
+    private final TransactionTemplate transactionTemplate;
 
     private final String resultsStream;
     private final String consumerGroup;
@@ -47,6 +55,10 @@ public class AutomationResultConsumer implements ApplicationListener<Application
             ObjectMapper objectMapper,
             ApplicationService applicationService,
             KillSwitchService killSwitchService,
+            ApplicationRepository applicationRepository,
+            JobRepository jobRepository,
+            CircuitBreakerStateRepository circuitBreakerStateRepository,
+            PlatformTransactionManager transactionManager,
             @Value("${automation.streams.results-stream:cc:automation:results}") String resultsStream,
             @Value("${automation.streams.consumer-group:spring-consumers}") String consumerGroup,
             @Value("${automation.streams.consumer-name:app-1}") String consumerName) {
@@ -54,6 +66,10 @@ public class AutomationResultConsumer implements ApplicationListener<Application
         this.objectMapper = objectMapper;
         this.applicationService = applicationService;
         this.killSwitchService = killSwitchService;
+        this.applicationRepository = applicationRepository;
+        this.jobRepository = jobRepository;
+        this.circuitBreakerStateRepository = circuitBreakerStateRepository;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.resultsStream = resultsStream;
         this.consumerGroup = consumerGroup;
         this.consumerName = consumerName;
@@ -129,7 +145,7 @@ public class AutomationResultConsumer implements ApplicationListener<Application
         log.info("AutomationResultConsumer stopped");
     }
 
-    private void processMessage(MapRecord<String, Object, Object> message) {
+    void processMessage(MapRecord<String, Object, Object> message) {
         try {
             Map<String, String> fields = objectMapper.convertValue(
                     message.getValue(), new TypeReference<Map<String, String>>() {});
@@ -158,6 +174,49 @@ public class AutomationResultConsumer implements ApplicationListener<Application
             applicationService.appendAuditEntry(applicationId,
                     "Playwright worker completed: status=" + status
                             + (screenshotPath.isEmpty() ? "" : ", screenshot=" + screenshotPath));
+
+            // Update circuit breaker state based on success/failure
+            try {
+                transactionTemplate.executeWithoutResult(txnStatus -> {
+                    applicationRepository.findById(applicationId).ifPresent(app -> {
+                        jobRepository.findById(app.getJobId()).ifPresent(job -> {
+                            String scope = job.getSource();
+                            if (scope != null) {
+                                CircuitBreakerStateEntity cbState = circuitBreakerStateRepository.findByScope(scope)
+                                        .orElseGet(() -> {
+                                            CircuitBreakerStateEntity newState = new CircuitBreakerStateEntity();
+                                            newState.setId(UUID.randomUUID());
+                                            newState.setScope(scope);
+                                            newState.setStatus(CircuitBreakerStatus.CLOSED);
+                                            newState.setErrorCountWindow(0);
+                                            return newState;
+                                        });
+
+                                if ("failed".equals(status)) {
+                                    if (cbState.getStatus() == CircuitBreakerStatus.CLOSED) {
+                                        int errors = cbState.getErrorCountWindow() + 1;
+                                        cbState.setErrorCountWindow(errors);
+                                        if (errors >= 3) {
+                                            cbState.setStatus(CircuitBreakerStatus.OPEN);
+                                            cbState.setTrippedAt(java.time.Instant.now());
+                                            cbState.setReason("3 consecutive failures in Playwright worker");
+                                            log.warn("Circuit Breaker TRIPPED (OPEN) for scope: {}", scope);
+                                        }
+                                    }
+                                } else if ("shadow_completed".equals(status) || "submitted".equals(status)) {
+                                    cbState.setErrorCountWindow(0);
+                                    cbState.setStatus(CircuitBreakerStatus.CLOSED);
+                                    cbState.setTrippedAt(null);
+                                    cbState.setReason(null);
+                                }
+                                circuitBreakerStateRepository.save(cbState);
+                            }
+                        });
+                    });
+                });
+            } catch (Exception cbEx) {
+                log.error("Failed to update circuit breaker state for application " + applicationIdStr, cbEx);
+            }
 
             log.info("Processed automation result: applicationId={}, status={}",
                     applicationIdStr, status);

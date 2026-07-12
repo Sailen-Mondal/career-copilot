@@ -76,6 +76,7 @@ public class ApplicationController {
                     entity.getAutomationTier(),
                     entity.getStatus().toLowerCase(), // Lowercase to match frontend CSS status classes
                     entity.getSubmittedAt(),
+                    entity.getCreatedAt(),
                     source,
                     entity.getExternalApplicationId(),
                     entity.isGroundednessCheckPassed(),
@@ -147,6 +148,7 @@ public class ApplicationController {
                 entity.getAutomationTier(),
                 entity.getStatus().toLowerCase(),
                 entity.getSubmittedAt(),
+                entity.getCreatedAt(),
                 source,
                 entity.getExternalApplicationId(),
                 entity.isGroundednessCheckPassed(),

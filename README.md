@@ -20,14 +20,29 @@ career-copilot/
 └── infra/                      # local infra and CI notes
 ```
 
-## MVP Order
+## Current Status
 
-1. Confirm the source legality matrix and non-functional requirements.
-2. Build the modular monolith with Flyway-managed Postgres.
-3. Ingest Greenhouse/Lever public job boards first.
-4. Add matching, eligibility filtering, and grounded document generation.
-5. Run browser automation in shadow mode before live submission.
-6. Enable low-volume auto-submit only behind groundedness, confidence, rate-limit, and circuit-breaker checks.
+The MVP is **fully implemented and tested**! All modules are integrated and run in local dev mode.
+
+### Implemented Features:
+1. **Enhanced Ingestion**: Automatically extracts skills, seniority, and work authorization requirements from public job boards.
+2. **Hard Pre-Filters**: Implemented filters for matching work authorization, visa sponsorship, candidate experience years (seniority bounds), and location type/preferences in `MatchingService`.
+3. **Transaction Isolation**: Restructured `ApplicationWorkflowService` to run external Vertex AI LLM calls outside database transactions, preventing Hikari pool starvation.
+4. **Resilient Circuit Breaker**: Integrates Playwright worker success/failure streams with the database-backed `CircuitBreakerState`, transitioning to `OPEN` on 3 consecutive failures.
+5. **Accurate Timestamps**: Added a `created_at` timestamp to the database schema (`V5`) and mapped it to the DTO and dashboard feeds.
+
+---
+
+## Getting Started: 1-Click Launch
+
+We have included a 1-click launcher in the root folder of the project.
+
+To run the entire system (Docker containers, Spring Boot backend, Playwright worker, and opening the browser dashboard):
+- **On Windows**: Double-click **`launch.bat`** (or pin it to your taskbar for a true 1-click experience).
+
+The script will automatically check if Docker is running, spin up PostgreSQL and Redis, start the backend server, boot the Playwright worker, and open the browser dashboard once the backend is healthy.
+
+---
 
 ## Guardrail Principle
 

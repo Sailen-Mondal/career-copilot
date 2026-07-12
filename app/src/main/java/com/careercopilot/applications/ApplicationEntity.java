@@ -60,6 +60,9 @@ public class ApplicationEntity {
     @Column(name = "groundedness_check_passed", nullable = false)
     private boolean groundednessCheckPassed;
 
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "groundedness_report", nullable = false, columnDefinition = "jsonb")
     private Map<String, Object> groundednessReport;
@@ -111,6 +114,9 @@ public class ApplicationEntity {
 
     public boolean isGroundednessCheckPassed() { return groundednessCheckPassed; }
     public void setGroundednessCheckPassed(boolean groundednessCheckPassed) { this.groundednessCheckPassed = groundednessCheckPassed; }
+
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
     public Map<String, Object> getGroundednessReport() { return groundednessReport; }
     public void setGroundednessReport(Map<String, Object> groundednessReport) { this.groundednessReport = groundednessReport; }

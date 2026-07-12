@@ -19,6 +19,7 @@ public record ApplicationDto(
         String automationTier,
         String status,
         Instant submittedAt,
+        Instant createdAt,
         String platform,
         String externalApplicationId,
         boolean groundednessCheckPassed,
