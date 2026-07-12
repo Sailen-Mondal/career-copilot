@@ -73,6 +73,7 @@ public class JobEntity {
     @Column(name = "dedup_key", unique = true)
     private String dedupKey;
 
+    @JdbcTypeCode(SqlTypes.VECTOR)
     @Column(name = "embedding_vector", columnDefinition = "vector(1536)")
     private float[] embeddingVector;
 
