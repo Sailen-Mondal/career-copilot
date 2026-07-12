@@ -91,7 +91,7 @@ set -- \
         "-Dorg.gradle.appname=$APP_BASE_NAME" \
         -classpath "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" \
         org.gradle.wrapper.GradleWrapperMain \
-        "$APP_ARGS"
+        $APP_ARGS
 
 # Stop when "xargs" is not available.
 if ! command -v xargs >/dev/null 2>&1
