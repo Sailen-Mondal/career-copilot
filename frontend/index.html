@@ -327,6 +327,7 @@
                   <span>Auto-run scenarios</span>
                 </label>
                 <select id="wfScenarioSelect" class="workflow-select" aria-label="Select simulation scenario">
+                  <option value="live" selected>Live Stream (Real Data)</option>
                   <option value="happy">Happy Path (Direct Submit)</option>
                   <option value="shadow">Shadow Mode (Pause for Review)</option>
                   <option value="skipped">Low Match Score (Skipped)</option>
@@ -339,16 +340,25 @@
             <div style="width: 100%; overflow-x: auto;">
               <div class="workflow-canvas">
                 <svg class="workflow-connections">
+                  <!-- Connection paths -->
                   <path id="wf-path-disc-match" class="workflow-path"></path>
-                  <path id="wf-path-match-gen" class="workflow-path"></path>
-                  <path id="wf-path-gen-auto" class="workflow-path"></path>
+                  <path id="wf-path-match-resume" class="workflow-path"></path>
+                  <path id="wf-path-match-cover" class="workflow-path"></path>
+                  <path id="wf-path-match-filter" class="workflow-path"></path>
+                  <path id="wf-path-resume-auto" class="workflow-path"></path>
+                  <path id="wf-path-cover-auto" class="workflow-path"></path>
 
+                  <!-- Pulsing flow overlays -->
                   <path id="wf-pulse-disc-match" class="workflow-pulse"></path>
-                  <path id="wf-pulse-match-gen" class="workflow-pulse"></path>
-                  <path id="wf-pulse-gen-auto" class="workflow-pulse"></path>
+                  <path id="wf-pulse-match-resume" class="workflow-pulse"></path>
+                  <path id="wf-pulse-match-cover" class="workflow-pulse"></path>
+                  <path id="wf-pulse-match-filter" class="workflow-pulse"></path>
+                  <path id="wf-pulse-resume-auto" class="workflow-pulse"></path>
+                  <path id="wf-pulse-cover-auto" class="workflow-pulse"></path>
                 </svg>
 
-                <div class="workflow-node" id="node-discovery" style="left: 16%; top: 50%;">
+                <!-- Node: Discovery -->
+                <div class="workflow-node" id="node-discovery" style="left: 14%; top: 50%;">
                   <div class="node-icon-circle">
                     <i data-lucide="search" class="icon-sm"></i>
                   </div>
@@ -360,7 +370,8 @@
                   <div class="node-port node-port-output"></div>
                 </div>
 
-                <div class="workflow-node" id="node-matching" style="left: 39%; top: 50%;">
+                <!-- Node: Matching -->
+                <div class="workflow-node" id="node-matching" style="left: 35%; top: 50%;">
                   <div class="node-port node-port-input"></div>
                   <div class="node-icon-circle">
                     <i data-lucide="git-compare-arrows" class="icon-sm"></i>
@@ -373,20 +384,49 @@
                   <div class="node-port node-port-output"></div>
                 </div>
 
-                <div class="workflow-node" id="node-generation" style="left: 61%; top: 50%;">
+                <!-- Node: Resume Tailor -->
+                <div class="workflow-node" id="node-resume" style="left: 58%; top: 24%;">
                   <div class="node-port node-port-input"></div>
                   <div class="node-icon-circle">
-                    <i data-lucide="sparkles" class="icon-sm"></i>
+                    <i data-lucide="file-text" class="icon-sm"></i>
                   </div>
                   <div class="node-details">
-                    <span class="node-title">AI Document Gen</span>
+                    <span class="node-title">Resume Tailor</span>
                     <span class="node-status">Idle</span>
                   </div>
                   <div class="node-status-badge"></div>
                   <div class="node-port node-port-output"></div>
                 </div>
 
-                <div class="workflow-node" id="node-autopilot" style="left: 84%; top: 50%;">
+                <!-- Node: Cover Letter Synth -->
+                <div class="workflow-node" id="node-coverletter" style="left: 58%; top: 54%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="mail" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Cover Letter Synth</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                  <div class="node-port node-port-output"></div>
+                </div>
+
+                <!-- Node: Filter Out / Skip (Lower Branch) -->
+                <div class="workflow-node" id="node-filter" style="left: 58%; top: 84%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="slash" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Filter / Block</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                </div>
+
+                <!-- Node: Autopilot Submit -->
+                <div class="workflow-node" id="node-autopilot" style="left: 82%; top: 39%;">
                   <div class="node-port node-port-input"></div>
                   <div class="node-icon-circle">
                     <i data-lucide="bot" class="icon-sm"></i>

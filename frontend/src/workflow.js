@@ -1,62 +1,98 @@
 /* ═══════════════════════════════════════════════════════════
-   Career Copilot — Automation Workflow Simulation Logic (n8n Style)
+   Career Copilot — Automation Workflow Simulation & Live Logic (Option B)
    ═══════════════════════════════════════════════════════════ */
 
 'use strict';
 
 (function () {
-  // Scenario configurations defining nodes, durations, visual states, and console logs
+  // Scenario configurations for the branching workflow layout
   const SCENARIOS = {
     happy: {
       name: 'Happy Path (Direct Submit)',
       steps: [
-        { node: 'node-discovery', tag: 'discovery', status: 'Syncing Greenhouse feed...', log: 'Fetching new posts from Greenhouse board "google"...', duration: 1500, stateClass: 'active', nodeStatusText: 'Syncing...' },
-        { node: 'node-discovery', tag: 'discovery', status: '12 jobs found', log: 'Discovery completed. 12 potential roles loaded into cache.', duration: 500, stateClass: 'success', nodeStatusText: '12 found' },
+        { node: 'node-discovery', tag: 'discovery', log: 'Ingesting Greenhouse board token "google"...', duration: 1500, stateClass: 'active', nodeStatusText: 'Syncing...' },
+        { node: 'node-discovery', tag: 'discovery', log: 'Discovery completed. 12 potential roles loaded into cache.', duration: 500, stateClass: 'success', nodeStatusText: '12 found' },
         
-        { node: 'node-matching', tag: 'matching', status: 'Scoring match...', log: 'Evaluating "Senior Backend Engineer" at Northstar Systems. Checking work authorization (PASSED). Checking seniority (PASSED). Computing vector cosine similarity...', duration: 2000, stateClass: 'active', nodeStatusText: 'Scoring...' },
-        { node: 'node-matching', tag: 'matching', status: 'Score: 92 (Match)', log: 'Cosine similarity: 0.92. Keyword intersection match: 90%. Computed score: 92/100 (Threshold: 85). MATCH VALIDATED.', duration: 500, stateClass: 'success', nodeStatusText: 'Match (92)' },
+        { node: 'node-matching', tag: 'matching', log: 'Evaluating "Senior Backend Engineer" at Northstar Systems. Checking work auth (PASSED) and seniority (PASSED). Evaluating vector cosine similarity...', duration: 2000, stateClass: 'active', nodeStatusText: 'Scoring...' },
+        { node: 'node-matching', tag: 'matching', log: 'Similarity score: 92/100 (Threshold: 85) -> Match confirmed. Routing to document generators...', duration: 500, stateClass: 'success', nodeStatusText: 'Match (92)' },
         
-        { node: 'node-generation', tag: 'generation', status: 'Generating docs...', log: 'Compiling facts profile. Synthesizing tailored cover letter. Running GroundednessVerifier (Passed: 100% verified facts, 0 hallucinations).', duration: 1800, stateClass: 'active', nodeStatusText: 'Generating...' },
-        { node: 'node-generation', tag: 'generation', status: 'Docs compiled', log: 'Tailored resume and cover letter successfully compiled and saved in memory.', duration: 500, stateClass: 'success', nodeStatusText: 'Ready' },
+        {
+          tag: 'generation',
+          log: 'Initializing parallel AI tasks: Resume Tailoring & Cover Letter Synthesizer...',
+          duration: 1800,
+          updates: [
+            { node: 'node-resume', stateClass: 'active', nodeStatusText: 'Tailoring...' },
+            { node: 'node-coverletter', stateClass: 'active', nodeStatusText: 'Synthesizing...' }
+          ]
+        },
+        {
+          tag: 'generation',
+          log: 'Groundedness check PASSED. Document generation tasks completed successfully.',
+          duration: 500,
+          updates: [
+            { node: 'node-resume', stateClass: 'success', nodeStatusText: 'Tailored' },
+            { node: 'node-coverletter', stateClass: 'success', nodeStatusText: 'Ready' }
+          ]
+        },
         
-        { node: 'node-autopilot', tag: 'autopilot', status: 'Submitting...', log: 'Initializing TypeScript Playwright headless worker. Launching browser. Filling form fields. Executing submission handlers...', duration: 2200, stateClass: 'active', nodeStatusText: 'Submitting...' },
-        { node: 'node-autopilot', tag: 'autopilot', status: 'Submitted', log: 'Application successfully submitted to Northstar Systems. Saved confirmation screenshot. Status updated to SUBMITTED.', duration: 1000, stateClass: 'success', nodeStatusText: 'Submitted' }
+        { node: 'node-autopilot', tag: 'autopilot', log: 'Launching headless Playwright browser. Navigating form and auto-filling contact fields and answers...', duration: 2200, stateClass: 'active', nodeStatusText: 'Submitting...' },
+        { node: 'node-autopilot', tag: 'autopilot', log: 'Form submitted. Captured confirmation screenshot. Autopilot workflow completed.', duration: 1000, stateClass: 'success', nodeStatusText: 'Submitted' }
       ]
     },
     shadow: {
       name: 'Shadow Mode (Pause for Review)',
       steps: [
-        { node: 'node-discovery', tag: 'discovery', status: 'Syncing Greenhouse feed...', log: 'Fetching new posts from Greenhouse board "google"...', duration: 1500, stateClass: 'active', nodeStatusText: 'Syncing...' },
-        { node: 'node-discovery', tag: 'discovery', status: '12 jobs found', log: 'Discovery completed. 12 potential roles loaded.', duration: 500, stateClass: 'success', nodeStatusText: '12 found' },
+        { node: 'node-discovery', tag: 'discovery', log: 'Fetching new posts from Greenhouse board...', duration: 1500, stateClass: 'active', nodeStatusText: 'Syncing...' },
+        { node: 'node-discovery', tag: 'discovery', log: 'Discovery completed. 12 potential roles loaded.', duration: 500, stateClass: 'success', nodeStatusText: '12 found' },
         
-        { node: 'node-matching', tag: 'matching', status: 'Scoring match...', log: 'Evaluating "Platform Engineer" at BrightLayer Health. Checking work auth (PASSED). Checking location preference (PASSED: Hybrid). Computing similarity score...', duration: 2000, stateClass: 'active', nodeStatusText: 'Scoring...' },
-        { node: 'node-matching', tag: 'matching', status: 'Score: 88 (Match)', log: 'Similarity: 0.88. Match score: 88/100 (Threshold: 85). MATCH VALIDATED.', duration: 500, stateClass: 'success', nodeStatusText: 'Match (88)' },
+        { node: 'node-matching', tag: 'matching', log: 'Evaluating "Platform Engineer" at BrightLayer Health. Checking work auth (PASSED) and location type (PASSED). Scoring vector distance...', duration: 2000, stateClass: 'active', nodeStatusText: 'Scoring...' },
+        { node: 'node-matching', tag: 'matching', log: 'Similarity score: 88/100 (Threshold: 85) -> Match confirmed.', duration: 500, stateClass: 'success', nodeStatusText: 'Match (88)' },
         
-        { node: 'node-generation', tag: 'generation', status: 'Generating docs...', log: 'Compiling facts. Synthesizing tailored cover letter. Running GroundednessVerifier (Passed).', duration: 1800, stateClass: 'active', nodeStatusText: 'Generating...' },
-        { node: 'node-generation', tag: 'generation', status: 'Docs compiled', log: 'Tailored resume and cover letter created.', duration: 500, stateClass: 'success', nodeStatusText: 'Ready' },
+        {
+          tag: 'generation',
+          log: 'Generating tailored materials in parallel...',
+          duration: 1800,
+          updates: [
+            { node: 'node-resume', stateClass: 'active', nodeStatusText: 'Tailoring...' },
+            { node: 'node-coverletter', stateClass: 'active', nodeStatusText: 'Synthesizing...' }
+          ]
+        },
+        {
+          tag: 'generation',
+          log: 'Resume and cover letter generated. Groundedness checks completed.',
+          duration: 500,
+          updates: [
+            { node: 'node-resume', stateClass: 'success', nodeStatusText: 'Tailored' },
+            { node: 'node-coverletter', stateClass: 'success', nodeStatusText: 'Ready' }
+          ]
+        },
         
-        { node: 'node-autopilot', tag: 'autopilot', status: 'Filling form (Shadow)...', log: 'Initializing Playwright worker in SHADOW mode. Launching browser. Filling form fields. Taking mock confirmation screenshot. Halting submission due to Shadow Mode active.', duration: 2200, stateClass: 'active', nodeStatusText: 'Filling...' },
-        { node: 'node-autopilot', tag: 'autopilot', status: 'Pending Review', log: 'Shadow run complete. Saved filled form preview. Halting for manual approval before clicking Submit.', duration: 1000, stateClass: 'warning', nodeStatusText: 'Pending' }
+        { node: 'node-autopilot', tag: 'autopilot', log: 'Running Playwright worker in Shadow mode. Filling Greenhouse form. Saving mock screenshot. Halting submission...', duration: 2200, stateClass: 'active', nodeStatusText: 'Filling...' },
+        { node: 'node-autopilot', tag: 'autopilot', log: 'Shadow run complete. Form screenshot saved. Pausing for user manual review.', duration: 1000, stateClass: 'warning', nodeStatusText: 'Pending' }
       ]
     },
     skipped: {
       name: 'Low Match Score (Skipped)',
       steps: [
-        { node: 'node-discovery', tag: 'discovery', status: 'Syncing Greenhouse feed...', log: 'Fetching new posts from Greenhouse board "google"...', duration: 1500, stateClass: 'active', nodeStatusText: 'Syncing...' },
-        { node: 'node-discovery', tag: 'discovery', status: '12 jobs found', log: 'Discovery completed. 12 potential roles loaded.', duration: 500, stateClass: 'success', nodeStatusText: '12 found' },
+        { node: 'node-discovery', tag: 'discovery', log: 'Fetching Greenhouse board posts...', duration: 1500, stateClass: 'active', nodeStatusText: 'Syncing...' },
+        { node: 'node-discovery', tag: 'discovery', log: 'Discovery completed. 12 potential roles loaded.', duration: 500, stateClass: 'success', nodeStatusText: '12 found' },
         
-        { node: 'node-matching', tag: 'matching', status: 'Scoring match...', log: 'Evaluating "Staff Java Engineer" at Atlas Grid. Checking seniority requirements (FAILED: Requires 10+ years experience, candidate has 6). Computing vector similarity...', duration: 2000, stateClass: 'active', nodeStatusText: 'Scoring...' },
-        { node: 'node-matching', tag: 'matching', status: 'Score: 74 (Skipped)', log: 'Match score: 74/100. Autonomy threshold is 85. Halting workflow. Application marked as SKIPPED.', duration: 1000, stateClass: 'warning', nodeStatusText: 'Skipped (74)' }
+        { node: 'node-matching', tag: 'matching', log: 'Evaluating "Staff Java Engineer" at Atlas Grid. Checking seniority limits (FAILED: Candidate has 6 years, role requires 10+).', duration: 2000, stateClass: 'active', nodeStatusText: 'Scoring...' },
+        { node: 'node-matching', tag: 'matching', log: 'Score: 74/100. (Threshold: 85). Autopilot policy: REJECT. Routing to skip path...', duration: 500, stateClass: 'success', nodeStatusText: 'Match (74)' },
+        
+        { node: 'node-filter', tag: 'matching', log: 'Application skipped: Match score below autonomy threshold (85). Marked in database as SKIPPED.', duration: 1000, stateClass: 'warning', nodeStatusText: 'Skipped (74)' }
       ]
     },
     blocked: {
       name: 'Blocklisted Company (Blocked)',
       steps: [
-        { node: 'node-discovery', tag: 'discovery', status: 'Syncing Greenhouse feed...', log: 'Fetching new posts...', duration: 1500, stateClass: 'active', nodeStatusText: 'Syncing...' },
-        { node: 'node-discovery', tag: 'discovery', status: '12 jobs found', log: 'Discovery completed.', duration: 500, stateClass: 'success', nodeStatusText: '12 found' },
+        { node: 'node-discovery', tag: 'discovery', log: 'Fetching new posts...', duration: 1500, stateClass: 'active', nodeStatusText: 'Syncing...' },
+        { node: 'node-discovery', tag: 'discovery', log: 'Discovery completed.', duration: 500, stateClass: 'success', nodeStatusText: '12 found' },
         
-        { node: 'node-matching', tag: 'matching', status: 'Checking blocklist...', log: 'Evaluating "Backend Lead" at BlockedCo. Checking company blocklist rules...', duration: 1500, stateClass: 'active', nodeStatusText: 'Checking...' },
-        { node: 'node-matching', tag: 'matching', status: 'Blocked Company', log: 'MATCH FAILURE: Company "BlockedCo" matches blacklisted keyword rules. Halting workflow immediately. Status marked as BLOCKED.', duration: 1000, stateClass: 'blocked', nodeStatusText: 'Blocked' }
+        { node: 'node-matching', tag: 'matching', log: 'Evaluating "Backend Lead" at BlockedCo. Checking company blocklist rules...', duration: 1500, stateClass: 'active', nodeStatusText: 'Checking...' },
+        { node: 'node-matching', tag: 'matching', log: 'MATCH FAILURE: Company "BlockedCo" matches blacklisted keyword rules. Routing to block path...', duration: 500, stateClass: 'success', nodeStatusText: 'Match (0)' },
+        
+        { node: 'node-filter', tag: 'matching', log: 'Application blocked: Company "BlockedCo" is blocklisted. Marked in database as BLOCKED.', duration: 1000, stateClass: 'blocked', nodeStatusText: 'Blocked' }
       ]
     }
   };
@@ -68,13 +104,16 @@
   // Render curved lines connecting input/output ports of nodes dynamically
   function updateConnections() {
     const canvas = document.querySelector('.workflow-canvas');
-    if (!canvas || canvas.offsetParent === null) return; // Hidden or not rendered
+    if (!canvas || canvas.offsetParent === null) return;
 
     const canvasRect = canvas.getBoundingClientRect();
     const connections = [
       { from: 'node-discovery', to: 'node-matching', pathId: 'wf-path-disc-match', pulseId: 'wf-pulse-disc-match' },
-      { from: 'node-matching', to: 'node-generation', pathId: 'wf-path-match-gen', pulseId: 'wf-pulse-match-gen' },
-      { from: 'node-generation', to: 'node-autopilot', pathId: 'wf-path-gen-auto', pulseId: 'wf-pulse-gen-auto' }
+      { from: 'node-matching', to: 'node-resume', pathId: 'wf-path-match-resume', pulseId: 'wf-pulse-match-resume' },
+      { from: 'node-matching', to: 'node-coverletter', pathId: 'wf-path-match-cover', pulseId: 'wf-pulse-match-cover' },
+      { from: 'node-matching', to: 'node-filter', pathId: 'wf-path-match-filter', pulseId: 'wf-pulse-match-filter' },
+      { from: 'node-resume', to: 'node-autopilot', pathId: 'wf-path-resume-auto', pulseId: 'wf-pulse-resume-auto' },
+      { from: 'node-coverletter', to: 'node-autopilot', pathId: 'wf-path-cover-auto', pulseId: 'wf-pulse-cover-auto' }
     ];
 
     connections.forEach(conn => {
@@ -102,21 +141,22 @@
           pathEl.setAttribute('d', d);
           if (pulseEl) pulseEl.setAttribute('d', d);
           
-          // Sync connection colors based on node statuses
           const fromState = fromEl.className;
+          const toState = toEl.className;
           pathEl.className.baseVal = 'workflow-path';
           if (pulseEl) pulseEl.className.baseVal = 'workflow-pulse';
 
           if (fromState.includes('success')) {
-            // Check target state to set success or active line
-            const toState = toEl.className;
-            if (toState.includes('success') || toState.includes('warning') || toState.includes('blocked')) {
-              pathEl.classList.add(toState.includes('success') ? 'success' : (toState.includes('blocked') ? 'blocked' : 'warning'));
+            if (toState.includes('success')) {
+              pathEl.classList.add('success');
             } else if (toState.includes('active')) {
               pathEl.classList.add('active');
               if (pulseEl) pulseEl.classList.add('active');
+            } else if (toState.includes('blocked')) {
+              pathEl.classList.add('blocked');
+            } else if (toState.includes('warning')) {
+              pathEl.classList.add('warning');
             } else {
-              // from is success, target is idle/pending
               pathEl.classList.add('success');
             }
           } else if (fromState.includes('active')) {
@@ -183,30 +223,31 @@
       }
 
       const step = steps[currentStepIndex];
-      const nodeEl = document.getElementById(step.node);
+      const updates = step.updates || [step];
 
-      if (nodeEl) {
-        // Set state class
-        if (step.stateClass === 'active') {
-          nodeEl.className = 'workflow-node active';
-          nodeEl.querySelector('.node-status-badge').innerHTML = '<div class="node-spinner"></div>';
-        } else if (step.stateClass === 'success') {
-          nodeEl.className = 'workflow-node success';
-          nodeEl.querySelector('.node-status-badge').innerHTML = '<i data-lucide="check-circle-2" class="icon-xs" style="color:var(--accent-green)"></i>';
-        } else if (step.stateClass === 'warning') {
-          nodeEl.className = 'workflow-node warning';
-          nodeEl.querySelector('.node-status-badge').innerHTML = '<i data-lucide="alert-triangle" class="icon-xs" style="color:var(--accent-yellow)"></i>';
-        } else if (step.stateClass === 'blocked') {
-          nodeEl.className = 'workflow-node blocked';
-          nodeEl.querySelector('.node-status-badge').innerHTML = '<i data-lucide="slash" class="icon-xs" style="color:var(--accent-red)"></i>';
+      updates.forEach(up => {
+        const nodeEl = document.getElementById(up.node);
+        if (nodeEl) {
+          if (up.stateClass === 'active') {
+            nodeEl.className = 'workflow-node active';
+            nodeEl.querySelector('.node-status-badge').innerHTML = '<div class="node-spinner"></div>';
+          } else if (up.stateClass === 'success') {
+            nodeEl.className = 'workflow-node success';
+            nodeEl.querySelector('.node-status-badge').innerHTML = '<i data-lucide="check-circle-2" class="icon-xs" style="color:var(--accent-green)"></i>';
+          } else if (up.stateClass === 'warning') {
+            nodeEl.className = 'workflow-node warning';
+            nodeEl.querySelector('.node-status-badge').innerHTML = '<i data-lucide="alert-triangle" class="icon-xs" style="color:var(--accent-yellow)"></i>';
+          } else if (up.stateClass === 'blocked') {
+            nodeEl.className = 'workflow-node blocked';
+            nodeEl.querySelector('.node-status-badge').innerHTML = '<i data-lucide="slash" class="icon-xs" style="color:var(--accent-red)"></i>';
+          }
+          nodeEl.querySelector('.node-status').textContent = up.nodeStatusText || 'Idle';
         }
+      });
 
-        nodeEl.querySelector('.node-status').textContent = step.nodeStatusText;
-        if (window.lucide) window.lucide.createIcons();
-        
-        addConsoleLog(step.tag, step.log);
-        updateConnections();
-      }
+      if (window.lucide) window.lucide.createIcons();
+      if (step.log) addConsoleLog(step.tag || 'system', step.log);
+      updateConnections();
 
       currentStepIndex++;
       activeTimeout = setTimeout(executeNextStep, step.duration);
@@ -224,15 +265,14 @@
     function cycle() {
       if (!isSimulating) {
         runScenario(keys[index]);
-        // Update scenario dropdown selection
         const selector = document.getElementById('wfScenarioSelect');
         if (selector) selector.value = keys[index];
         index = (index + 1) % keys.length;
       }
     }
 
-    cycle(); // Initial run immediately
-    autoCycleInterval = setInterval(cycle, 14000); // Cycle every 14 seconds (sim durations total ~8-9s)
+    cycle();
+    autoCycleInterval = setInterval(cycle, 15000);
   }
 
   function stopAutoCycle() {
@@ -240,6 +280,153 @@
       clearInterval(autoCycleInterval);
       autoCycleInterval = null;
     }
+  }
+
+  // Live Mode: updates nodes and logs dynamically based on actual database records
+  function updateWorkflowFromRealData(apps) {
+    const selector = document.getElementById('wfScenarioSelect');
+    if (!selector || selector.value !== 'live') return;
+
+    resetCanvas();
+    const consoleBody = document.getElementById('wfConsoleBody');
+    if (consoleBody) consoleBody.innerHTML = '';
+
+    if (!apps || apps.length === 0) {
+      addConsoleLog('system', 'Monitoring live system... No active job applications found.');
+      updateConnections();
+      return;
+    }
+
+    const latestApp = apps[0];
+    const status = latestApp.status ? latestApp.status.toLowerCase() : 'ready';
+    const score = latestApp.matchScore ?? 0;
+
+    // Node elements references
+    const discNode = document.getElementById('node-discovery');
+    const matchNode = document.getElementById('node-matching');
+    const resumeNode = document.getElementById('node-resume');
+    const coverNode = document.getElementById('node-coverletter');
+    const filterNode = document.getElementById('node-filter');
+    const autoNode = document.getElementById('node-autopilot');
+
+    // 1. Discovery node is always green success (since we fetched application list)
+    discNode.className = 'workflow-node success';
+    discNode.querySelector('.node-status').textContent = 'Completed';
+    discNode.querySelector('.node-status-badge').innerHTML = '<i data-lucide="check-circle-2" class="icon-xs" style="color:var(--accent-green)"></i>';
+
+    // 2. Matching Node
+    matchNode.className = 'workflow-node success';
+    matchNode.querySelector('.node-status').textContent = `Match (${score})`;
+    matchNode.querySelector('.node-status-badge').innerHTML = '<i data-lucide="check-circle-2" class="icon-xs" style="color:var(--accent-green)"></i>';
+
+    // 3. Status logic
+    if (status === 'blocked' || status === 'skipped') {
+      // Route to filter node
+      const isBlocked = status === 'blocked';
+      filterNode.className = `workflow-node ${isBlocked ? 'blocked' : 'warning'}`;
+      filterNode.querySelector('.node-status').textContent = isBlocked ? 'Blocked' : 'Skipped';
+      filterNode.querySelector('.node-status-badge').innerHTML = isBlocked ? 
+        '<i data-lucide="slash" class="icon-xs" style="color:var(--accent-red)"></i>' :
+        '<i data-lucide="alert-triangle" class="icon-xs" style="color:var(--accent-yellow)"></i>';
+      
+      resumeNode.className = 'workflow-node';
+      coverNode.className = 'workflow-node';
+      autoNode.className = 'workflow-node';
+    } else {
+      // Normal flow (queued, generating, verifying, ready, submitted, failed)
+      if (status === 'queued' || status === 'generating' || status === 'verifying') {
+        resumeNode.className = 'workflow-node active';
+        resumeNode.querySelector('.node-status').textContent = 'Tailoring...';
+        resumeNode.querySelector('.node-status-badge').innerHTML = '<div class="node-spinner"></div>';
+
+        coverNode.className = 'workflow-node active';
+        coverNode.querySelector('.node-status').textContent = 'Synthesizing...';
+        coverNode.querySelector('.node-status-badge').innerHTML = '<div class="node-spinner"></div>';
+
+        autoNode.className = 'workflow-node';
+      } else {
+        // ready, submitted, failed
+        resumeNode.className = 'workflow-node success';
+        resumeNode.querySelector('.node-status').textContent = 'Tailored';
+        resumeNode.querySelector('.node-status-badge').innerHTML = '<i data-lucide="check-circle-2" class="icon-xs" style="color:var(--accent-green)"></i>';
+
+        coverNode.className = 'workflow-node success';
+        coverNode.querySelector('.node-status').textContent = 'Ready';
+        coverNode.querySelector('.node-status-badge').innerHTML = '<i data-lucide="check-circle-2" class="icon-xs" style="color:var(--accent-green)"></i>';
+
+        if (status === 'ready') {
+          autoNode.className = 'workflow-node warning';
+          autoNode.querySelector('.node-status').textContent = 'Pending Review';
+          autoNode.querySelector('.node-status-badge').innerHTML = '<i data-lucide="alert-triangle" class="icon-xs" style="color:var(--accent-yellow)"></i>';
+        } else if (status === 'submitted') {
+          autoNode.className = 'workflow-node success';
+          autoNode.querySelector('.node-status').textContent = 'Submitted';
+          autoNode.querySelector('.node-status-badge').innerHTML = '<i data-lucide="check-circle-2" class="icon-xs" style="color:var(--accent-green)"></i>';
+        } else if (status === 'failed') {
+          autoNode.className = 'workflow-node blocked';
+          autoNode.querySelector('.node-status').textContent = 'Failed';
+          autoNode.querySelector('.node-status-badge').innerHTML = '<i data-lucide="slash" class="icon-xs" style="color:var(--accent-red)"></i>';
+        }
+      }
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+
+    // 4. Render real audit trail logs
+    const audit = latestApp.auditTrail || [];
+    if (audit.length === 0) {
+      addConsoleLog('system', `Live monitoring: "${latestApp.company}" (Role: ${latestApp.title}). Status: ${status.toUpperCase()}`);
+    } else {
+      audit.forEach(entry => {
+        let msg = entry;
+        let tsStr = new Date().toLocaleTimeString();
+        if (entry.startsWith('[')) {
+          const closeIdx = entry.indexOf(']');
+          if (closeIdx !== -1) {
+            const timePart = entry.substring(1, closeIdx);
+            try {
+              tsStr = new Date(timePart).toLocaleTimeString();
+            } catch (e) {}
+            msg = entry.substring(closeIdx + 1).trim();
+          }
+        }
+        
+        // classify tag
+        let tag = 'system';
+        const lowerMsg = msg.toLowerCase();
+        if (lowerMsg.includes('greenhouse') || lowerMsg.includes('sync') || lowerMsg.includes('discovery') || lowerMsg.includes('feed')) {
+          tag = 'discovery';
+        } else if (lowerMsg.includes('matching') || lowerMsg.includes('score') || lowerMsg.includes('autonomy') || lowerMsg.includes('threshold')) {
+          tag = 'matching';
+        } else if (lowerMsg.includes('groundedness') || lowerMsg.includes('generation') || lowerMsg.includes('resume') || lowerMsg.includes('cover letter')) {
+          tag = 'generation';
+        } else if (lowerMsg.includes('playwright') || lowerMsg.includes('worker') || lowerMsg.includes('submitted') || lowerMsg.includes('shadow')) {
+          tag = 'autopilot';
+        }
+
+        const line = document.createElement('div');
+        line.className = 'console-line';
+        line.innerHTML = `
+          <span class="console-ts">${tsStr}</span>
+          <span class="console-tag ${tag}">${tag}</span>
+          <span class="console-msg">${escHtml(msg)}</span>
+        `;
+        if (consoleBody) consoleBody.appendChild(line);
+      });
+      if (consoleBody) consoleBody.scrollTop = consoleBody.scrollHeight;
+    }
+
+    updateConnections();
+  }
+
+  // Security helper: escape HTML
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   // Setup DOM wiring
@@ -253,28 +440,50 @@
         if (autoCheckbox && autoCheckbox.checked) {
           autoCheckbox.checked = false;
           stopAutoCycle();
-          addConsoleLog('system', 'Auto-cycle disabled via manual trigger.');
         }
-        runScenario(scenarioSelect.value);
+        if (scenarioSelect.value === 'live') {
+          if (typeof window.refreshApplications === 'function') {
+            window.refreshApplications();
+          }
+        } else {
+          runScenario(scenarioSelect.value);
+        }
+      });
+    }
+
+    if (scenarioSelect) {
+      scenarioSelect.addEventListener('change', (e) => {
+        if (e.target.value === 'live') {
+          if (autoCheckbox) autoCheckbox.checked = false;
+          stopAutoCycle();
+          
+          const currentApps = (typeof appState !== 'undefined') ? appState.applications : [];
+          updateWorkflowFromRealData(currentApps);
+        } else {
+          runScenario(e.target.value);
+        }
       });
     }
 
     if (autoCheckbox) {
       autoCheckbox.addEventListener('change', (e) => {
         if (e.target.checked) {
+          if (scenarioSelect && scenarioSelect.value === 'live') {
+            scenarioSelect.value = 'happy';
+          }
           startAutoCycle();
         } else {
           stopAutoCycle();
-          addConsoleLog('system', 'Auto-cycle disabled.');
         }
       });
     }
 
-    // Interactivity: clicking a node switches pages/tabs
     const nodeRoutes = {
       'node-discovery': 'discovery',
       'node-matching': 'matching',
-      'node-generation': 'generation',
+      'node-resume': 'generation',
+      'node-coverletter': 'generation',
+      'node-filter': 'applications',
       'node-autopilot': 'automation'
     };
 
@@ -289,24 +498,24 @@
       }
     });
 
-    // Handle initial drawing and resize
     window.addEventListener('resize', updateConnections);
     
-    // Draw initial lines
+    // Initial draw delay to let layout settle
     setTimeout(() => {
       updateConnections();
-      if (autoCheckbox && autoCheckbox.checked) {
-        startAutoCycle();
+      if (scenarioSelect && scenarioSelect.value === 'live') {
+        const currentApps = (typeof appState !== 'undefined') ? appState.applications : [];
+        updateWorkflowFromRealData(currentApps);
       } else {
         runScenario('happy');
       }
     }, 100);
   }
 
-  // Make updateConnections accessible globally so app.js can trigger it when showing automation tab
+  // Publish global helpers
   window.updateWorkflowConnections = updateConnections;
+  window.updateWorkflowFromRealData = updateWorkflowFromRealData;
 
-  // Auto-init when DOM is loaded or when app.js manually flags
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initWorkflow);
   } else {

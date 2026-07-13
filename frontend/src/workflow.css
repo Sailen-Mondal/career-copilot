@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Career Copilot — Automation Workflow Canvas Styles (n8n Style)
+   Career Copilot — Automation Workflow Canvas Styles (Option B Branching)
    ═══════════════════════════════════════════════════════════ */
 
 /* Canvas Wrapper */
@@ -61,11 +61,11 @@
   cursor: pointer;
 }
 
-/* Canvas Editor Area */
+/* Canvas Editor Area (Height adjusted to 340px for branching flowchart spacing) */
 .workflow-canvas {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 340px;
   background-color: var(--bg-app);
   background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 16px 16px;

@@ -389,6 +389,11 @@ function renderApplications(apps) {
       updateInspectorDetails(app);
     }
   }
+
+  // Update live workflow canvas with real database records
+  if (typeof window.updateWorkflowFromRealData === 'function') {
+    window.updateWorkflowFromRealData(apps);
+  }
 }
 
 // ── Render: Live Reasoning Timeline (Brand Identity) ─────────────────────────
