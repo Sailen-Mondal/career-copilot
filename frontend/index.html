@@ -6,11 +6,13 @@
     <title>Career Copilot — AI Job Application Dashboard</title>
     <meta name="description" content="Career Copilot: AI-powered autonomous job application dashboard. Monitor, control, and audit your automated job search in real time.">
     <meta name="theme-color" content="#0B0B0C">
+    <link rel="icon" type="image/png" href="logo.png">
     <!-- Preconnect for Google Fonts performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="src/styles.css">
+    <link rel="stylesheet" href="src/workflow.css">
   </head>
   <body>
 
@@ -20,11 +22,7 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
           <div class="sidebar-logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <rect width="24" height="24" rx="6" fill="#5B8CFF"/>
-              <path d="M7 15 L12 7 L17 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="12" cy="18" r="1.5" fill="white"/>
-            </svg>
+            <img src="logo.png" alt="Career Copilot Logo" class="brand-logo-img">
           </div>
           <div class="sidebar-brand-text">
             <span class="sidebar-brand-name">Career Copilot</span>
@@ -313,6 +311,112 @@
                 <i data-lucide="moon" class="icon-sm" aria-hidden="true"></i>
                 Shadow Mode
               </button>
+            </div>
+          </section>
+
+          <!-- ── Automation Workflow Canvas Section ── -->
+          <section id="automation-canvas-section" class="card" aria-label="Automation workflow canvas" style="display: none; padding: 24px;">
+            <div class="workflow-header-row">
+              <div>
+                <h2 class="workflow-section-title">Live Automation Stream</h2>
+                <p class="workflow-section-desc">Real-time trace of active agent operations and process coordination.</p>
+              </div>
+              <div class="workflow-controls">
+                <label class="workflow-checkbox-label">
+                  <input type="checkbox" id="wfAutoCycle" class="workflow-checkbox" checked>
+                  <span>Auto-run scenarios</span>
+                </label>
+                <select id="wfScenarioSelect" class="workflow-select" aria-label="Select simulation scenario">
+                  <option value="happy">Happy Path (Direct Submit)</option>
+                  <option value="shadow">Shadow Mode (Pause for Review)</option>
+                  <option value="skipped">Low Match Score (Skipped)</option>
+                  <option value="blocked">Blocklisted Company (Blocked)</option>
+                </select>
+                <button id="wfTriggerRun" type="button" class="btn btn-primary" style="padding: 6px 14px;">Run Simulation</button>
+              </div>
+            </div>
+
+            <div style="width: 100%; overflow-x: auto;">
+              <div class="workflow-canvas">
+                <svg class="workflow-connections">
+                  <path id="wf-path-disc-match" class="workflow-path"></path>
+                  <path id="wf-path-match-gen" class="workflow-path"></path>
+                  <path id="wf-path-gen-auto" class="workflow-path"></path>
+
+                  <path id="wf-pulse-disc-match" class="workflow-pulse"></path>
+                  <path id="wf-pulse-match-gen" class="workflow-pulse"></path>
+                  <path id="wf-pulse-gen-auto" class="workflow-pulse"></path>
+                </svg>
+
+                <div class="workflow-node" id="node-discovery" style="left: 16%; top: 50%;">
+                  <div class="node-icon-circle">
+                    <i data-lucide="search" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Job Discovery</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                  <div class="node-port node-port-output"></div>
+                </div>
+
+                <div class="workflow-node" id="node-matching" style="left: 39%; top: 50%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="git-compare-arrows" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">AI Matching</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                  <div class="node-port node-port-output"></div>
+                </div>
+
+                <div class="workflow-node" id="node-generation" style="left: 61%; top: 50%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="sparkles" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">AI Document Gen</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                  <div class="node-port node-port-output"></div>
+                </div>
+
+                <div class="workflow-node" id="node-autopilot" style="left: 84%; top: 50%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="bot" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Autopilot Submit</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="workflow-console">
+              <div class="workflow-console-header">
+                <div class="workflow-console-dot-row">
+                  <span class="console-dot red"></span>
+                  <span class="console-dot yellow"></span>
+                  <span class="console-dot green"></span>
+                </div>
+                <span class="workflow-console-title">Live Execution Logs</span>
+                <span style="font-size: 10px; color: var(--text-disabled);">bash</span>
+              </div>
+              <div class="workflow-console-body" id="wfConsoleBody">
+                <div class="console-line">
+                  <span class="console-ts">13:34:08</span>
+                  <span class="console-tag system">system</span>
+                  <span class="console-msg">System initialized. Click "Run Simulation" or enable "Auto-run scenarios" to start stream simulation.</span>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -2033,7 +2137,7 @@ I look forward to discussing how my skills match your requirements.</pre>
             <div class="ai-brand-badge">
               <div class="ai-pulse-ring"></div>
               <div class="ai-icon-circle">
-                <i data-lucide="bot-message-square" class="ai-badge-icon"></i>
+                <img src="logo.png" class="ai-badge-logo-img" alt="Career Copilot Logo">
               </div>
             </div>
             <p class="inspector-empty-title">AI Autopilot Active</p>
@@ -2186,6 +2290,7 @@ I look forward to discussing how my skills match your requirements.</pre>
 
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    <script src="src/workflow.js" defer></script>
     <script src="src/app.js"></script>
   </body>
 </html>

@@ -178,6 +178,7 @@ const els = {
   generationSection:      $('generation-section'),
   profileSection:         $('profile-section'),
   settingsSection:        $('settings-section'),
+  automationCanvasSection: $('automation-canvas-section'),
   discoveredJobRows:      $('discoveredJobRows'),
   syncBoardInput:         $('syncBoardInput'),
   triggerSyncBtn:         $('triggerSyncBtn'),
@@ -988,6 +989,7 @@ function handleNavigation(viewId, settingsTabId = null) {
     els.generationSection.style.display = 'none';
     els.profileSection.style.display = 'none';
     els.settingsSection.style.display = 'none';
+    if (els.automationCanvasSection) els.automationCanvasSection.style.display = 'none';
   };
 
   // Hide/show elements based on active view
@@ -1011,6 +1013,10 @@ function handleNavigation(viewId, settingsTabId = null) {
     document.querySelector('.controls-panel').style.display = '';
     document.querySelector('#applications-section').style.display = 'none';
     document.querySelector('#audit-section').style.display = 'none';
+    if (els.automationCanvasSection) els.automationCanvasSection.style.display = '';
+    if (typeof window.updateWorkflowConnections === 'function') {
+      setTimeout(window.updateWorkflowConnections, 50);
+    }
   } else if (viewId === 'audit') {
     els.pageSubtitle.textContent = 'System events and execution logs';
     hideCustomViews();
