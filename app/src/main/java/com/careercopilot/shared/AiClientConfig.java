@@ -34,4 +34,12 @@ public class AiClientConfig {
     public EmbeddingClient mockEmbeddingClient() {
         return new MockEmbeddingClient();
     }
+
+    /**
+     * Registers a fallback RestClient.Builder bean if not auto-configured.
+     */
+    @Bean
+    public org.springframework.web.client.RestClient.Builder restClientBuilder() {
+        return org.springframework.web.client.RestClient.builder();
+    }
 }
