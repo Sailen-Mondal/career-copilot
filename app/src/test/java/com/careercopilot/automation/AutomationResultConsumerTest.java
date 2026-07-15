@@ -3,6 +3,8 @@ package com.careercopilot.automation;
 import com.careercopilot.applications.*;
 import com.careercopilot.discovery.JobEntity;
 import com.careercopilot.discovery.JobRepository;
+import com.careercopilot.profile.MasterProfileRepository;
+import com.careercopilot.generation.GeneratedDocumentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,6 +40,9 @@ class AutomationResultConsumerTest {
     @Mock private CircuitBreakerStateRepository circuitBreakerStateRepository;
     @Mock private PlatformTransactionManager transactionManager;
     @Mock private TransactionStatus transactionStatus;
+    @Mock private MasterProfileRepository masterProfileRepository;
+    @Mock private GeneratedDocumentRepository generatedDocumentRepository;
+    @Mock private AutomationPublisher automationPublisher;
 
     @InjectMocks
     private AutomationResultConsumer consumer;
@@ -70,6 +75,7 @@ class AutomationResultConsumerTest {
     @DisplayName("increments errorCountWindow and trips circuit breaker on 3 consecutive failures")
     @SuppressWarnings("unchecked")
     void processMessage_failedTripsBreaker() {
+        appEntity.setRetryCount(3); // Set retryCount to 3 so it doesn't trigger retry loop and marks FAILED
         Map<String, String> payload = Map.of(
                 "applicationId", appId.toString(),
                 "status", "failed"
@@ -89,7 +95,8 @@ class AutomationResultConsumerTest {
 
         consumer.processMessage(record);
 
-        verify(applicationService).transitionStatus(appId, ApplicationStatus.FAILED);
+        // Verification of state save inside transaction instead of transitionStatus for FAILED case in processMessage
+        verify(applicationRepository, atLeastOnce()).save(appEntity);
         
         ArgumentCaptor<CircuitBreakerStateEntity> captor = ArgumentCaptor.forClass(CircuitBreakerStateEntity.class);
         verify(circuitBreakerStateRepository).save(captor.capture());

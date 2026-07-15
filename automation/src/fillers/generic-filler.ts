@@ -180,7 +180,7 @@ export async function genericFill(
         continue;
       }
 
-      if (field.type !== 'file' && !(await locator.isVisible())) {
+      if (!(await locator.isVisible())) {
         unsupportedFields.push(field.identifier);
         logs.push(`[generic] SKIP (hidden): ${field.identifier}`);
         continue;

@@ -103,11 +103,11 @@ class SchemaIntegrationTest {
     }
 
     @Test
-    @DisplayName("Flyway schema_history table has exactly five applied migrations")
-    void flywayAppliedExactlyFiveMigrations() {
+    @DisplayName("Flyway schema_history table has exactly seven applied migrations")
+    void flywayAppliedExactlySevenMigrations() {
         Integer migrationCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM flyway_schema_history WHERE success = true",
                 Integer.class);
-        assertThat(migrationCount).as("Expected exactly five successful Flyway migrations").isEqualTo(5);
+        assertThat(migrationCount).as("Expected exactly seven successful Flyway migrations").isEqualTo(7);
     }
 }

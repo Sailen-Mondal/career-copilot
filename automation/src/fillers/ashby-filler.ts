@@ -87,7 +87,7 @@ export async function ashbyFill(
   for (const fi of fileInputs.slice(1)) {
     try {
       const label = await page.locator(`label[for="${await fi.getAttribute('id')}"]`).first().textContent().catch(() => '');
-      if (/cover/i.test(label)) {
+      if (/cover/i.test(label || '')) {
         await fi.setInputFiles(coverLetterPath);
         fieldsFilled.push('cover_letter_upload');
         logs.push('[ashby] uploaded cover letter');
