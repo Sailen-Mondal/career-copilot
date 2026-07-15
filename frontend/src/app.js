@@ -510,6 +510,7 @@ function updateInspectorDetails(app) {
             alert('Could not retrieve document content. Make sure generation succeeded.');
           }
         });
+      });
     }
   }
 
