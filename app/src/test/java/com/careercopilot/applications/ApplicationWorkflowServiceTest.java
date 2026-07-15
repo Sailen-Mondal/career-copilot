@@ -15,6 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.time.Instant;
 import java.util.*;
@@ -39,6 +41,8 @@ class ApplicationWorkflowServiceTest {
     @Mock private KillSwitchService killSwitchService;
     @Mock private org.springframework.transaction.PlatformTransactionManager transactionManager;
     @Mock private org.springframework.transaction.TransactionStatus transactionStatus;
+    @Mock private StringRedisTemplate redisTemplate;
+    @Mock private ValueOperations<String, String> valueOperations;
 
     @InjectMocks
     private ApplicationWorkflowService workflowService;
@@ -52,6 +56,8 @@ class ApplicationWorkflowServiceTest {
     @BeforeEach
     void setUp() {
         lenient().when(transactionManager.getTransaction(any())).thenReturn(transactionStatus);
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(valueOperations.get(anyString())).thenReturn("false");
         jobId = UUID.randomUUID();
         profileId = UUID.randomUUID();
 
