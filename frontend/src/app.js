@@ -162,6 +162,7 @@ const els = {
   inspectorReason:        $('inspectorReason'),
   inspectorTime:          $('inspectorTime'),
   inspectorFacts:         $('inspectorFacts'),
+  inspectorAuditTrail:    $('inspectorAuditTrail'),
   liveTimeline:           $('liveTimeline'),
 
   // Command Palette
@@ -509,9 +510,21 @@ function updateInspectorDetails(app) {
             alert('Could not retrieve document content. Make sure generation succeeded.');
           }
         });
-      });
     }
   }
+
+  // Render application audit trail
+  if (els.inspectorAuditTrail) {
+    const trail = app.auditTrail ?? [];
+    if (trail.length === 0) {
+      els.inspectorAuditTrail.innerHTML = `<li style="padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); color: var(--text-muted);">No audit trail recorded.</li>`;
+    } else {
+      els.inspectorAuditTrail.innerHTML = trail.map(entry => {
+        return `<li style="padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05);">${escHtml(entry)}</li>`;
+      }).join('');
+    }
+  }
+
   if (window.lucide) window.lucide.createIcons();
 }
 

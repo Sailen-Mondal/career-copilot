@@ -63,6 +63,12 @@ public class ApplicationEntity {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
+    @Column(name = "retry_count", nullable = false)
+    private int retryCount = 0;
+
+    @Column(name = "last_error")
+    private String lastError;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "groundedness_report", nullable = false, columnDefinition = "jsonb")
     private Map<String, Object> groundednessReport;
@@ -117,6 +123,12 @@ public class ApplicationEntity {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public int getRetryCount() { return retryCount; }
+    public void setRetryCount(int retryCount) { this.retryCount = retryCount; }
+
+    public String getLastError() { return lastError; }
+    public void setLastError(String lastError) { this.lastError = lastError; }
 
     public Map<String, Object> getGroundednessReport() { return groundednessReport; }
     public void setGroundednessReport(Map<String, Object> groundednessReport) { this.groundednessReport = groundednessReport; }
