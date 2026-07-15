@@ -1,6 +1,26 @@
 ---
 name: vercel-react-best-practices
-description: React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements.
+description: |
+  Apply React and Next.js performance optimization guidelines from Vercel Engineering.
+  Covers 45 rules across 8 priority categories to eliminate waterfalls, reduce bundle size,
+  optimize server components, and improve rendering performance.
+
+  Use this skill when:
+  - Writing, reviewing, or refactoring React components or Next.js pages
+  - Diagnosing slow page loads, large bundle sizes, or poor Core Web Vitals
+  - Implementing data fetching: Server Components, Client Components, SWR, React Query
+  - Optimizing imports to reduce bundle size (barrel files, dynamic imports, tree shaking)
+  - Eliminating request waterfalls with Promise.all, Suspense, or parallel fetching
+  - Reviewing re-render performance: useMemo, useCallback, memo, derived state
+  - Building for production: SSR, SSG, ISR, streaming, React Server Components
+  - User mentions "performance", "bundle size", "Lighthouse", "Core Web Vitals", "LCP", "FID"
+  - User says "optimize this", "this is slow", "reduce bundle", "lazy load"
+
+  Do NOT use for non-React/non-Next.js projects.
+
+  Keywords: React, Next.js, performance, bundle size, waterfall, SSR, RSC, Server Component,
+  Client Component, Suspense, dynamic import, barrel file, useMemo, useCallback, memo,
+  SWR, data fetching, streaming, Core Web Vitals, Lighthouse, optimization, re-render
 license: MIT
 metadata:
   author: vercel

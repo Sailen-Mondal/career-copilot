@@ -1,6 +1,27 @@
 ---
 name: mysql
-description: Plan and review MySQL/InnoDB schema, indexing, query tuning, transactions, and operations. Use when creating or modifying MySQL tables, indexes, or queries; diagnosing slow/locking behavior; planning migrations; or troubleshooting replication and connection issues. Load when using a MySQL database.
+description: |
+  MySQL and InnoDB database design, query optimization, indexing, transactions, locking,
+  and operational best practices for production systems.
+
+  Use this skill when:
+  - Working with MySQL, MariaDB, InnoDB, or any MySQL-compatible database
+  - Designing or reviewing database schema: tables, primary keys, data types, ENUMs
+  - Writing or optimizing SQL queries, JOINs, GROUP BY, ORDER BY, pagination
+  - Diagnosing slow queries, missing indexes, EXPLAIN output analysis
+  - Managing indexes: composite, covering, prefix, fulltext
+  - Dealing with deadlocks, lock contention, row locking issues, gap locks
+  - Tuning transactions: isolation levels, REPEATABLE READ, READ COMMITTED
+  - Planning schema migrations with online DDL (ALGORITHM=INPLACE/INSTANT)
+  - Troubleshooting connection pool exhaustion, max_connections
+  - Monitoring replication lag, binlog, replica drift
+  - Partitioning large tables (time-series, high-volume OLTP)
+
+  Do NOT use for PostgreSQL (use postgres skill) or non-relational databases.
+
+  Keywords: MySQL, MariaDB, InnoDB, SQL, database, query, slow query, EXPLAIN,
+  index, schema, migration, connection, pool, deadlock, transaction, replication,
+  partition, performance, optimization, ALTER TABLE, foreign key, DDL, ORM
 ---
 
 # MySQL

@@ -166,6 +166,7 @@ public class AutomationResultConsumer implements ApplicationListener<Application
             ApplicationStatus appStatus = switch (status) {
                 case "shadow_completed" -> ApplicationStatus.READY;
                 case "submitted" -> ApplicationStatus.SUBMITTED;
+                case "verifying" -> ApplicationStatus.VERIFYING;
                 case "failed" -> ApplicationStatus.FAILED;
                 default -> ApplicationStatus.BLOCKED;
             };

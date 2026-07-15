@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
@@ -38,6 +39,7 @@ public class ApplicationWorkflowService {
     private final AutomationPublisher automationPublisher;
     private final KillSwitchService killSwitchService;
     private final TransactionTemplate transactionTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     public ApplicationWorkflowService(
             ApplicationRepository applicationRepository,
@@ -49,7 +51,8 @@ public class ApplicationWorkflowService {
             CircuitBreakerStateRepository circuitBreakerStateRepository,
             AutomationPublisher automationPublisher,
             KillSwitchService killSwitchService,
-            PlatformTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager,
+            StringRedisTemplate redisTemplate) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.masterProfileRepository = masterProfileRepository;
@@ -60,6 +63,7 @@ public class ApplicationWorkflowService {
         this.automationPublisher = automationPublisher;
         this.killSwitchService = killSwitchService;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
+        this.redisTemplate = redisTemplate;
     }
 
     public ApplicationEntity runWorkflow(UUID jobId, UUID profileId) {
@@ -232,7 +236,7 @@ public class ApplicationWorkflowService {
                     AutomationCommand command = new AutomationCommand(
                             applicationId.toString(),
                             jobEntity.getUrl(),
-                            "shadow",
+                            "false".equalsIgnoreCase(redisTemplate.opsForValue().get("cc:automation:shadow-mode")) ? "live" : "shadow",
                             profileId.toString(),
                             resumeIdStr,
                             finalResumeDoc != null ? finalResumeDoc.content() : "",

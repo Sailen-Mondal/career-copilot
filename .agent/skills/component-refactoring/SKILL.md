@@ -1,6 +1,26 @@
 ---
 name: component-refactoring
-description: Refactor high-complexity React components in frontend. Use when the user asks for code splitting, hook extraction, or complexity reduction, or when you come across a component that is too complex to understand and refactor it.
+description: |
+  Refactor large, complex, or monolithic React/TypeScript components into clean, maintainable units.
+
+  Use this skill when:
+  - A component or file is too large (200+ lines), too complex, or hard to understand
+  - User asks to "split this", "break this up", "extract a hook", "simplify this", "this is too big"
+  - User mentions code splitting, hook extraction, separation of concerns, or complexity reduction
+  - A component mixes data fetching, business logic, and rendering in one file
+  - There are too many useState/useEffect calls in one component
+  - A file has multiple unrelated exports or responsibilities
+  - Modal state management, API calls, or conditional logic needs to be extracted
+  - User says "refactor", "clean up", "reorganize", "restructure" frontend code
+
+  Do NOT use for:
+  - Backend or non-React code refactoring
+  - Simple one-line fixes
+  - Styling or CSS-only changes
+
+  Keywords: refactor, split, extract, hooks, complexity, monolithic, too large, too long,
+  simplify, reorganize, code splitting, separation of concerns, custom hook, sub-component,
+  modal management, data fetching hook, React Query, useCallback, useMemo, useEffect
 ---
 
 # Component Refactoring Skill

@@ -1,8 +1,25 @@
 ---
 name: e2e-tester
-description: >
-  Playwright E2E testing patterns.
-  Trigger: When writing Playwright E2E tests (Page Object Model, selectors, MCP exploration workflow).
+description: |
+  Write, review, and debug Playwright end-to-end tests using Page Object Model patterns.
+  Uses MCP tools to explore the live app before writing selectors.
+
+  Use this skill when:
+  - Writing E2E tests, browser tests, integration tests, or automated user flow tests
+  - User mentions Playwright, Cypress, test automation, browser automation
+  - User asks to "test this user flow", "automate this workflow", "smoke test this"
+  - Creating Page Object Models (POM) for pages or components
+  - Debugging flaky tests, selector issues, timing problems, race conditions
+  - Setting up authentication state, test fixtures, or test configuration
+  - Writing CI/CD integration for Playwright (GitHub Actions, retries, reporters)
+  - Testing login flows, forms, navigation, modals, multi-step workflows
+  - User says "write a test for", "create automation for", "add E2E tests for"
+
+  Do NOT use for unit tests with Vitest/RTL (use frontend-testing instead).
+
+  Keywords: Playwright, E2E, end-to-end, browser test, automation, user flow, smoke test,
+  Page Object Model, POM, selector, locator, fixture, flaky test, test automation,
+  Cypress, login test, form test, navigation test, CI test, GitHub Actions test
 metadata:
   scope: [root, ui]
   auto_invoke: "Writing Playwright E2E tests"

@@ -1,6 +1,24 @@
 ---
 name: skill-creator
-description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
+description: |
+  Create, update, design, and package new agent skills for Antigravity/Claude Code.
+  Provides the complete skill authoring workflow from planning to packaging.
+
+  Use this skill when:
+  - User asks to "create a skill", "make a skill", "build a skill", "add a skill"
+  - User wants to package a workflow as a reusable agent skill
+  - User says "make this a skill", "create a skill from what we just did"
+  - User wants to update or improve an existing skill's SKILL.md or resources
+  - User wants to add reference files, scripts, or assets to an existing skill
+  - Designing the description, triggers, and frontmatter for a new skill
+  - Packaging a skill into a distributable .skill file
+  - Debugging why a skill isn't triggering or being selected
+
+  Do NOT use for general coding tasks — only for skill authoring and management.
+
+  Keywords: skill, create skill, build skill, make skill, skill creator, SKILL.md,
+  agent skill, package skill, skill design, skill authoring, frontmatter, triggers,
+  skill description, skill manifest, install skill, update skill
 ---
 
 # Skill Creator

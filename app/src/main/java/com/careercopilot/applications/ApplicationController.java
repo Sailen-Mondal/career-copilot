@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -19,20 +20,25 @@ import java.util.UUID;
 @RequestMapping("/api/applications")
 public class ApplicationController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ApplicationController.class);
+
     private final ApplicationService applicationService;
     private final ApplicationWorkflowService applicationWorkflowService;
     private final com.careercopilot.discovery.JobRepository jobRepository;
     private final GeneratedDocumentRepository generatedDocumentRepository;
+    private final StringRedisTemplate redisTemplate;
 
     public ApplicationController(
             ApplicationService applicationService,
             ApplicationWorkflowService applicationWorkflowService,
             com.careercopilot.discovery.JobRepository jobRepository,
-            GeneratedDocumentRepository generatedDocumentRepository) {
+            GeneratedDocumentRepository generatedDocumentRepository,
+            StringRedisTemplate redisTemplate) {
         this.applicationService = applicationService;
         this.applicationWorkflowService = applicationWorkflowService;
         this.jobRepository = jobRepository;
         this.generatedDocumentRepository = generatedDocumentRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     /** Returns all applications joined with job info as DTOs (without document content for speed). */
@@ -177,13 +183,27 @@ public class ApplicationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(entity);
     }
 
+    /** Submits the OTP verification code to Redis. */
+    @PostMapping("/{id}/submit-otp")
+    public ResponseEntity<Void> submitOtp(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body) {
+        String code = body.get("code");
+        if (code == null || code.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing code");
+        }
+        redisTemplate.opsForValue().set("cc:otp:" + id, code, java.time.Duration.ofMinutes(5));
+        log.info("Saved OTP code for application {} to Redis", id);
+        return ResponseEntity.ok().build();
+    }
+
     /** Transitions an application to a new status. */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApplicationEntity> updateStatus(
             @PathVariable UUID id,
             @RequestBody StatusUpdateRequest request) {
         ApplicationEntity entity = applicationService.transitionStatus(
-                id, ApplicationStatus.valueOf(request.status()));
+                id, ApplicationStatus.valueOf(request.status().toUpperCase()));
         return ResponseEntity.ok(entity);
     }
 

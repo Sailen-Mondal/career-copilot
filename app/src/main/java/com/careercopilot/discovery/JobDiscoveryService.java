@@ -185,4 +185,114 @@ public class JobDiscoveryService {
                 .map(JobEntity::toDomain)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Ingests a batch of source-agnostic {@link RawJobListing} objects.
+     * Applies the same dedup + embedding + normalisation pipeline as syncBoard().
+     * Returns only newly-inserted jobs (skips duplicates).
+     */
+    public List<Job> ingestRawListings(List<RawJobListing> rawListings) {
+        List<Job> newJobs = new ArrayList<>();
+        for (RawJobListing raw : rawListings) {
+            try {
+                // 1. Dedup key
+                String dedupKey = JobNormalizer.generateDedupKey(
+                        raw.companySlug(), raw.title(), raw.location());
+
+                if (jobRepository.findByDedupKey(dedupKey).isPresent()) {
+                    log.debug("[ingest] Duplicate dedupKey '{}' — skipping '{}'", dedupKey, raw.title());
+                    continue;
+                }
+
+                // 2. Strip HTML
+                String descClean = HTMLStripper.stripHtml(
+                        raw.descriptionHtml() != null ? raw.descriptionHtml() : "");
+
+                // 3. Embedding & semantic dedup
+                float[] embedding = embeddingClient.getEmbedding(descClean);
+                if (jobRepository.findNearestSemanticMatch(embedding, 0.98).isPresent()) {
+                    log.debug("[ingest] Semantic duplicate for '{}' — skipping", raw.title());
+                    continue;
+                }
+
+                // 4. Skill extraction
+                java.util.Set<String> skills = new java.util.HashSet<>();
+                String textForSkills = (raw.title() + " " + descClean).toLowerCase();
+                java.util.List<String> commonSkills = java.util.List.of(
+                        "java", "spring boot", "postgresql", "redis", "react", "docker",
+                        "kubernetes", "aws", "sql", "gcp", "python", "javascript",
+                        "typescript", "c++", "golang");
+                for (String skill : commonSkills) {
+                    if (textForSkills.contains(skill)) {
+                        skills.add(skill.substring(0, 1).toUpperCase() + skill.substring(1));
+                    }
+                }
+
+                // 5. Seniority
+                String titleLower = raw.title().toLowerCase();
+                String seniority = "MID";
+                if (titleLower.contains("senior") || titleLower.contains("sr")
+                        || titleLower.contains("lead") || titleLower.contains("staff")
+                        || titleLower.contains("principal")) {
+                    seniority = "SENIOR";
+                } else if (titleLower.contains("junior") || titleLower.contains("jr")
+                        || titleLower.contains("entry") || titleLower.contains("intern")) {
+                    seniority = "JUNIOR";
+                }
+
+                // 6. Work-auth detection
+                String descLower = descClean.toLowerCase();
+                String workAuth = null;
+                if (descLower.contains("us citizen") || descLower.contains("clearance required")) {
+                    workAuth = "US_CITIZEN";
+                } else if (descLower.contains("green card") || descLower.contains("permanent resident")) {
+                    workAuth = "GREEN_CARD";
+                }
+
+                // 7. Deterministic UUID
+                UUID jobId = UUID.nameUUIDFromBytes(
+                        (raw.source() + ":" + raw.companySlug() + ":" + raw.externalId()).getBytes());
+
+                java.net.URI jobUrl;
+                try { jobUrl = java.net.URI.create(raw.url()); } catch (Exception e) {
+                    jobUrl = java.net.URI.create("https://example.com");
+                }
+
+                Job job = new Job(
+                        jobId,
+                        raw.source(),
+                        raw.externalId(),
+                        jobUrl,
+                        raw.companyName() != null ? raw.companyName() : raw.companySlug(),
+                        raw.title(),
+                        raw.location(),
+                        raw.remote() ? "remote" : "onsite",
+                        raw.descriptionHtml(),
+                        descClean,
+                        skills,
+                        seniority,
+                        null,
+                        workAuth,
+                        false,
+                        raw.postedAt() != null ? raw.postedAt() : Instant.now(),
+                        Instant.now(),
+                        Instant.now(),
+                        JobStatus.ACTIVE,
+                        dedupKey,
+                        embedding
+                );
+
+                JobEntity entity = new JobEntity(job);
+                jobRepository.save(entity);
+                newJobs.add(job);
+                log.info("[ingest] Saved new job: '{}' from {} (id={})",
+                        job.title(), raw.source(), jobId);
+
+            } catch (Exception e) {
+                log.error("[ingest] Error processing raw listing '{}' from {}: {}",
+                        raw.title(), raw.source(), e.getMessage());
+            }
+        }
+        return newJobs;
+    }
 }

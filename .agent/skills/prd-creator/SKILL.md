@@ -1,6 +1,26 @@
 ---
 name: prd-creator
-description: Guides creation of comprehensive Product Requirement Documents (PRDs) for software projects through structured questioning and validation, then generates implementation task lists in JSON format. Use when users want to document a software idea, create specifications for development, plan a new application feature/bug, or break down requirements into actionable tasks. Transforms ideas into implementation-ready documents with verifiable pass criteria.
+description: |
+  Create comprehensive Product Requirement Documents (PRDs), feature specifications,
+  and implementation task lists in JSON format for software projects.
+
+  Use this skill when:
+  - User wants to document a software idea, feature, or product
+  - User says "create a PRD", "write a spec", "document this idea", "plan this feature"
+  - User wants to define requirements, user stories, or acceptance criteria
+  - User needs to break down a feature into actionable implementation tasks
+  - User mentions "product requirements", "feature brief", "spec doc", "requirements doc"
+  - Creating or updating tasks.json for the Ralph agent loop
+  - User says "I have an idea for...", "I want to build...", "plan this out"
+  - Generating implementation tasks from an existing PRD or specification
+  - Defining success metrics, KPIs, competitive analysis for a feature
+  - Verifying prerequisites (env vars, API keys, access) before implementation
+
+  Do NOT generate actual code — only documentation and task specifications.
+
+  Keywords: PRD, product requirements, spec, specification, feature brief, user story,
+  requirements doc, implementation plan, tasks.json, task list, product planning,
+  feature planning, acceptance criteria, KPI, success metrics, scope, project doc
 license: MIT
 metadata:
   author: pageai

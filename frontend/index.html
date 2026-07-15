@@ -500,43 +500,95 @@
           </section>
 
           <!-- ── Discovery Section ── -->
-          <section id="discovery-section" class="card" aria-label="Job Discovery Rules" style="display: none;">
-            <div class="section-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color);">
+          <section id="discovery-section" class="card" aria-label="Job Discovery Engine" style="display: none;">
+            <div class="section-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
               <div class="section-title-group">
-                <h2 class="section-title">Job Ingestion Feeds</h2>
-                <p class="control-hint">Sync and monitor raw crawled jobs from Greenhouse public feeds.</p>
+                <h2 class="section-title">&#x1F310; Multi-Source Discovery Engine</h2>
+                <p class="control-hint">Autonomous crawl running every 30 min across 5 public job board APIs. New jobs are scored, matched, and queued automatically.</p>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <span id="crawlerStatusBadge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(16,185,129,0.15);color:#10b981;font-size:12px;font-weight:600;">
+                  <span style="width:7px;height:7px;background:#10b981;border-radius:50%;display:inline-block;"></span>
+                  Scheduler Active
+                </span>
+                <button id="triggerCrawlBtn" type="button" class="btn btn-primary" style="padding:6px 18px;font-size:13px;">&#x26A1; Trigger Crawl Now</button>
               </div>
             </div>
-            <div class="controls-panel" style="border-bottom: 1px solid var(--border-color); gap: 16px; padding: 20px 24px;">
-              <div class="controls-group" style="flex-grow: 1; max-width: 400px;">
-                <label class="control-label" for="syncBoardInput">Greenhouse Board Token</label>
-                <div style="display: flex; gap: 8px;">
-                  <input type="text" id="syncBoardInput" value="google" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 6px 12px; color: var(--text-primary); outline: none; flex-grow: 1;">
-                  <button id="triggerSyncBtn" type="button" class="btn btn-primary" style="padding: 6px 16px;">Sync Feed</button>
+
+            <div style="padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x1F331;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Greenhouse</div><div style="font-size:11px;color:var(--text-muted);">20 tech boards</div></div>
                 </div>
+                <div style="font-size:11px;color:var(--text-muted);">Stripe &middot; Shopify &middot; Airbnb &middot; Databricks &middot; Figma...</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-greenhouse-status">&#x25CF; Ready</div>
+              </div>
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x2699;&#xFE0F;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Lever</div><div style="font-size:11px;color:var(--text-muted);">15 startup boards</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">GitHub &middot; Discord &middot; Linear &middot; Vercel &middot; Supabase...</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-lever-status">&#x25CF; Ready</div>
+              </div>
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x1F30D;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Remotive</div><div style="font-size:11px;color:var(--text-muted);">Remote-only</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">Software Dev &middot; DevOps &middot; Data categories</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-remotive-status">&#x25CF; Ready</div>
+              </div>
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x1F3D4;&#xFE0F;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Himalayas</div><div style="font-size:11px;color:var(--text-muted);">Global remote</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">himalayas.app &middot; 50 listings/cycle</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-himalayas-status">&#x25CF; Ready</div>
+              </div>
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x1F3E2;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Arbeitnow</div><div style="font-size:11px;color:var(--text-muted);">EU + global</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">arbeitnow.com &middot; tech roles worldwide</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-arbeitnow-status">&#x25CF; Ready</div>
               </div>
             </div>
+
+            <div style="padding:14px 24px;background:var(--bg-hover);border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color);display:flex;gap:32px;flex-wrap:wrap;">
+              <div><span style="font-size:20px;font-weight:700;color:var(--accent-blue);" id="discTotalJobs">&#x2014;</span><br><span style="font-size:11px;color:var(--text-muted);">Total Jobs Found</span></div>
+              <div><span style="font-size:20px;font-weight:700;color:#10b981;" id="discNewJobs">&#x2014;</span><br><span style="font-size:11px;color:var(--text-muted);">New This Cycle</span></div>
+              <div><span style="font-size:20px;font-weight:700;color:#f59e0b;" id="discQueued">&#x2014;</span><br><span style="font-size:11px;color:var(--text-muted);">Auto-Queued</span></div>
+              <div><span style="font-size:20px;font-weight:700;color:var(--text-secondary);" id="discNextRun">30m</span><br><span style="font-size:11px;color:var(--text-muted);">Next Crawl</span></div>
+            </div>
+
             <div class="table-wrap" style="padding: 20px 24px;">
               <table aria-label="Discovered jobs list">
                 <thead>
                   <tr>
+                    <th scope="col">Source</th>
                     <th scope="col">Company</th>
                     <th scope="col">Job Title</th>
-                    <th scope="col">Required Skills</th>
+                    <th scope="col">Skills</th>
                     <th scope="col">Seniority</th>
-                    <th scope="col">Location Type</th>
+                    <th scope="col">Type</th>
                   </tr>
                 </thead>
                 <tbody id="discoveredJobRows">
                   <tr>
-                    <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">
-                      No discovered jobs in database. Click Sync Feed to retrieve.
+                    <td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">
+                      <span style="font-size:32px">&#x1F50D;</span><br><br>
+                      No jobs yet. Crawler starts <strong>15 seconds after app boot</strong>, or click <em>Trigger Crawl Now</em>.
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </section>
+
 
           <!-- ── Matching Section ── -->
           <section id="matching-section" class="card" aria-label="Matching Engine Rules" style="display: none; padding: 24px;">
@@ -2225,6 +2277,20 @@ I look forward to discussing how my skills match your requirements.</pre>
               <span class="inspector-field-value" id="inspectorTime">—</span>
             </div>
 
+            <!-- OTP Input Section -->
+            <div id="inspectorOtpSection" style="margin-top: 16px; padding: 12px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px;" hidden>
+              <div style="font-weight: 600; color: var(--accent-blue); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="shield-alert" style="width: 16px; height: 16px;"></i> Verification Code Required
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+                Greenhouse requires a verification code sent to your email. Enter the 8-digit code to proceed:
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="otp-input" placeholder="12345678" style="flex: 1; padding: 6px 10px; font-size: 13px; font-family: monospace; letter-spacing: 2px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-light);">
+                <button type="button" id="otp-submit-btn" style="padding: 6px 12px; font-size: 13px; background: var(--accent-blue); border: none; border-radius: 4px; color: #fff; cursor: pointer; font-weight: 600;">Submit</button>
+              </div>
+            </div>
+
             <div class="inspector-separator"></div>
 
             <div class="inspector-section">
@@ -2325,6 +2391,19 @@ I look forward to discussing how my skills match your requirements.</pre>
             <button type="submit" class="btn btn-primary" style="padding: 8px 24px;">Save Fact</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ DOCUMENT MODAL ═══════════════════════ -->
+    <div class="command-palette-overlay" id="docModalOverlay" hidden>
+      <div class="command-palette" id="docModal" role="dialog" aria-label="Document Viewer" style="max-width: 700px; padding: 28px; display: flex; flex-direction: column; gap: 20px; max-height: 85vh; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <h3 id="docModalTitle" style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin: 0;">Document Viewer</h3>
+          <button id="docModalCloseBtn" class="btn" style="padding: 4px; background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: inline-flex; align-items: center; justify-content: center;"><i data-lucide="x" class="icon-sm"></i></button>
+        </div>
+        <div id="docModalContent" style="background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; font-family: inherit; font-size: 14.5px; line-height: 1.6; color: var(--text-primary); overflow-y: auto; white-space: pre-wrap; flex-grow: 1; min-height: 250px; text-align: left;">
+          <!-- Content populated dynamically -->
+        </div>
       </div>
     </div>
 

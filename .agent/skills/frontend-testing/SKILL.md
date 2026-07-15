@@ -1,6 +1,26 @@
 ---
 name: frontend-testing
-description: Generate Vitest + React Testing Library tests for frontend components, hooks, and utilities. Triggers on testing, spec files, coverage, Vitest, RTL, unit tests, integration tests, or write/review test requests.
+description: |
+  Generate, review, and improve Vitest + React Testing Library (RTL) unit and integration
+  tests for React components, custom hooks, and utility functions.
+
+  Use this skill when:
+  - Writing unit tests or integration tests for React components
+  - Writing tests for custom hooks (useX pattern)
+  - Writing tests for utility/helper functions
+  - User mentions Vitest, React Testing Library, RTL, jsdom, or testing-library
+  - User asks for test coverage improvement or adding tests to a file
+  - User says "write tests for", "add a spec for", "test this component", "test this hook"
+  - Creating or reviewing *.spec.tsx, *.spec.ts, *.test.tsx, *.test.ts files
+  - Testing loading states, error states, async behavior, user interactions
+  - User wants to mock API calls, context providers, or Next.js navigation in tests
+
+  Do NOT use for E2E tests with Playwright (use e2e-tester instead).
+  Do NOT use for Vitest configuration or setup (use vitest-best-practices instead).
+
+  Keywords: Vitest, RTL, React Testing Library, unit test, integration test, spec,
+  test component, test hook, test utility, coverage, mock, jest, jsdom, testing,
+  describe, it, expect, beforeEach, afterEach, vi.mock, vi.fn, render, screen
 ---
 
 This skill enables Claude to generate high-quality, comprehensive frontend tests following established conventions and best practices.

@@ -182,6 +182,7 @@ const els = {
   discoveredJobRows:      $('discoveredJobRows'),
   syncBoardInput:         $('syncBoardInput'),
   triggerSyncBtn:         $('triggerSyncBtn'),
+  triggerCrawlBtn:        $('triggerCrawlBtn'),
   profileForm:            $('profileForm'),
   profileName:            $('profileName'),
   profileEmail:           $('profileEmail'),
@@ -208,7 +209,11 @@ const els = {
   factBulletText:         $('factBulletText'),
   factSkills:             $('factSkills'),
   factCancelBtn:          $('factCancelBtn'),
-  addFactBtn:             $('addFactBtn')
+  addFactBtn:             $('addFactBtn'),
+  docModalOverlay:        $('docModalOverlay'),
+  docModalTitle:          $('docModalTitle'),
+  docModalContent:        $('docModalContent'),
+  docModalCloseBtn:       $('docModalCloseBtn')
 };
 
 // ── API helpers ───────────────────────────────────────────────────────────────
@@ -457,34 +462,68 @@ function updateInspectorDetails(app) {
   // Update document statuses dynamically
   const docsEl = $('inspectorDocs');
   if (docsEl) {
-    let resumeStatus = 'Pending';
-    let coverLetterStatus = 'Pending';
+    let resumeBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--text-muted);">Pending</span>`;
+    let coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--text-muted);">Pending</span>`;
 
-    if (app.status === 'submitted') {
-      resumeStatus = 'Sent';
-      coverLetterStatus = 'Sent';
+    const canView = ['submitted', 'ready', 'queued'].includes(app.status);
+
+    if (canView) {
+      resumeBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(59,130,246,0.15); color: var(--accent-blue); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(59,130,246,0.3); font-weight: 500;"><i data-lucide="eye" style="width: 12px; height: 12px;"></i> View</span>`;
+      coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(59,130,246,0.15); color: var(--accent-blue); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(59,130,246,0.3); font-weight: 500;"><i data-lucide="eye" style="width: 12px; height: 12px;"></i> View</span>`;
     } else if (app.status === 'generating') {
-      resumeStatus = 'Generating...';
-      coverLetterStatus = 'Generating...';
-    } else if (app.status === 'skipped' || app.status === 'blocked' || app.status === 'failed') {
-      resumeStatus = 'Not created';
-      coverLetterStatus = 'Not created';
+      resumeBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(245,158,11,0.15); color: var(--accent-orange); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(245,158,11,0.3); font-weight: 500;"><i data-lucide="loader-2" class="animate-spin" style="width: 12px; height: 12px;"></i> Generating</span>`;
+      coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(245,158,11,0.15); color: var(--accent-orange); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(245,158,11,0.3); font-weight: 500;"><i data-lucide="loader-2" class="animate-spin" style="width: 12px; height: 12px;"></i> Generating</span>`;
+    } else if (['skipped', 'blocked', 'failed'].includes(app.status)) {
+      resumeBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(239,68,68,0.1); color: var(--accent-red); font-weight: 500;">Not created</span>`;
+      coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(239,68,68,0.1); color: var(--accent-red); font-weight: 500;">Not created</span>`;
     }
 
     docsEl.innerHTML = `
-      <div class="inspector-doc-item">
-        <i data-lucide="file-text" class="icon-sm"></i>
-        <span>Tailored Resume</span>
-        <span class="inspector-doc-status">${resumeStatus}</span>
+      <div class="inspector-doc-item clickable-doc" data-type="resume" style="cursor: pointer; transition: background 0.2s; border-radius: 6px; padding: 6px 8px; display: flex; align-items: center; justify-content: space-between; border: 1px dashed var(--border-color);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="file-text" class="icon-sm"></i>
+          <span>Tailored Resume</span>
+        </div>
+        ${resumeBadge}
       </div>
-      <div class="inspector-doc-item" style="margin-top: 8px;">
-        <i data-lucide="mail" class="icon-sm"></i>
-        <span>Cover Letter</span>
-        <span class="inspector-doc-status">${coverLetterStatus}</span>
+      <div class="inspector-doc-item clickable-doc" data-type="cover_letter" style="margin-top: 8px; cursor: pointer; transition: background 0.2s; border-radius: 6px; padding: 6px 8px; display: flex; align-items: center; justify-content: space-between; border: 1px dashed var(--border-color);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="mail" class="icon-sm"></i>
+          <span>Cover Letter</span>
+        </div>
+        ${coverLetterBadge}
       </div>
     `;
+
+    if (canView) {
+      docsEl.querySelectorAll('.clickable-doc').forEach(item => {
+        item.addEventListener('click', async () => {
+          const type = item.getAttribute('data-type');
+          try {
+            const detail = await apiFetch(`/api/applications/${app.id}`);
+            const content = type === 'resume' ? detail.resumeContent : detail.coverLetterContent;
+            const title = type === 'resume' ? 'Tailored Resume' : 'Tailored Cover Letter';
+            openDocumentViewer(title, content);
+          } catch (err) {
+            console.error('Failed to fetch document:', err);
+            alert('Could not retrieve document content. Make sure generation succeeded.');
+          }
+        });
+      });
+    }
   }
   if (window.lucide) window.lucide.createIcons();
+}
+
+function openDocumentViewer(title, content) {
+  els.docModalTitle.textContent = title;
+  els.docModalContent.textContent = content || 'No content generated yet.';
+  els.docModalOverlay.hidden = false;
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function closeDocumentViewer() {
+  els.docModalOverlay.hidden = true;
 }
 
 function clearInspector() {
@@ -660,32 +699,39 @@ async function refreshApplications() {
 
 // ── Discovery: sync and render jobs ──────────────────────────────────────────
 async function refreshDiscoveredJobs() {
-  els.discoveredJobRows.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">Loading jobs...</td></tr>`;
+  els.discoveredJobRows.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">Loading jobs...</td></tr>`;
   try {
     const jobs = await apiFetch('/api/jobs');
+    // Update stat card
+    const totalEl = document.getElementById('discTotalJobs');
+    if (totalEl) totalEl.textContent = jobs ? jobs.length : '0';
     if (!jobs || jobs.length === 0) {
-      els.discoveredJobRows.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">No discovered jobs in database. Click Sync Feed to retrieve.</td></tr>`;
+      els.discoveredJobRows.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">No jobs yet — crawler will populate this automatically.</td></tr>`;
       return;
     }
-    els.discoveredJobRows.innerHTML = jobs.map(job => `
+    const sourceColors = { greenhouse: '#10b981', lever: '#6366f1', remotive: '#f59e0b', himalayas: '#3b82f6', arbeitnow: '#ec4899' };
+    els.discoveredJobRows.innerHTML = jobs.map(job => {
+      const src = (job.source || 'greenhouse').toLowerCase();
+      const color = sourceColors[src] || '#94a3b8';
+      return `
       <tr>
+        <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:${color}22;color:${color};">${escHtml(src)}</span></td>
         <td class="td-company">${escHtml(job.company ?? '—')}</td>
         <td class="td-role">${escHtml(job.title ?? '—')}</td>
-        <td><span style="font-size:11px;color:var(--text-secondary);">${escHtml(job.skillsRequired ? job.skillsRequired.join(', ') : '—')}</span></td>
+        <td><span style="font-size:11px;color:var(--text-secondary);">${escHtml(job.requiredSkills ? job.requiredSkills.join(', ') : '—')}</span></td>
         <td>${escHtml(job.seniority ?? '—')}</td>
         <td>${escHtml(job.locationType ?? '—')}</td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   } catch (err) {
     console.error('Failed to load discovered jobs:', err);
-    els.discoveredJobRows.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--accent-red)">Error loading jobs. Backend might be down.</td></tr>`;
+    els.discoveredJobRows.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--accent-red)">Error loading jobs. Backend might be down.</td></tr>`;
   }
 }
 
 async function triggerDiscoverySync() {
-  const board = els.syncBoardInput.value.trim() || 'google';
-  els.triggerSyncBtn.disabled = true;
-  els.triggerSyncBtn.textContent = 'Syncing...';
+  const board = els.syncBoardInput ? (els.syncBoardInput.value.trim() || 'google') : 'google';
+  if (els.triggerSyncBtn) { els.triggerSyncBtn.disabled = true; els.triggerSyncBtn.textContent = 'Syncing...'; }
   try {
     await apiFetch(`/api/sources/greenhouse/sync?board=${encodeURIComponent(board)}`, { method: 'POST' });
     await refreshDiscoveredJobs();
@@ -693,8 +739,24 @@ async function triggerDiscoverySync() {
     console.error('Sync failed:', err);
     alert('Sync failed. Please check backend logs.');
   } finally {
-    els.triggerSyncBtn.disabled = false;
-    els.triggerSyncBtn.textContent = 'Sync Feed';
+    if (els.triggerSyncBtn) { els.triggerSyncBtn.disabled = false; els.triggerSyncBtn.textContent = 'Sync Feed'; }
+  }
+}
+
+async function triggerAutonomousCrawl() {
+  const btn = els.triggerCrawlBtn;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Crawling…'; }
+  try {
+    await apiFetch('/api/discovery/trigger', { method: 'POST' });
+    // Give the backend 5s head start then reload jobs
+    setTimeout(async () => {
+      await refreshDiscoveredJobs();
+      if (btn) { btn.disabled = false; btn.textContent = '⚡ Trigger Crawl Now'; }
+    }, 5000);
+  } catch (err) {
+    console.error('Crawl trigger failed:', err);
+    alert('Could not trigger crawl. Is the backend running?');
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ Trigger Crawl Now'; }
   }
 }
 
@@ -1231,12 +1293,17 @@ async function init() {
 
   // New views event listeners
   if (els.triggerSyncBtn) els.triggerSyncBtn.addEventListener('click', triggerDiscoverySync);
+  if (els.triggerCrawlBtn) els.triggerCrawlBtn.addEventListener('click', triggerAutonomousCrawl);
   if (els.profileForm) els.profileForm.addEventListener('submit', saveProfile);
   if (els.settingsForm) els.settingsForm.addEventListener('submit', saveSystemSettings);
   if (els.resetBreakersBtn) els.resetBreakersBtn.addEventListener('click', resetCircuitBreakers);
   if (els.addFactBtn) els.addFactBtn.addEventListener('click', () => openFactEditor());
   if (els.factCancelBtn) els.factCancelBtn.addEventListener('click', closeFactEditor);
   if (els.factForm) els.factForm.addEventListener('submit', saveFact);
+  if (els.docModalCloseBtn) els.docModalCloseBtn.addEventListener('click', closeDocumentViewer);
+  if (els.docModalOverlay) els.docModalOverlay.addEventListener('click', (e) => {
+    if (e.target === els.docModalOverlay) closeDocumentViewer();
+  });
 
   // Layout actions
   els.sidebarCollapseBtn.addEventListener('click', collapseSidebar);

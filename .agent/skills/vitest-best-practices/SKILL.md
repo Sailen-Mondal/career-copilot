@@ -1,6 +1,26 @@
 ---
 name: vitest-best-practices
-description: Comprehensive vitest testing patterns covering test structure, AAA pattern, parameterized tests, assertions, mocking, test doubles, error handling, async testing, and performance optimization. Use when writing, reviewing, or refactoring vitest tests, or when user mentions vitest, testing, TDD, test coverage, mocking, assertions, or test files (*.test.ts, *.spec.ts).
+description: |
+  Apply comprehensive Vitest testing patterns and best practices to improve test quality,
+  structure, and maintainability. Focuses on HOW to write better tests (not generating tests).
+
+  Use this skill when:
+  - Reviewing existing tests for quality, structure, or anti-patterns
+  - Improving test clarity: AAA pattern, naming conventions, test isolation
+  - Writing parameterized tests with it.each() for multiple scenarios
+  - Choosing the right assertion: toEqual vs toBe vs toStrictEqual vs toThrow
+  - Deciding between fakes, stubs, mocks, and spies — and when to use each
+  - Fixing async test issues: async/await, fake timers, concurrent tests
+  - Improving test performance: expensive setup, cleanup, watch mode
+  - Using Vitest-specific features: coverage, benchmarking, type testing, snapshots
+  - User mentions "best practices", "is this test correct", "how should I structure tests"
+
+  Also combine with frontend-testing when generating new component/hook tests.
+  Do NOT use for Playwright E2E tests (use e2e-tester instead).
+
+  Keywords: Vitest, best practices, test structure, AAA, parameterized, it.each,
+  assertions, mocking, test doubles, spy, stub, fake, async test, timer, snapshot,
+  coverage, benchmark, type test, describe, it, test quality, refactor tests
 compatibility: Requires vitest testing framework
 ---
 

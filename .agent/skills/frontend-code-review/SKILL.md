@@ -1,6 +1,24 @@
 ---
 name: frontend-code-review
-description: "Trigger when the user requests a review of frontend files (e.g., `.tsx`, `.ts`, `.js`). Support both pending-change reviews and focused file reviews while applying the checklist rules."
+description: |
+  Review frontend code for bugs, performance issues, TypeScript errors, and quality violations.
+
+  Use this skill when:
+  - User asks to "review my code", "check this file", "review this PR", "look at my changes"
+  - User wants a code review of .tsx, .ts, .js, .jsx files
+  - User is preparing a pull request and wants pre-commit checks
+  - Reviewing staged, pending, or recently written frontend changes
+  - User mentions "TypeScript audit", "lint errors", "code quality", "best practices"
+  - User wants to check for React anti-patterns, prop misuse, or hook violations
+  - Checking for performance issues, missing memoization, unnecessary re-renders
+  - User says "what's wrong with this", "is this code okay", "can you look at this"
+
+  Do NOT use for:
+  - Backend, Python, Java, or non-frontend files
+  - Pure styling/CSS changes with no logic
+
+  Keywords: code review, PR review, pull request, review, audit, TypeScript, .tsx, .ts,
+  React, code quality, lint, ESLint, prettier, check code, inspect, pre-commit, staging
 ---
 
 # Frontend Code Review

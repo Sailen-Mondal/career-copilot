@@ -1,6 +1,25 @@
 ---
 name: web-design-guidelines
-description: Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices".
+description: |
+  Review UI code and designs against Web Interface Guidelines for accessibility, usability,
+  layout correctness, and best practices. Fetches latest rules from source before reviewing.
+
+  Use this skill when:
+  - User asks to "review my UI", "audit my design", "check accessibility", "audit UX"
+  - User mentions WCAG, a11y, accessibility compliance, screen reader support
+  - User wants a design review, UI review, or UX review of frontend code
+  - Checking for semantic HTML, proper heading hierarchy, ARIA labels, focus management
+  - User says "does my UI follow best practices", "is this accessible", "check my interface"
+  - Reviewing a component, page, or entire app for design guideline compliance
+  - User mentions contrast ratios, color accessibility, keyboard navigation, tab order
+
+  Do NOT use for:
+  - Pure logic/business code with no UI
+  - Backend code review (use frontend-code-review for mixed reviews)
+
+  Keywords: UI review, UX review, design review, accessibility, a11y, WCAG, aria,
+  screen reader, keyboard navigation, contrast, semantic HTML, focus, best practices,
+  design audit, interface review, web guidelines, usability, responsive, mobile
 argument-hint: <file-or-pattern>
 metadata:
   author: vercel

@@ -1,6 +1,28 @@
 ---
 name: postgres
-description: PostgreSQL best practices, query optimization, connection troubleshooting, and performance improvement. Load when working with Postgres databases.
+description: |
+  PostgreSQL database design, query optimization, connection management, performance tuning,
+  and operational best practices. Also covers PlanetScale-specific PostgreSQL features.
+
+  Use this skill when:
+  - Working with PostgreSQL, Postgres, PlanetScale, or any pg-based database
+  - Designing or reviewing database schema, tables, primary keys, foreign keys, data types
+  - Writing or optimizing SQL queries, JOINs, subqueries, CTEs, window functions
+  - Diagnosing slow queries, missing indexes, EXPLAIN plan analysis
+  - Managing indexes: composite, partial, covering, GIN, GiST, BRIN
+  - Dealing with connection pooling, PgBouncer, max_connections exhaustion
+  - Troubleshooting MVCC, VACUUM, dead tuples, transaction ID wraparound
+  - Setting up or debugging replication, WAL, checkpoints, failover
+  - Planning schema migrations, ALTER TABLE, online DDL
+  - Diagnosing deadlocks, lock contention, serialization failures
+  - Monitoring with pg_stat_statements, pg_stat_user_tables, system views
+  - Backup and recovery: pg_dump, pg_basebackup, PITR
+
+  Do NOT use for MySQL (use mysql skill), MongoDB, or non-relational databases.
+
+  Keywords: PostgreSQL, Postgres, SQL, database, query, slow query, index, schema,
+  migration, connection, pool, PgBouncer, EXPLAIN, VACUUM, WAL, replication,
+  PlanetScale, deadlock, transaction, pg_stat, performance, optimization
 license: MIT
 metadata:
   author: planetscale

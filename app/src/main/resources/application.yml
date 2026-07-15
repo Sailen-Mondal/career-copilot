@@ -66,10 +66,14 @@ info:
 # Automation guardrail defaults (overridden by MasterProfile per user)
 # ------------------------------------------------------------------
 automation:
-  daily-cap: ${AUTOMATION_DAILY_CAP:3}
-  autonomy-threshold: ${AUTONOMY_THRESHOLD:85}
+  daily-cap: ${AUTOMATION_DAILY_CAP:20}
+  autonomy-threshold: ${AUTONOMY_THRESHOLD:0}
   streams:
     jobs-stream: cc:automation:jobs
     results-stream: cc:automation:results
     consumer-group: spring-consumers
     consumer-name: ${HOSTNAME:app-1}
+  crawler:
+    enabled: true
+    startup-delay-ms: ${CRAWLER_STARTUP_DELAY_MS:15000}
+    interval-ms: ${CRAWLER_INTERVAL_MS:1800000}
