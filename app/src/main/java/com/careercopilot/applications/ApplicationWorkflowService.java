@@ -212,12 +212,35 @@ public class ApplicationWorkflowService {
             if (decision.shouldSubmit()) {
                 appContainer[0].setStatus(ApplicationStatus.QUEUED.name());
                 auditTrail.add(timestamp() + " Application approved for automation queue.");
+                appContainer[0].setAuditTrail(new ArrayList<>(auditTrail));
+                return applicationRepository.save(appContainer[0]);
             } else {
+                UUID resumeId = appContainer[0].getResumeVersionId();
+                UUID coverId = appContainer[0].getCoverLetterVersionId();
+                
+                // Unset FKs in application to avoid circular FK violations during deletion
+                appContainer[0].setResumeVersionId(null);
+                appContainer[0].setCoverLetterVersionId(null);
+                applicationRepository.saveAndFlush(appContainer[0]);
+                
+                // Delete documents
+                if (resumeId != null) {
+                    generatedDocumentRepository.deleteById(resumeId);
+                }
+                if (coverId != null) {
+                    generatedDocumentRepository.deleteById(coverId);
+                }
+                
+                // Delete application
+                applicationRepository.delete(appContainer[0]);
+                applicationRepository.flush();
+                
+                // Set status on transient object to return
                 appContainer[0].setStatus(ApplicationStatus.BLOCKED.name());
                 auditTrail.add(timestamp() + " Application skipped/blocked: " + decision.reason());
+                appContainer[0].setAuditTrail(new ArrayList<>(auditTrail));
+                return appContainer[0];
             }
-            appContainer[0].setAuditTrail(new ArrayList<>(auditTrail));
-            return applicationRepository.save(appContainer[0]);
         });
 
         if (decision.shouldSubmit()) {
