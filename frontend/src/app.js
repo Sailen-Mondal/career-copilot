@@ -463,19 +463,22 @@ function updateInspectorDetails(app) {
   // Update document statuses dynamically
   const docsEl = $('inspectorDocs');
   if (docsEl) {
-    let resumeBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--text-muted);">Pending</span>`;
-    let coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--text-muted);">Pending</span>`;
+    const hasResume = !!app.resumeVersionId;
+    const hasCoverLetter = !!app.coverLetterVersionId;
 
-    const canView = ['submitted', 'ready', 'queued'].includes(app.status);
-
-    if (canView) {
+    if (hasResume) {
       resumeBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(59,130,246,0.15); color: var(--accent-blue); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(59,130,246,0.3); font-weight: 500;"><i data-lucide="eye" style="width: 12px; height: 12px;"></i> View</span>`;
-      coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(59,130,246,0.15); color: var(--accent-blue); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(59,130,246,0.3); font-weight: 500;"><i data-lucide="eye" style="width: 12px; height: 12px;"></i> View</span>`;
     } else if (app.status === 'generating') {
       resumeBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(245,158,11,0.15); color: var(--accent-orange); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(245,158,11,0.3); font-weight: 500;"><i data-lucide="loader-2" class="animate-spin" style="width: 12px; height: 12px;"></i> Generating</span>`;
-      coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(245,158,11,0.15); color: var(--accent-orange); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(245,158,11,0.3); font-weight: 500;"><i data-lucide="loader-2" class="animate-spin" style="width: 12px; height: 12px;"></i> Generating</span>`;
-    } else if (['skipped', 'blocked', 'failed'].includes(app.status)) {
+    } else {
       resumeBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(239,68,68,0.1); color: var(--accent-red); font-weight: 500;">Not created</span>`;
+    }
+
+    if (hasCoverLetter) {
+      coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(59,130,246,0.15); color: var(--accent-blue); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(59,130,246,0.3); font-weight: 500;"><i data-lucide="eye" style="width: 12px; height: 12px;"></i> View</span>`;
+    } else if (app.status === 'generating') {
+      coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(245,158,11,0.15); color: var(--accent-orange); display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(245,158,11,0.3); font-weight: 500;"><i data-lucide="loader-2" class="animate-spin" style="width: 12px; height: 12px;"></i> Generating</span>`;
+    } else {
       coverLetterBadge = `<span class="inspector-doc-status" style="font-size: 11px; padding: 2.5px 8px; border-radius: 4px; background: rgba(239,68,68,0.1); color: var(--accent-red); font-weight: 500;">Not created</span>`;
     }
 
@@ -496,22 +499,25 @@ function updateInspectorDetails(app) {
       </div>
     `;
 
-    if (canView) {
-      docsEl.querySelectorAll('.clickable-doc').forEach(item => {
-        item.addEventListener('click', async () => {
-          const type = item.getAttribute('data-type');
-          try {
-            const detail = await apiFetch(`/api/applications/${app.id}`);
-            const content = type === 'resume' ? detail.resumeContent : detail.coverLetterContent;
-            const title = type === 'resume' ? 'Tailored Resume' : 'Tailored Cover Letter';
-            openDocumentViewer(title, content);
-          } catch (err) {
-            console.error('Failed to fetch document:', err);
-            alert('Could not retrieve document content. Make sure generation succeeded.');
-          }
-        });
+    docsEl.querySelectorAll('.clickable-doc').forEach(item => {
+      item.addEventListener('click', async () => {
+        const type = item.getAttribute('data-type');
+        const versionId = type === 'resume' ? app.resumeVersionId : app.coverLetterVersionId;
+        if (!versionId) {
+          alert('This document was not generated.');
+          return;
+        }
+        try {
+          const detail = await apiFetch(`/api/applications/${app.id}`);
+          const content = type === 'resume' ? detail.resumeContent : detail.coverLetterContent;
+          const title = type === 'resume' ? 'Tailored Resume' : 'Tailored Cover Letter';
+          openDocumentViewer(title, content);
+        } catch (err) {
+          console.error('Failed to fetch document:', err);
+          alert('Could not retrieve document content. Make sure generation succeeded.');
+        }
       });
-    }
+    });
   }
 
   // Render application audit trail
