@@ -18,6 +18,7 @@ export interface AutomationCommand {
   candidatePhone?: string;
   candidateLinkedin?: string;
   candidateWebsite?: string;
+  customAnswersJson?: string;
 }
 
 export interface AutomationResult {

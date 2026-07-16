@@ -17,6 +17,27 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AiClientConfig {
 
+    static {
+        try {
+            java.nio.file.Path envPath = java.nio.file.Paths.get(".env");
+            if (java.nio.file.Files.exists(envPath)) {
+                java.nio.file.Files.readAllLines(envPath).forEach(line -> {
+                    line = line.trim();
+                    if (!line.isEmpty() && !line.startsWith("#") && line.contains("=")) {
+                        String[] parts = line.split("=", 2);
+                        String key = parts[0].trim();
+                        String value = parts[1].trim();
+                        if (System.getProperty(key) == null && System.getenv(key) == null) {
+                            System.setProperty(key, value);
+                        }
+                    }
+                });
+            }
+        } catch (Exception e) {
+            // Ignore environment file loading errors
+        }
+    }
+
     /**
      * Registers the mock LLM client when client-type is "mock" (default if missing).
      */

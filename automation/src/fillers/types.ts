@@ -13,6 +13,8 @@ export interface ResumeProfile {
   website: string;
   coverLetter: string;
   summary: string;
+  customAnswers?: Record<string, string>;
+  applicationId?: string;
 }
 
 export interface FillerResult {

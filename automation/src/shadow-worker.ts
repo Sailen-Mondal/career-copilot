@@ -26,6 +26,14 @@ function ensureScreenshotsDir(): void { if (!fs.existsSync(SCREENSHOTS_DIR)) fs.
 function buildResumeProfile(command: AutomationCommand): ResumeProfile {
   const fullName  = command.candidateName || 'Candidate';
   const parts     = fullName.split(' ');
+  let customAnswers: Record<string, string> = {};
+  if (command.customAnswersJson) {
+    try {
+      customAnswers = JSON.parse(command.customAnswersJson);
+    } catch (e) {
+      console.error('Failed to parse customAnswersJson:', e);
+    }
+  }
   return {
     name:        fullName,
     firstName:   parts[0] || 'Candidate',
@@ -39,6 +47,8 @@ function buildResumeProfile(command: AutomationCommand): ResumeProfile {
     website:     command.candidateWebsite  || '',
     coverLetter: command.coverLetterContent || '',
     summary:     command.resumeContent     || '',
+    customAnswers,
+    applicationId: command.applicationId,
   };
 }
 

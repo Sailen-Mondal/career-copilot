@@ -98,7 +98,7 @@ class ApplicationWorkflowServiceTest {
     @DisplayName("runs workflow successfully, generates documents and publishes to Redis queue")
     void runWorkflow_happyPath() throws Exception {
         // Arrange
-        MatchResult matchResult = new MatchResult(90, true, null, Map.of("embedding", 45, "keyword", 45));
+        MatchResult matchResult = new MatchResult(90, true, null, Map.of("embedding", 45, "keyword", 45), "Mocked MatchResult");
         when(matchingService.scoreJob(jobId, profileId)).thenReturn(matchResult);
 
         ApplicationEntity application = new ApplicationEntity();
@@ -132,7 +132,7 @@ class ApplicationWorkflowServiceTest {
     @DisplayName("skips publishing and blocks application if autonomy score is low")
     void runWorkflow_lowScore() throws Exception {
         // Arrange
-        MatchResult matchResult = new MatchResult(50, true, null, Map.of("embedding", 25, "keyword", 25));
+        MatchResult matchResult = new MatchResult(50, true, null, Map.of("embedding", 25, "keyword", 25), "Mocked MatchResult");
         when(matchingService.scoreJob(jobId, profileId)).thenReturn(matchResult);
 
         ApplicationEntity application = new ApplicationEntity();

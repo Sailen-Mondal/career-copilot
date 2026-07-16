@@ -31,6 +31,10 @@ class MatchingServiceTest {
     private MasterProfileRepository masterProfileRepository;
     @Mock
     private JobRepository jobRepository;
+    @Mock
+    private com.careercopilot.shared.LlmClient llmClient;
+    @Mock
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @InjectMocks
     private MatchingService matchingService;
@@ -216,5 +220,52 @@ class MatchingServiceTest {
 
         assertThat(result.eligible()).isFalse();
         assertThat(result.ineligibilityReason()).contains("Location filter: Job location 'New York, NY' does not match preferred locations");
+    }
+
+    @Test
+    @DisplayName("applies LLM score adjustment for borderline base scores")
+    void scoreJob_borderlineLlmEvaluation() throws Exception {
+        // Arrange
+        // Set up skills to get a base score in the 60-85 range
+        jobEntity.setRequiredSkills(Set.of("Java", "Spring", "Docker"));
+        
+        ProfileFactEntity fact1 = new ProfileFactEntity();
+        fact1.setType(FactType.SKILL);
+        fact1.setBulletText("Expert Java developer");
+        fact1.setSkills(Set.of("Java"));
+
+        ProfileFactEntity fact2 = new ProfileFactEntity();
+        fact2.setType(FactType.SKILL);
+        fact2.setBulletText("Proficient with Spring Boot");
+        fact2.setSkills(Set.of("Spring"));
+
+        when(profileFactRepository.findByMasterProfileId(profileId)).thenReturn(List.of(fact1, fact2));
+        
+        // 2 out of 3 skills matching = 66% keyword score = 33 points.
+        // We'll stub embedding client to return a score that brings us to borderline.
+        // Let's set embedding cosine to 0.75, which yields 0.75 * 50 = 38 points.
+        // Base score = 33 + 38 = 71 (borderline!)
+        float[] dummyEmb = new float[1536];
+        java.util.Arrays.fill(dummyEmb, 1.0f);
+        when(embeddingClient.getEmbedding(anyString())).thenReturn(dummyEmb);
+        // Let's stub similarity calculation. Wait, similarity is calculated inside MatchingService
+        // from the returned embeddings. Since both are dummyEmb, cosine is 1.0 -> 50 points.
+        // Total base = 33 + 50 = 83 (borderline!)
+
+        com.fasterxml.jackson.databind.node.ObjectNode mockJson = new com.fasterxml.jackson.databind.ObjectMapper().createObjectNode();
+        mockJson.put("scoreAdjustment", 10);
+        mockJson.put("reasoning", "Semantic analysis shows candidates has 2 out of 3 core requirements.");
+        when(llmClient.generate(anyString(), anyString())).thenReturn("JSON");
+        when(objectMapper.readTree(anyString())).thenReturn(mockJson);
+
+        // Act
+        MatchResult result = matchingService.scoreJob(jobId, profileId);
+
+        // Assert
+        assertThat(result.eligible()).isTrue();
+        // Base score = 83 (keyword 33 + embedding 50). LLM adjusts +10 -> 93.
+        assertThat(result.score()).isEqualTo(93);
+        assertThat(result.reasoning()).isEqualTo("Semantic analysis shows candidates has 2 out of 3 core requirements.");
+        assertThat(result.breakdown()).containsEntry("llmAdjustment", 10);
     }
 }

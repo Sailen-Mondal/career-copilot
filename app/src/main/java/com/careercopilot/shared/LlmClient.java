@@ -19,4 +19,14 @@ public interface LlmClient {
      * @return the generated text content
      */
     String generate(String systemPrompt, String userPrompt);
+
+    /**
+     * Generates a text response given a system instruction, user message, and specific model name.
+     *
+     * @param systemPrompt the system-level instruction to steer the model
+     * @param userPrompt   the user-level content/input
+     * @param modelName    the specific AI model name to use
+     * @return the generated text content
+     */
+    String generate(String systemPrompt, String userPrompt, String modelName);
 }

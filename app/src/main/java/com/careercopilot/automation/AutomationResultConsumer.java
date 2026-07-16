@@ -10,8 +10,13 @@ import com.careercopilot.profile.MasterProfileEntity;
 import com.careercopilot.profile.MasterProfileRepository;
 import com.careercopilot.generation.GeneratedDocumentEntity;
 import com.careercopilot.generation.GeneratedDocumentRepository;
+import com.careercopilot.discovery.EmbeddingClient;
+import com.careercopilot.profile.ProfileFactEntity;
+import com.careercopilot.profile.ProfileFactRepository;
+import com.careercopilot.shared.LlmClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,6 +59,10 @@ public class AutomationResultConsumer implements ApplicationListener<Application
     private final MasterProfileRepository masterProfileRepository;
     private final GeneratedDocumentRepository generatedDocumentRepository;
     private final AutomationPublisher automationPublisher;
+    private final AnswerCacheRepository answerCacheRepository;
+    private final EmbeddingClient embeddingClient;
+    private final LlmClient llmClient;
+    private final ProfileFactRepository profileFactRepository;
 
     private final String resultsStream;
     private final String consumerGroup;
@@ -74,6 +83,10 @@ public class AutomationResultConsumer implements ApplicationListener<Application
             MasterProfileRepository masterProfileRepository,
             GeneratedDocumentRepository generatedDocumentRepository,
             AutomationPublisher automationPublisher,
+            AnswerCacheRepository answerCacheRepository,
+            EmbeddingClient embeddingClient,
+            LlmClient llmClient,
+            ProfileFactRepository profileFactRepository,
             @Value("${automation.streams.results-stream:cc:automation:results}") String resultsStream,
             @Value("${automation.streams.consumer-group:spring-consumers}") String consumerGroup,
             @Value("${automation.streams.consumer-name:app-1}") String consumerName) {
@@ -88,6 +101,10 @@ public class AutomationResultConsumer implements ApplicationListener<Application
         this.masterProfileRepository = masterProfileRepository;
         this.generatedDocumentRepository = generatedDocumentRepository;
         this.automationPublisher = automationPublisher;
+        this.answerCacheRepository = answerCacheRepository;
+        this.embeddingClient = embeddingClient;
+        this.llmClient = llmClient;
+        this.profileFactRepository = profileFactRepository;
         this.resultsStream = resultsStream;
         this.consumerGroup = consumerGroup;
         this.consumerName = consumerName;
@@ -181,6 +198,16 @@ public class AutomationResultConsumer implements ApplicationListener<Application
 
             UUID applicationId = UUID.fromString(applicationIdStr);
 
+            String unsupportedFieldsJson = fields.get("unsupportedFields");
+            List<String> unsupportedFieldsList = new ArrayList<>();
+            if (unsupportedFieldsJson != null && !unsupportedFieldsJson.isEmpty()) {
+                try {
+                    unsupportedFieldsList = objectMapper.readValue(unsupportedFieldsJson, new TypeReference<List<String>>() {});
+                } catch (Exception e) {
+                    log.error("Failed to parse unsupportedFields", e);
+                }
+            }
+
             // Handle Retry Logic for failures
             if ("failed".equals(status)) {
                 final boolean[] retried = {false};
@@ -217,6 +244,70 @@ public class AutomationResultConsumer implements ApplicationListener<Application
                     // Re-publish to the stream for retry
                     applicationRepository.findById(applicationId).ifPresent(this::republishAutomationCommand);
                     return; // Skip circuit breaker check until final failure
+                }
+            } else if ("shadow_completed".equals(status) && !unsupportedFieldsList.isEmpty()) {
+                final List<String> finalUnsupportedFields = unsupportedFieldsList;
+                final Map<String, String>[] customAnswersMapContainer = new Map[]{new HashMap<>()};
+                final boolean[] allResolved = {true};
+                final List<String> unresolvedFields = new ArrayList<>();
+
+                transactionTemplate.executeWithoutResult(txnStatus -> {
+                    applicationRepository.findById(applicationId).ifPresent(app -> {
+                        jobRepository.findById(app.getJobId()).ifPresent(job -> {
+                            Map<String, String> resolvedAnswers = resolveUnsupportedFields(applicationId, finalUnsupportedFields, job);
+                            
+                            for (String fieldStr : finalUnsupportedFields) {
+                                String[] parts = fieldStr.split("::", 2);
+                                String identifier = parts[0];
+                                String questionText = parts.length > 1 ? parts[1] : "";
+                                
+                                if (!resolvedAnswers.containsKey(identifier) && !resolvedAnswers.containsKey(questionText)) {
+                                    allResolved[0] = false;
+                                    unresolvedFields.add(fieldStr);
+                                }
+                            }
+                            
+                            customAnswersMapContainer[0] = resolvedAnswers;
+                        });
+                    });
+                });
+
+                if (!allResolved[0]) {
+                    applicationService.transitionStatus(applicationId, ApplicationStatus.BLOCKED);
+                    applicationService.appendAuditEntry(applicationId,
+                            "Application blocked due to unhandled form fields: " + unresolvedFields);
+                    return;
+                } else if (customAnswersMapContainer[0] != null && !customAnswersMapContainer[0].isEmpty()) {
+                    final boolean[] rescheduled = {false};
+                    transactionTemplate.executeWithoutResult(txnStatus -> {
+                        applicationRepository.findById(applicationId).ifPresent(app -> {
+                            int currentRetries = app.getRetryCount();
+                            if (currentRetries < 3) {
+                                app.setRetryCount(currentRetries + 1);
+                                app.setStatus(ApplicationStatus.QUEUED.name());
+                                List<String> trail = app.getAuditTrail();
+                                if (trail == null) trail = new ArrayList<>();
+                                trail.add("[" + Instant.now().toString() + "] Shadow run found custom questions. Resolved all, re-dispatching with custom answers.");
+                                app.setAuditTrail(trail);
+                                applicationRepository.save(app);
+                                rescheduled[0] = true;
+                            } else {
+                                app.setStatus(ApplicationStatus.BLOCKED.name());
+                                List<String> trail = app.getAuditTrail();
+                                if (trail == null) trail = new ArrayList<>();
+                                trail.add("[" + Instant.now().toString() + "] Max attempts to resolve custom questions reached.");
+                                app.setAuditTrail(trail);
+                                applicationRepository.save(app);
+                            }
+                        });
+                    });
+
+                    if (rescheduled[0]) {
+                        applicationRepository.findById(applicationId).ifPresent(app -> {
+                            republishWithCustomAnswers(app, customAnswersMapContainer[0]);
+                        });
+                        return;
+                    }
                 }
             } else {
                 // Map worker status to ApplicationStatus
@@ -315,6 +406,20 @@ public class AutomationResultConsumer implements ApplicationListener<Application
                         .orElse("");
             }
 
+            String customAnswersJson = "{}";
+            try {
+                List<AnswerCacheEntity> cached = answerCacheRepository.findAll().stream()
+                        .filter(a -> a.getScope() == null || a.getScope().equalsIgnoreCase(jobEntity.getCompany()) || a.getScope().equalsIgnoreCase(jobEntity.getSource()))
+                        .toList();
+                Map<String, String> answersMap = new HashMap<>();
+                for (AnswerCacheEntity cache : cached) {
+                    answersMap.put(cache.getQuestionText(), cache.getAnswerText());
+                }
+                customAnswersJson = objectMapper.writeValueAsString(answersMap);
+            } catch (Exception e) {
+                log.warn("Failed to fetch custom answers for republishing", e);
+            }
+
             AutomationCommand command = new AutomationCommand(
                     app.getId().toString(),
                     jobEntity.getUrl(),
@@ -328,13 +433,156 @@ public class AutomationResultConsumer implements ApplicationListener<Application
                     profile.getEmail(),
                     profile.getPhone(),
                     profile.getLinkedinUrl(),
-                    profile.getWebsiteUrl()
+                    profile.getWebsiteUrl(),
+                    customAnswersJson
             );
 
             automationPublisher.publish(command);
             log.info("Re-dispatched application {} to Redis automation stream for retry", app.getId());
         } catch (Exception e) {
             log.error("Failed to republish automation command for retry", e);
+        }
+    }
+
+    private Map<String, String> resolveUnsupportedFields(UUID applicationId, List<String> unsupportedFields, JobEntity job) {
+        Map<String, String> resolved = new HashMap<>();
+        
+        List<ProfileFactEntity> facts = profileFactRepository.findByMasterProfileId(
+                applicationRepository.findById(applicationId).map(ApplicationEntity::getProfileId).orElse(null)
+        );
+        if (facts == null || facts.isEmpty()) {
+            return resolved;
+        }
+
+        for (String fieldStr : unsupportedFields) {
+            String[] parts = fieldStr.split("::", 2);
+            String identifier = parts[0];
+            String questionText = parts.length > 1 ? parts[1] : "";
+            
+            if (questionText.isBlank()) {
+                if (identifier.contains(" ") || identifier.contains("_")) {
+                    questionText = identifier.replace("_", " ");
+                } else {
+                    continue;
+                }
+            }
+
+            String lowerQ = questionText.toLowerCase();
+            if (lowerQ.contains("resume") || lowerQ.contains("coverletter") || lowerQ.contains("cv") ||
+                lowerQ.contains("firstname") || lowerQ.contains("lastname") || lowerQ.contains("email") ||
+                lowerQ.contains("phone")) {
+                continue;
+            }
+
+            Optional<AnswerCacheEntity> cachedOpt = answerCacheRepository.findExactMatch(questionText, job.getCompany());
+            if (cachedOpt.isEmpty()) {
+                cachedOpt = answerCacheRepository.findExactMatch(questionText, null);
+            }
+            
+            if (cachedOpt.isEmpty()) {
+                try {
+                    float[] questionEmb = embeddingClient.getEmbedding(questionText);
+                    cachedOpt = answerCacheRepository.findSemanticMatch(questionEmb, job.getCompany());
+                    if (cachedOpt.isEmpty()) {
+                        cachedOpt = answerCacheRepository.findSemanticMatch(questionEmb, null);
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed semantic search for custom question: " + questionText, e);
+                }
+            }
+
+            if (cachedOpt.isPresent()) {
+                String answer = cachedOpt.get().getAnswerText();
+                resolved.put(identifier, answer);
+                resolved.put(questionText, answer);
+                log.info("Found cached answer for question '{}' (key={})", questionText, identifier);
+            } else {
+                try {
+                    String systemPrompt = """
+                            You are an automated job application assistant. Your task is to write a concise, professional answer to a custom application question on behalf of the candidate.
+                            Use the provided candidate profile facts to answer the question accurately and professionally.
+                            Do not exaggerate or hallucinate. Keep the answer under 100 words.
+                            Output ONLY the plain text of the answer. No intro, no quotes, no markdown.
+                            """;
+
+                    StringBuilder userPromptBuilder = new StringBuilder();
+                    userPromptBuilder.append("QUESTION: ").append(questionText).append("\n\nCANDIDATE FACTS:\n");
+                    for (ProfileFactEntity f : facts) {
+                        userPromptBuilder.append("- ").append(f.getBulletText()).append("\n");
+                    }
+
+                    String answer = llmClient.generate(systemPrompt, userPromptBuilder.toString());
+                    answer = answer.trim();
+                    if (answer.startsWith("\"") && answer.endsWith("\"")) {
+                        answer = answer.substring(1, answer.length() - 1).trim();
+                    }
+
+                    float[] questionEmb = embeddingClient.getEmbedding(questionText);
+                    AnswerCacheEntity newCache = new AnswerCacheEntity(
+                            UUID.randomUUID(),
+                            questionText,
+                            questionEmb,
+                            answer,
+                            job.getCompany(),
+                            Instant.now()
+                    );
+                    answerCacheRepository.save(newCache);
+
+                    resolved.put(identifier, answer);
+                    resolved.put(questionText, answer);
+                    log.info("Generated and cached answer for question '{}' (key={})", questionText, identifier);
+                } catch (Exception e) {
+                    log.error("Failed to generate answer for question: " + questionText, e);
+                }
+            }
+        }
+        return resolved;
+    }
+
+    private void republishWithCustomAnswers(ApplicationEntity app, Map<String, String> customAnswers) {
+        try {
+            JobEntity jobEntity = jobRepository.findById(app.getJobId())
+                    .orElseThrow(() -> new IllegalStateException("Job not found: " + app.getJobId()));
+            MasterProfileEntity profile = masterProfileRepository.findById(app.getProfileId())
+                    .orElseThrow(() -> new IllegalStateException("Profile not found: " + app.getProfileId()));
+
+            String resumeContent = "";
+            if (app.getResumeVersionId() != null) {
+                resumeContent = generatedDocumentRepository.findById(app.getResumeVersionId())
+                        .map(GeneratedDocumentEntity::getContent)
+                        .orElse("");
+            }
+
+            String coverLetterContent = "";
+            if (app.getCoverLetterVersionId() != null) {
+                coverLetterContent = generatedDocumentRepository.findById(app.getCoverLetterVersionId())
+                        .map(GeneratedDocumentEntity::getContent)
+                        .orElse("");
+            }
+
+            String customAnswersJson = objectMapper.writeValueAsString(customAnswers);
+
+            AutomationCommand command = new AutomationCommand(
+                    app.getId().toString(),
+                    jobEntity.getUrl(),
+                    "false".equalsIgnoreCase(redisTemplate.opsForValue().get("cc:automation:shadow-mode")) ? "live" : "shadow",
+                    app.getProfileId().toString(),
+                    app.getResumeVersionId() != null ? app.getResumeVersionId().toString() : "",
+                    resumeContent,
+                    app.getCoverLetterVersionId() != null ? app.getCoverLetterVersionId().toString() : "",
+                    coverLetterContent,
+                    profile.getName(),
+                    profile.getEmail(),
+                    profile.getPhone(),
+                    profile.getLinkedinUrl(),
+                    profile.getWebsiteUrl(),
+                    customAnswersJson
+            );
+
+            automationPublisher.publish(command);
+            log.info("Re-dispatched application {} with custom answers: {}", app.getId(), customAnswersJson);
+        } catch (Exception e) {
+            log.error("Failed to republish command with custom answers", e);
         }
     }
 }

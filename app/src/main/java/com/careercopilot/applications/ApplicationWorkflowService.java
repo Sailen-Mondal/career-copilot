@@ -82,7 +82,8 @@ public class ApplicationWorkflowService {
         // 3. Create application entity (status GENERATING, backend-driven score)
         UUID applicationId = UUID.randomUUID();
         List<String> auditTrail = new ArrayList<>();
-        auditTrail.add(timestamp() + " Workflow started. Match score computed: " + matchResult.score());
+        auditTrail.add(timestamp() + " Workflow started. Match score computed: " + matchResult.score()
+                + " (Reasoning: " + matchResult.reasoning() + ")");
         if (!matchResult.eligible()) {
             auditTrail.add(timestamp() + " Matcher marked job ineligible: " + matchResult.ineligibilityReason());
         }
@@ -246,7 +247,8 @@ public class ApplicationWorkflowService {
                             profile.email(),
                             profile.phone(),
                             profile.linkedinUrl(),
-                            profile.websiteUrl()
+                            profile.websiteUrl(),
+                            "{}"
                     );
                     automationPublisher.publish(command);
                     appContainer[0] = transactionTemplate.execute(status -> {

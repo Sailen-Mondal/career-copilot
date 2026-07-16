@@ -40,7 +40,14 @@ app:
   security:
     api-key: ${API_KEY:dev-insecure-key}
   ai:
-    client-type: ${AI_CLIENT_TYPE:mock}   # mock | vertex
+    client-type: ${AI_CLIENT_TYPE:mock}   # mock | vertex | openrouter
+    openrouter:
+      api-key: ${OPENROUTER_API_KEY:}
+      model: ${OPENROUTER_MODEL:openrouter/free}
+      base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
+  discovery:
+    greenhouse:
+      use-mock: false
 
 # ------------------------------------------------------------------
 # Actuator — only health and info exposed (no sensitive endpoints)

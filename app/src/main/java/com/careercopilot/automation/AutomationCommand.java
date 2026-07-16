@@ -17,5 +17,6 @@ public record AutomationCommand(
         String candidateEmail,
         String candidatePhone,
         String candidateLinkedin,
-        String candidateWebsite
+        String candidateWebsite,
+        String customAnswersJson
 ) {}

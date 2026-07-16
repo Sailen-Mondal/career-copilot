@@ -66,6 +66,7 @@ function deserializeCommand(fields: Record<string, string>): AutomationCommand {
     candidatePhone: fields['candidatePhone'] || undefined,
     candidateLinkedin: fields['candidateLinkedin'] || undefined,
     candidateWebsite: fields['candidateWebsite'] || undefined,
+    customAnswersJson: fields['customAnswersJson'] || undefined,
   };
 }
 

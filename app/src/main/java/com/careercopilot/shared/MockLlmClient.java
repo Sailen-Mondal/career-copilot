@@ -30,4 +30,9 @@ public class MockLlmClient implements LlmClient {
         String markerSection = markers.isEmpty() ? "" : " " + String.join(" ", markers);
         return "Mock LLM generated document based on provided facts." + markerSection;
     }
+
+    @Override
+    public String generate(String systemPrompt, String userPrompt, String modelName) {
+        return generate(systemPrompt, userPrompt);
+    }
 }

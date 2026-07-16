@@ -8,6 +8,8 @@ import com.careercopilot.profile.MasterProfileRepository;
 import com.careercopilot.profile.ProfileFactEntity;
 import com.careercopilot.profile.ProfileFactRepository;
 import com.careercopilot.profile.WorkAuthorization;
+import com.careercopilot.shared.LlmClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,15 +33,21 @@ public class MatchingService {
     private final ProfileFactRepository profileFactRepository;
     private final MasterProfileRepository masterProfileRepository;
     private final JobRepository jobRepository;
+    private final LlmClient llmClient;
+    private final ObjectMapper objectMapper;
 
     public MatchingService(EmbeddingClient embeddingClient,
                            ProfileFactRepository profileFactRepository,
                            MasterProfileRepository masterProfileRepository,
-                           JobRepository jobRepository) {
+                           JobRepository jobRepository,
+                           LlmClient llmClient,
+                           ObjectMapper objectMapper) {
         this.embeddingClient = embeddingClient;
         this.profileFactRepository = profileFactRepository;
         this.masterProfileRepository = masterProfileRepository;
         this.jobRepository = jobRepository;
+        this.llmClient = llmClient;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -192,19 +200,86 @@ public class MatchingService {
                 intersection * 50L / Math.max(1L, jobRequiredSkills.size()));
 
         int total = embeddingScore + keywordScore;
+        int originalTotal = total;
+        int llmAdjustment = 0;
+        String reasoning = "Base score outside borderline range (60-85). LLM check bypassed.";
+
+        if (total >= 60 && total <= 85) {
+            try {
+                String systemPrompt = """
+                        You are an expert recruiter evaluating the match between a job description and a candidate's profile facts.
+                        Analyze the semantic fit, check if the candidate's actual experience matches the role requirements, and determine a semantic adjustment score.
+                        You must output exactly a JSON object matching this structure:
+                        {
+                          "scoreAdjustment": <integer between -15 and 15>,
+                          "reasoning": "<brief explanation of the semantic match or discrepancies>"
+                        }
+                        Do not output any markdown code blocks, backticks, or extra text. Output raw JSON only.
+                        """;
+
+                StringBuilder userPromptBuilder = new StringBuilder();
+                userPromptBuilder.append("CANDIDATE FACTS:\n");
+                for (ProfileFactEntity f : facts) {
+                    userPromptBuilder.append("- ").append(f.getBulletText()).append("\n");
+                }
+
+                userPromptBuilder.append("\nJOB DESCRIPTION:\n")
+                        .append(job.getDescriptionClean() != null ? job.getDescriptionClean() : "")
+                        .append("\n");
+
+                String llmResponse = llmClient.generate(systemPrompt, userPromptBuilder.toString());
+                
+                if (llmResponse.contains("```json")) {
+                    llmResponse = llmResponse.substring(llmResponse.indexOf("```json") + 7);
+                    if (llmResponse.contains("```")) {
+                        llmResponse = llmResponse.substring(0, llmResponse.indexOf("```"));
+                    }
+                } else if (llmResponse.contains("```")) {
+                    llmResponse = llmResponse.substring(llmResponse.indexOf("```") + 3);
+                    if (llmResponse.contains("```")) {
+                        llmResponse = llmResponse.substring(0, llmResponse.indexOf("```"));
+                    }
+                }
+                llmResponse = llmResponse.trim();
+
+                com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(llmResponse);
+                if (rootNode.has("scoreAdjustment")) {
+                    llmAdjustment = rootNode.get("scoreAdjustment").asInt();
+                    llmAdjustment = Math.max(-15, Math.min(15, llmAdjustment));
+                }
+                if (rootNode.has("reasoning")) {
+                    reasoning = rootNode.get("reasoning").asText();
+                } else {
+                    reasoning = "LLM semantic evaluation completed.";
+                }
+                
+                total = Math.max(0, Math.min(100, total + llmAdjustment));
+
+            } catch (Exception e) {
+                reasoning = "LLM semantic evaluation failed: " + e.getMessage() + ". Using base score.";
+            }
+        }
+
+        Map<String, Integer> breakdown = Map.of(
+                "embedding", embeddingScore,
+                "keyword", keywordScore,
+                "baseTotal", originalTotal,
+                "llmAdjustment", llmAdjustment
+        );
 
         return new MatchResult(
                 total,
                 true,
                 null,
-                Map.of("embedding", embeddingScore, "keyword", keywordScore)
+                breakdown,
+                reasoning
         );
     }
 
     // ---- Private helpers ----
 
     private static MatchResult ineligible(String reason) {
-        return new MatchResult(0, false, reason, Map.of());
+        return new MatchResult(0, false, reason, Map.of(), "Ineligible: " + reason);
     }
 
     /**

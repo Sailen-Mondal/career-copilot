@@ -29,4 +29,17 @@ public class VertexAiLlmClient implements LlmClient {
                 .call()
                 .content();
     }
+
+    @Override
+    public String generate(String systemPrompt, String userPrompt, String modelName) {
+        return chatClient
+                .prompt()
+                .system(systemPrompt)
+                .user(userPrompt)
+                .options(org.springframework.ai.vertexai.gemini.VertexAiGeminiChatOptions.builder()
+                        .withModel(modelName)
+                        .build())
+                .call()
+                .content();
+    }
 }

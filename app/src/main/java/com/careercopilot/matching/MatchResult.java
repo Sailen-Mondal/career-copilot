@@ -14,7 +14,8 @@ public record MatchResult(
         int score,
         boolean eligible,
         String ineligibilityReason,
-        Map<String, Integer> breakdown
+        Map<String, Integer> breakdown,
+        String reasoning
 ) {
     public MatchResult {
         breakdown = breakdown == null ? Map.of() : Map.copyOf(breakdown);
