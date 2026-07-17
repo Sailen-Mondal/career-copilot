@@ -18,7 +18,8 @@ public record MasterProfile(
         String email,
         String phone,
         String linkedinUrl,
-        String websiteUrl
+        String websiteUrl,
+        Set<String> searchKeywords
 ) {
     public MasterProfile {
         if (id == null) {
@@ -35,6 +36,7 @@ public record MasterProfile(
         }
         locations = locations == null ? Set.of() : Set.copyOf(locations);
         blocklistCompanies = blocklistCompanies == null ? Set.of() : Set.copyOf(blocklistCompanies);
+        searchKeywords = searchKeywords == null ? Set.of() : Set.copyOf(searchKeywords);
     }
 
     public boolean blocksCompany(String company) {

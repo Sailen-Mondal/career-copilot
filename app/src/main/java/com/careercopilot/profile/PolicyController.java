@@ -42,7 +42,8 @@ public class PolicyController {
                         null,
                         null,
                         null,
-                        null
+                        null,
+                        Set.of()
                 ));
 
         Map<String, String> platformBreakers = circuitBreakerStateRepository.findAll().stream()
@@ -61,6 +62,7 @@ public class PolicyController {
         response.put("autonomyThreshold", profile.autonomyThreshold());
         response.put("dailyApplicationCap", profile.dailyApplicationCap());
         response.put("blocklistCompanies", profile.blocklistCompanies());
+        response.put("searchKeywords", profile.searchKeywords());
         response.put("platformBreakerStates", platformBreakers);
 
         return ResponseEntity.ok(response);
@@ -87,7 +89,8 @@ public class PolicyController {
                     null,
                     null,
                     null,
-                    null
+                    null,
+                    Set.of()
             );
         } else {
             old = profileOpt.get();
@@ -111,6 +114,16 @@ public class PolicyController {
             }
         }
 
+        Set<String> searchKeywords = old.searchKeywords();
+        if (request.containsKey("searchKeywords")) {
+            Object rawList = request.get("searchKeywords");
+            if (rawList instanceof Collection<?>) {
+                searchKeywords = ((Collection<?>) rawList).stream()
+                        .map(Object::toString)
+                        .collect(Collectors.toSet());
+            }
+        }
+
         MasterProfile updated = new MasterProfile(
                 old.id(),
                 old.userId(),
@@ -126,7 +139,8 @@ public class PolicyController {
                 old.email(),
                 old.phone(),
                 old.linkedinUrl(),
-                old.websiteUrl()
+                old.websiteUrl(),
+                searchKeywords
         );
 
         profileService.saveProfile(DEFAULT_USER_ID, updated);

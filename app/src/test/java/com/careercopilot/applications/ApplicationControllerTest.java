@@ -77,7 +77,8 @@ class ApplicationControllerTest {
                 "john@example.com",
                 "123-456-7890",
                 "https://linkedin.com/in/johndoe",
-                "https://johndoe.com"
+                "https://johndoe.com",
+                Set.of()
         );
         masterProfileEntity = new MasterProfileEntity(profileDomain);
     }

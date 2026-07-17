@@ -41,7 +41,8 @@ public class ProfileService {
                 profile.email(),
                 profile.phone(),
                 profile.linkedinUrl(),
-                profile.websiteUrl()
+                profile.websiteUrl(),
+                profile.searchKeywords()
         );
 
         MasterProfileEntity entity = new MasterProfileEntity(profileWithUser);

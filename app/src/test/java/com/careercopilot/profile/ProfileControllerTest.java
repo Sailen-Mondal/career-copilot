@@ -61,7 +61,6 @@ class ProfileControllerTest {
         ResponseEntity<MasterProfile> getResponse = profileController.getProfile();
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
-        // 2. Create Profile
         CreateProfileRequest request = new CreateProfileRequest(
                 WorkAuthorization.US_CITIZEN,
                 false,
@@ -75,7 +74,8 @@ class ProfileControllerTest {
                 "john@example.com",
                 "123-456-7890",
                 "https://linkedin.com/in/johndoe",
-                "https://johndoe.com"
+                "https://johndoe.com",
+                Set.of("Backend", "Java")
         );
         ResponseEntity<MasterProfile> createResponse = profileController.createOrUpdateProfile(request);
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.OK);

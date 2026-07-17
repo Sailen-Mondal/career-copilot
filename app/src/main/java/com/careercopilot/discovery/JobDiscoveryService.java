@@ -1,5 +1,7 @@
 package com.careercopilot.discovery;
 
+import com.careercopilot.profile.MasterProfileEntity;
+import com.careercopilot.profile.MasterProfileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,14 +23,17 @@ public class JobDiscoveryService {
     private final GreenhouseClient greenhouseClient;
     private final EmbeddingClient embeddingClient;
     private final JobRepository jobRepository;
+    private final MasterProfileRepository masterProfileRepository;
 
     public JobDiscoveryService(
             GreenhouseClient greenhouseClient,
             EmbeddingClient embeddingClient,
-            JobRepository jobRepository) {
+            JobRepository jobRepository,
+            MasterProfileRepository masterProfileRepository) {
         this.greenhouseClient = greenhouseClient;
         this.embeddingClient = embeddingClient;
         this.jobRepository = jobRepository;
+        this.masterProfileRepository = masterProfileRepository;
     }
 
     public List<Job> syncBoard(String boardToken) {
@@ -36,10 +41,19 @@ public class JobDiscoveryService {
         List<GreenhouseJob> gJobs = greenhouseClient.fetchJobs(boardToken);
         log.info("Fetched {} jobs for board: {}", gJobs.size(), boardToken);
 
+        java.util.Set<String> searchKeywords = masterProfileRepository.findAll().stream()
+                .findFirst()
+                .map(MasterProfileEntity::getSearchKeywords)
+                .orElse(java.util.Set.of());
+
         List<Job> syncedJobs = new ArrayList<>();
 
         for (GreenhouseJob gJob : gJobs) {
             try {
+                if (!matchesKeywords(gJob.title(), searchKeywords)) {
+                    log.info("Job skipped (title '{}' does not match profile search keywords)", gJob.title());
+                    continue;
+                }
                 // 1. Determine location
                 String location = "unknown";
                 if (gJob.offices() != null && !gJob.offices().isEmpty()) {
@@ -192,9 +206,18 @@ public class JobDiscoveryService {
      * Returns only newly-inserted jobs (skips duplicates).
      */
     public List<Job> ingestRawListings(List<RawJobListing> rawListings) {
+        java.util.Set<String> searchKeywords = masterProfileRepository.findAll().stream()
+                .findFirst()
+                .map(MasterProfileEntity::getSearchKeywords)
+                .orElse(java.util.Set.of());
+
         List<Job> newJobs = new ArrayList<>();
         for (RawJobListing raw : rawListings) {
             try {
+                if (!matchesKeywords(raw.title(), searchKeywords)) {
+                    log.info("Job skipped (title '{}' does not match profile search keywords)", raw.title());
+                    continue;
+                }
                 // 1. Dedup key
                 String dedupKey = JobNormalizer.generateDedupKey(
                         raw.companySlug(), raw.title(), raw.location());
@@ -294,5 +317,18 @@ public class JobDiscoveryService {
             }
         }
         return newJobs;
+    }
+
+    private boolean matchesKeywords(String title, java.util.Set<String> keywords) {
+        if (keywords == null || keywords.isEmpty()) {
+            return true;
+        }
+        String titleLower = title.toLowerCase();
+        for (String kw : keywords) {
+            if (titleLower.contains(kw.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

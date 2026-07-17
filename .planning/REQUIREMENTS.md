@@ -20,6 +20,9 @@
 ### Model Chain Framework (Chaining)
 - [ ] **LLM-CHAIN-01**: Implement a configurable LLM Chaining framework that supports routing calls to a primary model (cheap), secondary model (premium, for validation/error recovery), and a static/local fallback.
 
+### Keyword-Based Filtering & Dynamic Discovery (Crawling)
+- [ ] **LLM-CRAWL-01**: The system must support user-defined search and filter keywords stored in the candidate profile, display them on the dashboard, and use them to guide job crawler ingestion to eliminate irrelevant jobs.
+
 ## Out of Scope
 - Unlimited LLM generation without cost caps or budget safety triggers.
 - Dynamic generation of entire new resume formats (styling/structure) rather than tailoring content fields.

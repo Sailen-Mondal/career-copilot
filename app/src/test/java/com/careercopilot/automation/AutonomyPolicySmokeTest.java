@@ -29,7 +29,8 @@ public final class AutonomyPolicySmokeTest {
                 "john@example.com",
                 "123-456-7890",
                 "https://linkedin.com/in/johndoe",
-                "https://johndoe.com"
+                "https://johndoe.com",
+                Set.of()
         );
 
         Job job = new Job(

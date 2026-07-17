@@ -15,5 +15,6 @@ public record CreateProfileRequest(
         String email,
         String phone,
         String linkedinUrl,
-        String websiteUrl
+        String websiteUrl,
+        Set<String> searchKeywords
 ) {}

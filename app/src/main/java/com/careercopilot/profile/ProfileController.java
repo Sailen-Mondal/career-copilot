@@ -54,7 +54,8 @@ public class ProfileController {
                 request.email(),
                 request.phone(),
                 request.linkedinUrl(),
-                request.websiteUrl()
+                request.websiteUrl(),
+                request.searchKeywords()
         );
         MasterProfile saved = profileService.saveProfile(DEFAULT_USER_ID, profile);
         return ResponseEntity.ok(saved);
@@ -90,7 +91,8 @@ public class ProfileController {
                             null,
                             null,
                             null,
-                            null
+                            null,
+                            Set.of()
                     );
                     return profileService.saveProfile(DEFAULT_USER_ID, newProfile);
                 });
@@ -171,7 +173,8 @@ public class ProfileController {
                     null,
                     null,
                     null,
-                    null
+                    null,
+                    java.util.Set.of()
             );
         } else {
             old = profileOpt.get();
@@ -191,7 +194,8 @@ public class ProfileController {
                 old.email(),
                 old.phone(),
                 old.linkedinUrl(),
-                old.websiteUrl()
+                old.websiteUrl(),
+                old.searchKeywords()
         );
         profileService.saveProfile(DEFAULT_USER_ID, updated);
         return ResponseEntity.ok(Map.of("threshold", threshold));

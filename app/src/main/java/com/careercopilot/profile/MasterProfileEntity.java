@@ -38,6 +38,10 @@ public class MasterProfileEntity {
     @Column(name = "blocklist_companies", nullable = false, columnDefinition = "jsonb")
     private Set<String> blocklistCompanies = new HashSet<>();
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "search_keywords", nullable = false, columnDefinition = "jsonb")
+    private Set<String> searchKeywords = new HashSet<>();
+
     @Column(name = "daily_application_cap", nullable = false)
     private int dailyApplicationCap;
 
@@ -71,6 +75,7 @@ public class MasterProfileEntity {
         this.locations = profile.locations();
         this.remotePreference = profile.remotePreference();
         this.blocklistCompanies = profile.blocklistCompanies();
+        this.searchKeywords = profile.searchKeywords();
         this.dailyApplicationCap = profile.dailyApplicationCap();
         this.autonomyThreshold = profile.autonomyThreshold();
         this.name = profile.name();
@@ -96,7 +101,8 @@ public class MasterProfileEntity {
                 this.email,
                 this.phone,
                 this.linkedinUrl,
-                this.websiteUrl
+                this.websiteUrl,
+                this.searchKeywords
         );
     }
 
@@ -194,4 +200,7 @@ public class MasterProfileEntity {
 
     public String getWebsiteUrl() { return websiteUrl; }
     public void setWebsiteUrl(String websiteUrl) { this.websiteUrl = websiteUrl; }
+
+    public Set<String> getSearchKeywords() { return searchKeywords; }
+    public void setSearchKeywords(Set<String> searchKeywords) { this.searchKeywords = searchKeywords; }
 }

@@ -75,7 +75,8 @@ class MatchingServiceTest {
                 "john@example.com",
                 "123",
                 "linkedin",
-                "website"
+                "website",
+                Set.of()
         );
         profileEntity = new MasterProfileEntity(profileDomain);
 

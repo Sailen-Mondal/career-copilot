@@ -793,6 +793,10 @@ async function loadProfileAndFacts() {
       els.profilePhone.value = profile.phone ?? '';
       els.profileWorkAuth.value = profile.workAuthorization ?? 'OTHER';
       els.profileLocations.value = profile.locations ? Array.from(profile.locations).join(', ') : '';
+      
+      // Load search keywords from profile
+      const keywords = profile.searchKeywords ? Array.from(profile.searchKeywords) : ['Backend', 'Platform', 'Systems Engineer'];
+      setupTagInput('disc-tags-title-keywords', keywords);
     }
   } catch (err) {
     console.warn('Failed to load master profile:', err);
@@ -840,6 +844,15 @@ async function loadProfileAndFacts() {
 async function saveProfile(e) {
   e.preventDefault();
   const locs = els.profileLocations.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  
+  // Extract search keywords from DOM
+  const searchKeywords = [];
+  const keywordsContainer = document.getElementById('disc-tags-title-keywords');
+  if (keywordsContainer) {
+    const tags = keywordsContainer.querySelectorAll('.tag-badge span');
+    tags.forEach(span => searchKeywords.push(span.textContent));
+  }
+
   const body = {
     name: els.profileName.value,
     email: els.profileEmail.value,
@@ -851,7 +864,8 @@ async function saveProfile(e) {
     remotePreference: 'HYBRID',
     blocklistCompanies: ['BlockedCo'],
     dailyApplicationCap: 5,
-    autonomyThreshold: appState.threshold
+    autonomyThreshold: appState.threshold,
+    searchKeywords: searchKeywords
   };
 
   try {
@@ -966,6 +980,10 @@ async function loadSystemSettings() {
 
       if (els.settingsBlocklist) els.settingsBlocklist.value = policy.blocklistCompanies ? Array.from(policy.blocklistCompanies).join(', ') : '';
 
+      if (policy.searchKeywords) {
+        setupTagInput('disc-tags-title-keywords', Array.from(policy.searchKeywords));
+      }
+
       // Render circuit breakers list
       if (els.settingsBreakersList && policy.platformBreakerStates) {
         els.settingsBreakersList.innerHTML = Object.entries(policy.platformBreakerStates).map(([scope, status]) => {
@@ -1016,10 +1034,18 @@ async function saveSystemSettings(e) {
     if (appLimitDaily) cap = Number(appLimitDaily.value);
   }
 
+  let searchKeywords = [];
+  const keywordsContainer = document.getElementById('disc-tags-title-keywords');
+  if (keywordsContainer) {
+    const tags = keywordsContainer.querySelectorAll('.tag-badge span');
+    tags.forEach(span => searchKeywords.push(span.textContent));
+  }
+
   const body = {
     autonomyThreshold: threshold,
     dailyApplicationCap: cap,
-    blocklistCompanies: blocklist
+    blocklistCompanies: blocklist,
+    searchKeywords: searchKeywords
   };
 
   try {
