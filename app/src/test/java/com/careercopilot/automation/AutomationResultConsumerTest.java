@@ -68,6 +68,7 @@ class AutomationResultConsumerTest {
         jobEntity.setSource("greenhouse");
 
         lenient().when(applicationRepository.findById(appId)).thenReturn(Optional.of(appEntity));
+        lenient().when(applicationRepository.existsById(appId)).thenReturn(true);
         lenient().when(jobRepository.findById(jobId)).thenReturn(Optional.of(jobEntity));
     }
 

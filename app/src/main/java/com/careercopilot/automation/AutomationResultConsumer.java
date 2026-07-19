@@ -198,6 +198,11 @@ public class AutomationResultConsumer implements ApplicationListener<Application
 
             UUID applicationId = UUID.fromString(applicationIdStr);
 
+            if (!applicationRepository.existsById(applicationId)) {
+                log.warn("Stale result message received - Application {} not found in database. Ignoring.", applicationId);
+                return;
+            }
+
             String unsupportedFieldsJson = fields.get("unsupportedFields");
             List<String> unsupportedFieldsList = new ArrayList<>();
             if (unsupportedFieldsJson != null && !unsupportedFieldsJson.isEmpty()) {

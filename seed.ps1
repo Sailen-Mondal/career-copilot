@@ -20,6 +20,7 @@ $profileBody = @{
     blocklistCompanies = @("BlockedCo")
     dailyApplicationCap = 5
     autonomyThreshold = 80
+    searchKeywords = @("software", "engineer", "developer", "backend", "fullstack", "java", "react")
 } | ConvertTo-Json
 
 $profileResponse = Invoke-RestMethod -Uri "http://localhost:8080/api/profile" -Method Post -Headers $headers -Body $profileBody

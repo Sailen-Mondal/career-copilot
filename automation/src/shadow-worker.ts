@@ -115,7 +115,7 @@ export async function runShadowCommand(command: AutomationCommand): Promise<Auto
     logs.push(log(`Loaded: ${page.url()}`));
 
     // ── Detect platform ─────────────────────────────────────────────────────
-    const detection = await detectPlatform(command.jobUrl, page);
+    const detection = await detectPlatform(page.url(), page);
     logs.push(log(`Platform detected: ${detection.platform} (confidence: ${detection.confidence})`));
 
     // ── Fill with appropriate strategy ──────────────────────────────────────
@@ -137,7 +137,10 @@ export async function runShadowCommand(command: AutomationCommand): Promise<Auto
 
     // ── Determine final status ───────────────────────────────────────────────
     let finalStatus: AutomationResult['status'];
-    if (!isLive) {
+    if (result.fieldsFilled.length === 0 && result.unsupportedFields.length === 0) {
+      finalStatus = 'failed';
+      logs.push(log('Error: No form fields were found on the page. The job may have expired or closed.'));
+    } else if (!isLive) {
       finalStatus = 'shadow_completed';
     } else if (result.errorBody === 'SKIPPED_REQUIRES_ACCOUNT') {
       finalStatus = 'skipped';

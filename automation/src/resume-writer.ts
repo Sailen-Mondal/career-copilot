@@ -35,22 +35,45 @@ function escapeLatex(text: string): string {
 
 /** Convert plain-text resume content into LaTeX body paragraphs. */
 function contentToLatex(content: string): string {
-  return content
-    .split('\n')
-    .map(line => {
-      const trimmed = line.trim();
-      if (!trimmed) return '';
-      // Bullet points (lines starting with - or •)
-      if (/^[-•*]\s+/.test(trimmed)) {
-        return `  \\item ${escapeLatex(trimmed.replace(/^[-•*]\s+/, ''))}`;
+  const lines = content.split('\n');
+  const result: string[] = [];
+  let inItemize = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (inItemize) {
+        result.push('\\end{itemize}');
+        inItemize = false;
       }
-      // Section headers (ALL CAPS or ends with :)
+      continue;
+    }
+
+    if (/^[-•*]\s+/.test(trimmed)) {
+      if (!inItemize) {
+        result.push('\\begin{itemize}');
+        inItemize = true;
+      }
+      result.push(`  \\item ${escapeLatex(trimmed.replace(/^[-•*]\s+/, ''))}`);
+    } else {
+      if (inItemize) {
+        result.push('\\end{itemize}');
+        inItemize = false;
+      }
+
       if (/^[A-Z][A-Z\s]{3,}$/.test(trimmed) || /^[A-Z][^a-z]+:$/.test(trimmed)) {
-        return `\\section*{${escapeLatex(trimmed.replace(/:$/, ''))}}`;
+        result.push(`\\section*{${escapeLatex(trimmed.replace(/:$/, ''))}}`);
+      } else {
+        result.push(escapeLatex(trimmed) + ' \\\\[2pt]');
       }
-      return escapeLatex(trimmed) + ' \\\\[2pt]';
-    })
-    .join('\n');
+    }
+  }
+
+  if (inItemize) {
+    result.push('\\end{itemize}');
+  }
+
+  return result.join('\n');
 }
 
 function buildLatex(data: ResumeData): string {
