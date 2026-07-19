@@ -25,7 +25,7 @@ public class LeverDiscoveryAdapter implements SourceDiscoveryAdapter {
     private static final List<String> BOARDS = List.of(
             "github", "discord", "linear", "retool", "grafana",
             "vercel", "planetscale", "posthog", "supabase", "fly",
-            "clerk", "neon", "turso", "modal", "render"
+            "clerk", "neon", "turso", "modal", "render", "bolster"
     );
 
     private final RestClient restClient;
