@@ -62,8 +62,15 @@ public class LeverDiscoveryAdapter implements SourceDiscoveryAdapter {
                         String location = cats != null ? String.valueOf(cats.getOrDefault("location", "Remote")) : "Remote";
                         boolean remote  = location.toLowerCase().contains("remote");
 
-                        Map<String, Object> desc = (Map<String, Object>) p.get("descriptionPlain");
-                        String descText = desc != null ? String.valueOf(desc) : String.valueOf(p.getOrDefault("description", ""));
+                        Object descObj = p.get("descriptionPlain");
+                        String descText = "";
+                        if (descObj instanceof Map<?, ?> descMap) {
+                            descText = String.valueOf(descMap);
+                        } else if (descObj instanceof String descStr) {
+                            descText = descStr;
+                        } else {
+                            descText = String.valueOf(p.getOrDefault("description", ""));
+                        }
 
                         Long createdAt = p.get("createdAt") instanceof Number n ? n.longValue() : null;
                         Instant posted = createdAt != null ? Instant.ofEpochMilli(createdAt) : null;
