@@ -48,10 +48,9 @@ public class AiClientConfig {
     }
 
     /**
-     * Registers the mock embedding client when client-type is "mock" (default if missing).
+     * Registers the embedding client (falls back to mock embedding client).
      */
     @Bean
-    @ConditionalOnProperty(name = "app.ai.client-type", havingValue = "mock", matchIfMissing = true)
     public EmbeddingClient mockEmbeddingClient() {
         return new MockEmbeddingClient();
     }

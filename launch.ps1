@@ -3,6 +3,20 @@
 
 $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
+# Load .env variables into process scope if .env exists
+if (Test-Path "$PSScriptRoot/.env") {
+    Write-Host "Loading environment variables from .env..." -ForegroundColor Cyan
+    Get-Content "$PSScriptRoot/.env" | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -and -not $line.StartsWith("#") -and $line -match "^([^=]+)=(.*)$") {
+            $key = $Matches[1].Trim()
+            $val = $Matches[2].Trim()
+            [System.Environment]::SetEnvironmentVariable($key, $val, "Process")
+            Set-Item "env:$key" $val
+        }
+    }
+}
+
 # 1. Start Docker Desktop if not running
 Write-Host "Checking if Docker daemon is running..." -ForegroundColor Cyan
 try {

@@ -26,12 +26,5 @@ export async function greenhouseFill(
 
   // Delegate actual form-filling to genericFill (中央 Brain)
   logs.push('[greenhouse] Delegating actual form filling to genericFill brain');
-  
-  // Note: if the target is a Frame, we must evaluate on the page, but genericFill expects Page.
-  // Playwright's Page acts as the root, so passing `page` is correct and genericFill will handle the main page's elements.
-  // If we have an iframe, we can frame-fill, but greenhouse is mostly direct boards or iframes. 
-  // Let's pass target (Page | Frame) to genericFill? 
-  // Wait! In generic-filler.ts, we declared page: Page. Let's make it page: Page | Frame in generic-filler.ts so it can fill inside frames too!
-  // That's an amazing idea!
-  return genericFill(page, resume, pdfResumePath, coverLetterPath, logs, isLive);
+  return genericFill(target, resume, pdfResumePath, coverLetterPath, logs, isLive);
 }

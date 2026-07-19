@@ -81,14 +81,35 @@ public final class GroundednessVerifier {
             if (trimmed.isEmpty()) {
                 continue;
             }
-            // Skip boilerplate greetings/closings
+            // Skip boilerplate greetings/closings, transitions, and contact fields
             String lower = trimmed.toLowerCase();
             if (lower.startsWith("dear") ||
                 lower.startsWith("sincerely") ||
                 lower.startsWith("hello") ||
                 lower.startsWith("subject:") ||
                 lower.startsWith("resume") ||
-                lower.startsWith("cover letter")) {
+                lower.startsWith("cover letter") ||
+                lower.contains("apply") ||
+                lower.contains("applying") ||
+                lower.contains("interest") ||
+                lower.contains("excited") ||
+                lower.contains("look forward") ||
+                lower.contains("hear from") ||
+                lower.contains("opportunity") ||
+                lower.contains("thank") ||
+                lower.contains("regards") ||
+                lower.contains("hiring manager") ||
+                lower.contains("recruiter") ||
+                lower.contains("phone:") ||
+                lower.contains("email:") ||
+                lower.contains("linkedin:") ||
+                lower.contains("github:") ||
+                lower.contains("address:") ||
+                lower.contains("portfolio:")) {
+                continue;
+            }
+            // Skip very short sentences/phrases (e.g. headings, names, dates, address parts)
+            if (trimmed.split("\\s+").length < 4) {
                 continue;
             }
             boolean hasMarker = FACT_MARKER.matcher(trimmed).find();

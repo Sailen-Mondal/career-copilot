@@ -32,7 +32,11 @@ export async function leverFill(
     } else {
       logs.push('[lever] Clicking Apply button');
       await applyBtn.click();
-      await page.waitForTimeout(2000);
+      try {
+        await page.waitForSelector('form, input[type="text"]', { timeout: 10000 });
+      } catch {
+        logs.push('[lever] Form did not load in 10s, proceeding anyway');
+      }
     }
   } else {
     // Check if we're already on the apply page

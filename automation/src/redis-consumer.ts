@@ -90,6 +90,24 @@ export async function startConsuming(): Promise<void> {
     }
   }
 
+  // ─── Reclaim Stuck/Pending Messages on Startup ───────────────────────────
+  try {
+    const pendingInfo = (await readClient.xpending(JOBS_STREAM, CONSUMER_GROUP, '-', '+', 100)) as any[];
+    if (pendingInfo && pendingInfo.length > 0) {
+      log(`Found ${pendingInfo.length} pending messages in stream. Reclaiming inactive ones…`);
+      for (const item of pendingInfo) {
+        const [messageId, consumerName, idleTimeMs] = item;
+        // If the message has been pending/idle for more than 15 seconds, reclaim it!
+        if (Number(idleTimeMs) > 15000) {
+          log(`Reclaiming message id=${messageId} from ${consumerName} (idle for ${idleTimeMs}ms)`);
+          await readClient.xclaim(JOBS_STREAM, CONSUMER_GROUP, CONSUMER_NAME, '15000', messageId);
+        }
+      }
+    }
+  } catch (err) {
+    log(`WARN: Failed to reclaim pending messages on startup: ${err}`);
+  }
+
   log(`Starting XREADGROUP loop on stream "${JOBS_STREAM}" …`);
 
   // Flag set by SIGTERM handler in index.ts
@@ -97,13 +115,24 @@ export async function startConsuming(): Promise<void> {
     let rawMessages: Array<[string, Array<[string, string[]]>]> | null = null;
 
     try {
-      // XREADGROUP GROUP <group> <consumer> COUNT 1 BLOCK <ms> STREAMS <stream> >
+      // 1. First, check for pending messages (previously delivered to this consumer or unclaimed)
       rawMessages = (await readClient.xreadgroup(
         'GROUP', CONSUMER_GROUP, CONSUMER_NAME,
         'COUNT', '1',
-        'BLOCK', String(BLOCK_MS),
-        'STREAMS', JOBS_STREAM, '>',
+        'BLOCK', '500',
+        'STREAMS', JOBS_STREAM, '0',
       )) as Array<[string, Array<[string, string[]]>]> | null;
+
+      // 2. If no pending messages, block and read new messages ('>')
+      const hasPending = rawMessages && rawMessages.length > 0 && rawMessages[0][1] && rawMessages[0][1].length > 0;
+      if (!hasPending) {
+        rawMessages = (await readClient.xreadgroup(
+          'GROUP', CONSUMER_GROUP, CONSUMER_NAME,
+          'COUNT', '1',
+          'BLOCK', String(BLOCK_MS),
+          'STREAMS', JOBS_STREAM, '>',
+        )) as Array<[string, Array<[string, string[]]>]> | null;
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       // NOGROUP means the stream/group was deleted; stop gracefully

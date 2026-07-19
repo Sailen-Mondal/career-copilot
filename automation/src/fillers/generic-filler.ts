@@ -101,6 +101,11 @@ export function chooseValue(
   if (/\bveteran\b/.test(combined))          return 'No';
   if (/\bdisability\b/.test(combined))       return 'No';
 
+  // Terms, consent, declarations, and privacy policy checkboxes
+  if (/\b(privacy|policy|terms|condition|consent|agree|acknowledge|certify|declaration|statement|correct|accurate)\b/.test(combined)) {
+    return 'Yes';
+  }
+
   return null;
 }
 
