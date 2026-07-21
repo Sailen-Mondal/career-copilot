@@ -1,0 +1,44 @@
+# Render Blueprint Infrastructure Configuration
+# Deploys Full Stack (Backend + Postgres DB + Redis + Frontend) 100% FREE
+services:
+  - type: web
+    name: career-copilot-backend
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: API_KEY
+        value: dev-insecure-key
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: career-copilot-db
+          property: connectionString
+      - key: SPRING_REDIS_HOST
+        fromService:
+          type: redis
+          name: career-copilot-redis
+          property: host
+      - key: SPRING_REDIS_PORT
+        fromService:
+          type: redis
+          name: career-copilot-redis
+          property: port
+
+  - type: web
+    name: career-copilot-frontend
+    env: static
+    buildCommand: ""
+    staticPublishPath: ./frontend
+    plan: free
+
+databases:
+  - name: career-copilot-db
+    plan: free
+    databaseName: career_copilot
+    user: career_copilot
+
+  - name: career-copilot-redis
+    type: redis
+    plan: free
