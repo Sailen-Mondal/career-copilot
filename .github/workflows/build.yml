@@ -24,7 +24,7 @@ jobs:
       # ubuntu-latest ships Docker — Testcontainers works out of the box.
 
       - name: Build and test
-        run: ./gradlew build --no-daemon
+        run: ./gradlew check :app:bootJar --no-daemon
         env:
           # Keep the dev-mode API key for tests; SchemaIntegrationTest overrides
           # via @DynamicPropertySource so this value doesn't affect Testcontainers.
