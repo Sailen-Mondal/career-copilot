@@ -3,8 +3,8 @@
 services:
   - type: web
     name: career-copilot-backend
-    env: docker
-    dockerfilePath: Dockerfile
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     plan: free
     envVars:
       - key: SPRING_PROFILES_ACTIVE
@@ -28,17 +28,17 @@ services:
 
   - type: web
     name: career-copilot-frontend
-    env: static
-    buildCommand: ""
+    runtime: static
     staticPublishPath: ./frontend
     plan: free
+
+  - type: redis
+    name: career-copilot-redis
+    plan: free
+    ipAllowList: []
 
 databases:
   - name: career-copilot-db
     plan: free
     databaseName: career_copilot
     user: career_copilot
-
-  - name: career-copilot-redis
-    type: redis
-    plan: free
