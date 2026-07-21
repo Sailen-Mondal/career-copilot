@@ -2,7 +2,7 @@
 
 $headers = @{
     "Content-Type" = "application/json"
-    "X-API-Key" = "dev-insecure-key"
+    "X-API-Key" = "copilot-dev-key"
 }
 
 Write-Host "1. Creating candidate profile..." -ForegroundColor Cyan

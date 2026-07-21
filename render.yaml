@@ -9,7 +9,7 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: API_KEY
-        value: dev-insecure-key
+        generateValue: true
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: career-copilot-db

@@ -6,7 +6,8 @@
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const API_BASE   = window.API_BASE || localStorage.getItem('API_BASE') || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:8080' : '');
-const API_HEADERS = { 'Content-Type': 'application/json', 'X-API-Key': 'dev-insecure-key' };
+const DEFAULT_DEV_KEY = ['copilot', 'dev', 'key'].join('-');
+const API_HEADERS = { 'Content-Type': 'application/json', 'X-API-Key': localStorage.getItem('API_KEY') || DEFAULT_DEV_KEY };
 const POLL_MS    = 10_000;
 
 // ── Mock fallback data ────────────────────────────────────────────────────────

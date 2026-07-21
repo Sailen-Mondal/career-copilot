@@ -268,7 +268,7 @@ async function getAnswersFromBrain(
   pageUrl: string,
 ): Promise<Record<string, string>> {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
-  const apiKey = process.env.API_KEY || 'dev-insecure-key';
+  const apiKey = process.env.API_KEY || 'copilot-dev-key';
 
   const body = fields.map(f => ({
     selector: f.selector,

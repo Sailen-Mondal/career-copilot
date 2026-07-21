@@ -38,7 +38,7 @@ spring:
 # ------------------------------------------------------------------
 app:
   security:
-    api-key: ${API_KEY:dev-insecure-key}
+    api-key: ${API_KEY:copilot-dev-key}
   ai:
     client-type: ${AI_CLIENT_TYPE:mock}   # mock | vertex | openrouter
     openrouter:
