@@ -1,5 +1,4 @@
 # Render Blueprint Infrastructure Configuration
-# Deploys Full Stack (Backend + Postgres DB + Redis + Frontend) 100% FREE
 services:
   - type: web
     name: career-copilot-backend
@@ -30,7 +29,6 @@ services:
     name: career-copilot-frontend
     runtime: static
     staticPublishPath: ./frontend
-    plan: free
 
   - type: redis
     name: career-copilot-redis
