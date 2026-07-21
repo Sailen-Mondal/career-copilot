@@ -11,6 +11,8 @@ An autonomous job application system that discovers jobs, matches candidate prof
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 
+**[🚀 Live Demo (Dashboard)](https://sailen-mondal.github.io/career-copilot/)** — runs with built-in mock data, no backend required
+
 ## Overview
 
 AI Career Copilot was engineered to automate the tedious and time-consuming process of modern job hunting while maintaining absolute control over the quality and truthfulness of applications. It ingests job listings from multiple ATS platforms and job boards, evaluates them against a candidate's verified profile facts, and employs advanced vector similarity search to score the matches. 
@@ -138,7 +140,7 @@ career-copilot/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/career-copilot.git
+   git clone https://github.com/Sailen-Mondal/career-copilot.git
    cd career-copilot
    ```
 
@@ -184,9 +186,11 @@ The project maintains rigorous test coverage to ensure reliability across all mo
 - **Mock Interfaces**: Includes `MockLlmClient` and `MockEmbeddingClient` to facilitate deterministic offline testing without incurring API costs or dealing with network latency.
 - **Continuous Integration**: GitHub Actions automatically runs the full test suite and verifies builds on every push.
 
-## Screenshots
+### Dashboard Overview
+![Dashboard Overview](docs/screenshots/dashboard.png)
 
-<!-- Add dashboard screenshots here -->
+### Live Automation Workflow
+![Automation Workflow](docs/screenshots/automation-workflow.png)
 
 ## License
 
