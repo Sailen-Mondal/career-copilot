@@ -29,6 +29,3 @@ test-results/
 .agents/
 app/bin/
 automation/screenshot.png
-automation/resume_*.pdf
-automation/resume_*.tex
-automation/cover_letter_*.txt
