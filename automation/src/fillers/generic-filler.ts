@@ -132,9 +132,12 @@ async function collectFillableFields(page: Page | Frame, logs: string[]): Promis
         const lh = page.locator(`label[for="${id}"]`);
         if (await lh.count() > 0) labelText = (await lh.first().textContent()) ?? '';
       }
+      const required = (await handle.getAttribute('required')) !== null ||
+                       (await handle.getAttribute('aria-required')) === 'true' ||
+                       labelText.includes('*');
       labelText = labelText.replace(/\s+/g, ' ').replace(/\s*\*$/, '').trim();
       const selector = name ? `input[name="${name}"]` : id ? `#${id}` : `input[placeholder="${ph}"]`;
-      fields.push({ selector, identifier, labelText, type: 'input' });
+      fields.push({ selector, identifier, labelText, type: 'input', required });
     } catch { /* skip */ }
   }
 
@@ -150,9 +153,12 @@ async function collectFillableFields(page: Page | Frame, logs: string[]): Promis
         const lh = page.locator(`label[for="${id}"]`);
         if (await lh.count() > 0) labelText = (await lh.first().textContent()) ?? '';
       }
+      const required = (await handle.getAttribute('required')) !== null ||
+                       (await handle.getAttribute('aria-required')) === 'true' ||
+                       labelText.includes('*');
       labelText = labelText.replace(/\s+/g, ' ').replace(/\s*\*$/, '').trim();
       const selector = name ? `textarea[name="${name}"]` : id ? `#${id}` : 'textarea';
-      fields.push({ selector, identifier, labelText, type: 'textarea' });
+      fields.push({ selector, identifier, labelText, type: 'textarea', required });
     } catch { /* skip */ }
   }
 
@@ -168,6 +174,10 @@ async function collectFillableFields(page: Page | Frame, logs: string[]): Promis
         const lh = page.locator(`label[for="${id}"]`);
         if (await lh.count() > 0) labelText = (await lh.first().textContent()) ?? '';
       }
+      const required = (await handle.getAttribute('required')) !== null ||
+                       (await handle.getAttribute('aria-required')) === 'true' ||
+                       labelText.includes('*');
+      labelText = labelText.replace(/\s+/g, ' ').replace(/\s*\*$/, '').trim();
 
       const optionTexts: string[] = [];
       const options = await handle.locator('option').all();
@@ -177,7 +187,7 @@ async function collectFillableFields(page: Page | Frame, logs: string[]): Promis
       }
 
       const selector = name ? `select[name="${name}"]` : id ? `#${id}` : 'select';
-      fields.push({ selector, identifier, labelText: labelText.trim(), type: 'select', options: optionTexts });
+      fields.push({ selector, identifier, labelText, type: 'select', options: optionTexts, required });
     } catch { /* skip */ }
   }
 
@@ -194,8 +204,12 @@ async function collectFillableFields(page: Page | Frame, logs: string[]): Promis
         const lh = page.locator(`label[for="${id}"]`);
         if (await lh.count() > 0) labelText = (await lh.first().textContent()) ?? '';
       }
+      const required = (await handle.getAttribute('required')) !== null ||
+                       (await handle.getAttribute('aria-required')) === 'true' ||
+                       labelText.includes('*');
+      labelText = labelText.replace(/\s+/g, ' ').replace(/\s*\*$/, '').trim();
       const selector = name ? `input[name="${name}"]` : id ? `#${id}` : 'input[type="file"]';
-      fields.push({ selector, identifier, labelText: labelText.trim(), type: 'file' });
+      fields.push({ selector, identifier, labelText, type: 'file', required });
     } catch { /* skip */ }
   }
 
@@ -212,9 +226,12 @@ async function collectFillableFields(page: Page | Frame, logs: string[]): Promis
         const lh = page.locator(`label[for="${id}"]`);
         if (await lh.count() > 0) labelText = (await lh.first().textContent()) ?? '';
       }
+      const required = (await handle.getAttribute('required')) !== null ||
+                       (await handle.getAttribute('aria-required')) === 'true' ||
+                       labelText.includes('*');
       labelText = labelText.replace(/\s+/g, ' ').replace(/\s*\*$/, '').trim();
       const selector = id ? `#${id}` : name ? `input[name="${name}"][value="${valueAttr}"]` : 'input[type="checkbox"]';
-      fields.push({ selector, identifier: id || name || 'checkbox', labelText: labelText || identifier, type: 'checkbox' });
+      fields.push({ selector, identifier: id || name || 'checkbox', labelText: labelText || identifier, type: 'checkbox', required });
     } catch { /* skip */ }
   }
 
@@ -231,9 +248,12 @@ async function collectFillableFields(page: Page | Frame, logs: string[]): Promis
         const lh = page.locator(`label[for="${id}"]`);
         if (await lh.count() > 0) labelText = (await lh.first().textContent()) ?? '';
       }
+      const required = (await handle.getAttribute('required')) !== null ||
+                       (await handle.getAttribute('aria-required')) === 'true' ||
+                       labelText.includes('*');
       labelText = labelText.replace(/\s+/g, ' ').replace(/\s*\*$/, '').trim();
       const selector = id ? `#${id}` : name ? `input[name="${name}"][value="${valueAttr}"]` : 'input[type="radio"]';
-      fields.push({ selector, identifier: id || name || 'radio', labelText: labelText || identifier, type: 'radio' });
+      fields.push({ selector, identifier: id || name || 'radio', labelText: labelText || identifier, type: 'radio', required });
     } catch { /* skip */ }
   }
 
@@ -311,7 +331,9 @@ export async function genericFill(
 
     if (value === null && field.type === 'textarea') value = resume.coverLetter;
     if (value === null) {
-      unsupportedFields.push(`${field.identifier}::${field.labelText}`);
+      if (field.required) {
+        unsupportedFields.push(`${field.identifier}::${field.labelText}`);
+      }
       logs.push(`[generic] SKIP (no mapping): ${field.identifier}`);
       continue;
     }
@@ -327,7 +349,9 @@ export async function genericFill(
       }
 
       if (!(await locator.isVisible())) {
-        unsupportedFields.push(`${field.identifier}::${field.labelText}`);
+        if (field.required) {
+          unsupportedFields.push(`${field.identifier}::${field.labelText}`);
+        }
         logs.push(`[generic] SKIP (hidden): ${field.identifier}`);
         continue;
       }
@@ -387,7 +411,9 @@ export async function genericFill(
       logs.push(`[generic] FILLED: ${field.identifier}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      unsupportedFields.push(`${field.identifier}::${field.labelText}`);
+      if (field.required) {
+        unsupportedFields.push(`${field.identifier}::${field.labelText}`);
+      }
       logs.push(`[generic] ERROR filling ${field.identifier}: ${msg}`);
     }
   }
