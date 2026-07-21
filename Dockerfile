@@ -1,8 +1,8 @@
 # Multi-stage Dockerfile for Spring Boot Backend on Render / Cloud
-FROM gradle:8.14.1-jdk21-alpine AS build
+FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
 COPY . .
-RUN gradle :app:bootJar -x test --no-daemon
+RUN chmod +x ./gradlew && ./gradlew :app:bootJar -x test --no-daemon -Dorg.gradle.jvmargs="-Xmx384m"
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app

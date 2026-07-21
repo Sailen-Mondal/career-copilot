@@ -15,6 +15,10 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters") // needed for Spring MVC param name resolution
 }
 
+tasks.named<Jar>("jar") {
+    enabled = false
+}
+
 dependencies {
     // Web + REST
     implementation(libs.spring.boot.starter.web)
