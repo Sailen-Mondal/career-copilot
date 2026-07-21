@@ -1,0 +1,2424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Career Copilot — AI Job Application Dashboard</title>
+    <meta name="description" content="Career Copilot: AI-powered autonomous job application dashboard. Monitor, control, and audit your automated job search in real time.">
+    <meta name="theme-color" content="#0B0B0C">
+    <link rel="icon" type="image/png" href="logo.png">
+    <!-- Preconnect for Google Fonts performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="src/styles.css">
+    <link rel="stylesheet" href="src/workflow.css">
+  </head>
+  <body>
+
+    <div class="app-shell">
+
+      <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-logo">
+            <img src="logo.png" alt="Career Copilot Logo" class="brand-logo-img">
+          </div>
+          <div class="sidebar-brand-text">
+            <span class="sidebar-brand-name">Career Copilot</span>
+            <span class="sidebar-brand-plan">AI Autopilot Active</span>
+          </div>
+          <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse sidebar" title="Collapse sidebar">
+            <i data-lucide="panel-left-close" class="icon-sm"></i>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" id="sidebarNav" aria-label="Main navigation">
+          <!-- Overview -->
+          <div class="nav-section">
+            <span class="nav-section-header">Overview</span>
+            <a class="nav-item active" data-view="dashboard" href="#dashboard" id="nav-dashboard">
+              <i data-lucide="layout-dashboard" class="nav-icon"></i>
+              <span>Dashboard</span>
+            </a>
+            <a class="nav-item" data-view="applications" href="#applications" id="nav-applications">
+              <i data-lucide="file-text" class="nav-icon"></i>
+              <span>Applications</span>
+              <span class="nav-badge" id="navAppCount">5</span>
+            </a>
+            <a class="nav-item" data-view="profile" href="#profile" id="nav-profile">
+              <i data-lucide="user" class="nav-icon"></i>
+              <span>Profile</span>
+            </a>
+          </div>
+
+          <!-- Pipeline -->
+          <div class="nav-section">
+            <span class="nav-section-header">Pipeline</span>
+            <a class="nav-item" data-view="discovery" href="#discovery" id="nav-discovery">
+              <i data-lucide="search" class="nav-icon"></i>
+              <span>Discovery</span>
+            </a>
+            <a class="nav-item" data-view="matching" href="#matching" id="nav-matching">
+              <i data-lucide="git-compare-arrows" class="nav-icon"></i>
+              <span>Matching</span>
+            </a>
+            <a class="nav-item" data-view="generation" href="#generation" id="nav-generation">
+              <i data-lucide="sparkles" class="nav-icon"></i>
+              <span>Generation</span>
+            </a>
+          </div>
+
+          <!-- System -->
+          <div class="nav-section">
+            <span class="nav-section-header">System</span>
+            <a class="nav-item" data-view="automation" href="#automation" id="nav-automation">
+              <i data-lucide="bot" class="nav-icon"></i>
+              <span>Automation</span>
+            </a>
+            <a class="nav-item" data-view="audit" href="#audit" id="nav-audit">
+              <i data-lucide="scroll-text" class="nav-icon"></i>
+              <span>Audit Log</span>
+            </a>
+          </div>
+
+          <!-- Settings -->
+          <div class="nav-section">
+            <span class="nav-section-header">Settings</span>
+            <a class="nav-item active" data-view="settings" data-settings-tab="general" href="#settings-general" id="nav-settings-general">
+              <i data-lucide="sliders" class="nav-icon"></i>
+              <span>General Settings</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="ai" href="#settings-ai" id="nav-settings-ai">
+              <i data-lucide="cpu" class="nav-icon"></i>
+              <span>AI Engine</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="discovery" href="#settings-discovery" id="nav-settings-discovery">
+              <i data-lucide="search" class="nav-icon"></i>
+              <span>Job Discovery</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="matching" href="#settings-matching" id="nav-settings-matching">
+              <i data-lucide="git-compare" class="nav-icon"></i>
+              <span>Matching Engine</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="applications" href="#settings-applications" id="nav-settings-applications">
+              <i data-lucide="file-check" class="nav-icon"></i>
+              <span>Applications Set</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="resume" href="#settings-resume" id="nav-settings-resume">
+              <i data-lucide="user-square-2" class="nav-icon"></i>
+              <span>Resume & Profile</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="automation" href="#settings-automation" id="nav-settings-automation">
+              <i data-lucide="bot" class="nav-icon"></i>
+              <span>Automation Set</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="notifications" href="#settings-notifications" id="nav-settings-notifications">
+              <i data-lucide="bell" class="nav-icon"></i>
+              <span>Notifications</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="safety" href="#settings-safety" id="nav-settings-safety">
+              <i data-lucide="shield-check" class="nav-icon"></i>
+              <span>Safety & Limits</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="integrations" href="#settings-integrations" id="nav-settings-integrations">
+              <i data-lucide="cable" class="nav-icon"></i>
+              <span>Integrations</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="logs" href="#settings-logs" id="nav-settings-logs">
+              <i data-lucide="scroll-text" class="nav-icon"></i>
+              <span>Observability Logs</span>
+            </a>
+            <a class="nav-item" data-view="settings" data-settings-tab="advanced" href="#settings-advanced" id="nav-settings-advanced">
+              <i data-lucide="settings-2" class="nav-icon"></i>
+              <span>Advanced Config</span>
+            </a>
+          </div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-status">
+            <span class="status-dot-sm" id="sidebarStatusDot"></span>
+            <span class="sidebar-status-text" id="sidebarStatusText">Autopilot Active</span>
+          </div>
+        </div>
+      </aside>
+      <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+      <div class="main-wrapper" id="mainWrapper">
+
+        <!-- ── Top Bar ── -->
+        <header class="topbar" role="banner">
+          <div class="topbar-left">
+            <button class="sidebar-expand-btn" id="sidebarExpandBtn" aria-label="Expand sidebar" title="Expand sidebar" hidden>
+              <i data-lucide="panel-left-open" class="icon-sm"></i>
+            </button>
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+              <ol>
+                <li><a href="#dashboard">Career Copilot</a></li>
+                <li class="breadcrumb-separator" aria-hidden="true">
+                  <i data-lucide="chevron-right" class="icon-xs"></i>
+                </li>
+                <li><span id="breadcrumbCurrent" aria-current="page">Dashboard</span></li>
+              </ol>
+            </nav>
+          </div>
+
+          <div class="topbar-center">
+            <nav class="topbar-tabs" aria-label="Quick navigation">
+              <button class="topbar-tab active" data-view="dashboard">Dashboard</button>
+              <button class="topbar-tab" data-view="applications">Applications</button>
+              <button class="topbar-tab" data-view="automation">Automation</button>
+              <button class="topbar-tab" data-view="audit">Audit Log</button>
+            </nav>
+          </div>
+
+          <div class="topbar-right">
+            <button class="topbar-search-btn" id="searchBtn" aria-label="Search (Ctrl+K)" title="Search (Ctrl+K)">
+              <i data-lucide="search" class="icon-sm"></i>
+              <span class="search-label">Search</span>
+              <kbd class="search-kbd">Ctrl K</kbd>
+            </button>
+
+            <div class="automation-status" id="automationStatusBadge">
+              <span class="status-dot animate-pulse" id="statusDot" aria-hidden="true"></span>
+              <span id="automationState" class="automation-state-label">RUNNING</span>
+            </div>
+
+            <time id="lastRefreshed" class="last-refreshed" datetime="" title="Last data refresh"></time>
+
+            <div class="user-avatar" id="userAvatar" title="User Settings">
+              <span>S</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- ── Content ── -->
+        <main class="content" id="mainContent">
+
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-meta">
+              <h1 class="page-title" id="pageTitle">Dashboard</h1>
+              <div class="page-header-stats" id="pageHeaderStats">
+                <span class="header-stat"><strong id="hdrDiscovered">47</strong> discovered</span>
+                <span class="header-stat-dot">&middot;</span>
+                <span class="header-stat"><strong id="hdrApplied">3</strong> applied</span>
+                <span class="header-stat-dot">&middot;</span>
+                <span class="header-stat"><strong id="hdrScore">84</strong> match score</span>
+              </div>
+            </div>
+            <p class="page-subtitle" id="pageSubtitle">Monitor your automated job search pipeline</p>
+          </div>
+
+          <!-- ── Stats Row ── -->
+          <section class="stats-row" aria-label="Key metrics">
+            <article class="stat-card" id="stat-discovered">
+              <div class="stat-card-header">
+                <div class="stat-icon-wrap">
+                  <i data-lucide="telescope" class="stat-icon"></i>
+                </div>
+                <span class="stat-trend trend-up"><i data-lucide="arrow-up-right" class="icon-xs"></i> 12%</span>
+              </div>
+              <div class="stat-card-body">
+                <p class="stat-value" id="val-discovered">&mdash;</p>
+                <p class="stat-label">Jobs Discovered</p>
+              </div>
+              <div class="stat-card-chart">
+                <svg class="sparkline" viewBox="0 0 100 24" width="100%" height="24">
+                  <path d="M 0 18 Q 20 6, 40 14 T 80 4 T 100 8" fill="none" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+            </article>
+
+            <article class="stat-card" id="stat-applied">
+              <div class="stat-card-header">
+                <div class="stat-icon-wrap stat-icon-green">
+                  <i data-lucide="check-circle-2" class="stat-icon"></i>
+                </div>
+                <span class="stat-trend trend-up-green"><i data-lucide="arrow-up-right" class="icon-xs"></i> 3 today</span>
+              </div>
+              <div class="stat-card-body">
+                <p class="stat-value" id="val-applied">&mdash;</p>
+                <p class="stat-label">Applied Today</p>
+              </div>
+              <div class="stat-card-chart">
+                <svg class="sparkline" viewBox="0 0 100 24" width="100%" height="24">
+                  <path d="M 0 20 Q 20 18, 40 8 T 80 12 T 100 4" fill="none" stroke="var(--accent-green)" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+            </article>
+
+            <article class="stat-card" id="stat-avg-score">
+              <div class="stat-card-header">
+                <div class="stat-icon-wrap stat-icon-blue">
+                  <i data-lucide="star" class="stat-icon"></i>
+                </div>
+                <span class="stat-trend"><i data-lucide="trending-up" class="icon-xs"></i> Optimal</span>
+              </div>
+              <div class="stat-card-body">
+                <p class="stat-value" id="val-avg-score">&mdash;</p>
+                <p class="stat-label">Avg Match Score</p>
+              </div>
+              <div class="stat-card-chart">
+                <svg class="sparkline" viewBox="0 0 100 24" width="100%" height="24">
+                  <path d="M 0 10 Q 20 10, 40 8 T 80 6 T 100 4" fill="none" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+            </article>
+
+            <article class="stat-card" id="stat-success-rate">
+              <div class="stat-card-header">
+                <div class="stat-icon-wrap stat-icon-yellow">
+                  <i data-lucide="bar-chart-3" class="stat-icon"></i>
+                </div>
+                <span class="stat-trend"><i data-lucide="activity" class="icon-xs"></i> Constant</span>
+              </div>
+              <div class="stat-card-body">
+                <p class="stat-value" id="val-success-rate">&mdash;</p>
+                <p class="stat-label">Success Rate</p>
+              </div>
+              <div class="stat-card-chart">
+                <svg class="sparkline" viewBox="0 0 100 24" width="100%" height="24">
+                  <path d="M 0 12 Q 20 16, 40 12 T 80 8 T 100 10" fill="none" stroke="var(--accent-yellow)" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+            </article>
+          </section>
+
+          <!-- ── Controls Panel ── -->
+          <section id="controls" class="card controls-panel" aria-label="Automation controls">
+            <div class="controls-group">
+              <label class="control-label" for="threshold">
+                <i data-lucide="sliders-horizontal" class="icon-sm" aria-hidden="true"></i>
+                Autonomy Threshold
+              </label>
+              <div class="slider-row">
+                <input type="range" id="threshold" min="0" max="100" value="85" aria-label="Autonomy threshold percentage">
+                <output id="thresholdValue" for="threshold" class="threshold-output">85</output>
+              </div>
+              <p class="control-hint">Applications scoring below this value will be skipped.</p>
+            </div>
+
+            <div class="controls-divider" aria-hidden="true"></div>
+
+            <div class="controls-group controls-actions">
+              <button id="killSwitch" type="button" class="btn btn-primary" aria-label="Toggle automation kill switch">
+                <i data-lucide="pause" class="icon-sm" aria-hidden="true"></i>
+                Pause Automation
+              </button>
+
+              <button id="shadowMode" type="button" role="switch" aria-pressed="true" class="btn btn-secondary">
+                <i data-lucide="moon" class="icon-sm" aria-hidden="true"></i>
+                Shadow Mode
+              </button>
+            </div>
+          </section>
+
+          <!-- ── Automation Workflow Canvas Section ── -->
+          <section id="automation-canvas-section" class="card" aria-label="Automation workflow canvas" style="display: none; padding: 24px;">
+            <div class="workflow-header-row">
+              <div>
+                <h2 class="workflow-section-title">Live Automation Stream</h2>
+                <p class="workflow-section-desc">Real-time trace of active agent operations and process coordination.</p>
+              </div>
+              <div class="workflow-controls">
+                <label class="workflow-checkbox-label">
+                  <input type="checkbox" id="wfAutoCycle" class="workflow-checkbox" checked>
+                  <span>Auto-run scenarios</span>
+                </label>
+                <select id="wfScenarioSelect" class="workflow-select" aria-label="Select simulation scenario">
+                  <option value="live" selected>Live Stream (Real Data)</option>
+                  <option value="happy">Happy Path (Direct Submit)</option>
+                  <option value="shadow">Shadow Mode (Pause for Review)</option>
+                  <option value="skipped">Low Match Score (Skipped)</option>
+                  <option value="blocked">Blocklisted Company (Blocked)</option>
+                </select>
+                <button id="wfTriggerRun" type="button" class="btn btn-primary" style="padding: 6px 14px;">Run Simulation</button>
+              </div>
+            </div>
+
+            <div style="width: 100%; overflow-x: auto;">
+              <div class="workflow-canvas">
+                <svg class="workflow-connections">
+                  <!-- Connection paths -->
+                  <path id="wf-path-disc-match" class="workflow-path"></path>
+                  <path id="wf-path-match-resume" class="workflow-path"></path>
+                  <path id="wf-path-match-cover" class="workflow-path"></path>
+                  <path id="wf-path-match-filter" class="workflow-path"></path>
+                  <path id="wf-path-resume-auto" class="workflow-path"></path>
+                  <path id="wf-path-cover-auto" class="workflow-path"></path>
+
+                  <!-- Pulsing flow overlays -->
+                  <path id="wf-pulse-disc-match" class="workflow-pulse"></path>
+                  <path id="wf-pulse-match-resume" class="workflow-pulse"></path>
+                  <path id="wf-pulse-match-cover" class="workflow-pulse"></path>
+                  <path id="wf-pulse-match-filter" class="workflow-pulse"></path>
+                  <path id="wf-pulse-resume-auto" class="workflow-pulse"></path>
+                  <path id="wf-pulse-cover-auto" class="workflow-pulse"></path>
+                </svg>
+
+                <!-- Node: Discovery -->
+                <div class="workflow-node" id="node-discovery" style="left: 14%; top: 50%;">
+                  <div class="node-icon-circle">
+                    <i data-lucide="search" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Job Discovery</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                  <div class="node-port node-port-output"></div>
+                </div>
+
+                <!-- Node: Matching -->
+                <div class="workflow-node" id="node-matching" style="left: 35%; top: 50%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="git-compare-arrows" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">AI Matching</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                  <div class="node-port node-port-output"></div>
+                </div>
+
+                <!-- Node: Resume Tailor -->
+                <div class="workflow-node" id="node-resume" style="left: 58%; top: 24%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="file-text" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Resume Tailor</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                  <div class="node-port node-port-output"></div>
+                </div>
+
+                <!-- Node: Cover Letter Synth -->
+                <div class="workflow-node" id="node-coverletter" style="left: 58%; top: 54%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="mail" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Cover Letter Synth</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                  <div class="node-port node-port-output"></div>
+                </div>
+
+                <!-- Node: Filter Out / Skip (Lower Branch) -->
+                <div class="workflow-node" id="node-filter" style="left: 58%; top: 84%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="slash" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Filter / Block</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                </div>
+
+                <!-- Node: Autopilot Submit -->
+                <div class="workflow-node" id="node-autopilot" style="left: 82%; top: 39%;">
+                  <div class="node-port node-port-input"></div>
+                  <div class="node-icon-circle">
+                    <i data-lucide="bot" class="icon-sm"></i>
+                  </div>
+                  <div class="node-details">
+                    <span class="node-title">Autopilot Submit</span>
+                    <span class="node-status">Idle</span>
+                  </div>
+                  <div class="node-status-badge"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="workflow-console">
+              <div class="workflow-console-header">
+                <div class="workflow-console-dot-row">
+                  <span class="console-dot red"></span>
+                  <span class="console-dot yellow"></span>
+                  <span class="console-dot green"></span>
+                </div>
+                <span class="workflow-console-title">Live Execution Logs</span>
+                <span style="font-size: 10px; color: var(--text-disabled);">bash</span>
+              </div>
+              <div class="workflow-console-body" id="wfConsoleBody">
+                <div class="console-line">
+                  <span class="console-ts">13:34:08</span>
+                  <span class="console-tag system">system</span>
+                  <span class="console-msg">System initialized. Click "Run Simulation" or enable "Auto-run scenarios" to start stream simulation.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── Applications Table ── -->
+          <section id="applications-section" class="card" aria-label="Job applications">
+            <div class="section-header">
+              <div class="section-title-group">
+                <h2 class="section-title">Applications</h2>
+                <span id="applicationCount" class="record-count">Loading…</span>
+              </div>
+              <div class="section-header-actions">
+                <span class="refresh-indicator" id="refreshIndicator" aria-label="Refreshing" hidden>
+                  <span class="spinner"></span>
+                </span>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table id="applicationsTable" aria-label="Job applications list">
+                <thead>
+                  <tr>
+                    <th scope="col">Company</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Reason</th>
+                    <th scope="col">Time</th>
+                  </tr>
+                </thead>
+                <tbody id="applicationRows">
+                  <!-- Populated by app.js -->
+                  <tr class="loading-row">
+                    <td colspan="6">
+                      <div class="loading-shimmer"></div>
+                      <div class="loading-shimmer" style="width:70%;margin-top:8px"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- ── Discovery Section ── -->
+          <section id="discovery-section" class="card" aria-label="Job Discovery Engine" style="display: none;">
+            <div class="section-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+              <div class="section-title-group">
+                <h2 class="section-title">&#x1F310; Multi-Source Discovery Engine</h2>
+                <p class="control-hint">Autonomous crawl running every 30 min across 5 public job board APIs. New jobs are scored, matched, and queued automatically.</p>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <span id="crawlerStatusBadge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(16,185,129,0.15);color:#10b981;font-size:12px;font-weight:600;">
+                  <span style="width:7px;height:7px;background:#10b981;border-radius:50%;display:inline-block;"></span>
+                  Scheduler Active
+                </span>
+                <button id="triggerCrawlBtn" type="button" class="btn btn-primary" style="padding:6px 18px;font-size:13px;">&#x26A1; Trigger Crawl Now</button>
+              </div>
+            </div>
+
+            <div style="padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x1F331;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Greenhouse</div><div style="font-size:11px;color:var(--text-muted);">20 tech boards</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">Stripe &middot; Shopify &middot; Airbnb &middot; Databricks &middot; Figma...</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-greenhouse-status">&#x25CF; Ready</div>
+              </div>
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x2699;&#xFE0F;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Lever</div><div style="font-size:11px;color:var(--text-muted);">15 startup boards</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">GitHub &middot; Discord &middot; Linear &middot; Vercel &middot; Supabase...</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-lever-status">&#x25CF; Ready</div>
+              </div>
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x1F30D;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Remotive</div><div style="font-size:11px;color:var(--text-muted);">Remote-only</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">Software Dev &middot; DevOps &middot; Data categories</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-remotive-status">&#x25CF; Ready</div>
+              </div>
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x1F3D4;&#xFE0F;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Himalayas</div><div style="font-size:11px;color:var(--text-muted);">Global remote</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">himalayas.app &middot; 50 listings/cycle</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-himalayas-status">&#x25CF; Ready</div>
+              </div>
+              <div style="background:var(--bg-hover);border:1px solid var(--border-color);border-radius:10px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span style="font-size:20px;">&#x1F3E2;</span>
+                  <div><div style="font-weight:600;font-size:13px;">Arbeitnow</div><div style="font-size:11px;color:var(--text-muted);">EU + global</div></div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">arbeitnow.com &middot; tech roles worldwide</div>
+                <div style="margin-top:8px;font-size:11px;color:#10b981;" id="src-arbeitnow-status">&#x25CF; Ready</div>
+              </div>
+            </div>
+
+            <div style="padding:14px 24px;background:var(--bg-hover);border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color);display:flex;gap:32px;flex-wrap:wrap;">
+              <div><span style="font-size:20px;font-weight:700;color:var(--accent-blue);" id="discTotalJobs">&#x2014;</span><br><span style="font-size:11px;color:var(--text-muted);">Total Jobs Found</span></div>
+              <div><span style="font-size:20px;font-weight:700;color:#10b981;" id="discNewJobs">&#x2014;</span><br><span style="font-size:11px;color:var(--text-muted);">New This Cycle</span></div>
+              <div><span style="font-size:20px;font-weight:700;color:#f59e0b;" id="discQueued">&#x2014;</span><br><span style="font-size:11px;color:var(--text-muted);">Auto-Queued</span></div>
+              <div><span style="font-size:20px;font-weight:700;color:var(--text-secondary);" id="discNextRun">30m</span><br><span style="font-size:11px;color:var(--text-muted);">Next Crawl</span></div>
+            </div>
+
+            <div class="table-wrap" style="padding: 20px 24px;">
+              <table aria-label="Discovered jobs list">
+                <thead>
+                  <tr>
+                    <th scope="col">Source</th>
+                    <th scope="col">Company</th>
+                    <th scope="col">Job Title</th>
+                    <th scope="col">Skills</th>
+                    <th scope="col">Seniority</th>
+                    <th scope="col">Type</th>
+                  </tr>
+                </thead>
+                <tbody id="discoveredJobRows">
+                  <tr>
+                    <td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">
+                      <span style="font-size:32px">&#x1F50D;</span><br><br>
+                      No jobs yet. Crawler starts <strong>15 seconds after app boot</strong>, or click <em>Trigger Crawl Now</em>.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+
+          <!-- ── Matching Section ── -->
+          <section id="matching-section" class="card" aria-label="Matching Engine Rules" style="display: none; padding: 24px;">
+            <h2 class="section-title" style="margin-bottom: 16px;">AI Match Constraints & Rules</h2>
+            <div class="controls-group" style="margin-bottom: 24px;">
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--accent-blue);">Rule-Based Pre-Filters</h3>
+              <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: var(--text-secondary);">
+                <li style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="check-circle-2" class="icon-sm" style="color: var(--accent-green);"></i>
+                  <strong>Work Authorization Check:</strong> Hard pre-filter matches candidate nationality and authorization categories.
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="check-circle-2" class="icon-sm" style="color: var(--accent-green);"></i>
+                  <strong>Visa Sponsorship Check:</strong> If visa sponsorship is not offered but required, application is automatically blocked.
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="check-circle-2" class="icon-sm" style="color: var(--accent-green);"></i>
+                  <strong>Seniority Matching:</strong> JUNIOR roles restrict candidate experience up to 8 years; SENIOR roles require at least 3 years.
+                </li>
+                <li style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="check-circle-2" class="icon-sm" style="color: var(--accent-green);"></i>
+                  <strong>Location Pref Match:</strong> Automatically verifies onsite, hybrid, and remote preferences against job locations.
+                </li>
+              </ul>
+            </div>
+            
+            <div class="controls-group">
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--accent-blue);">Semantic Vector Similarity</h3>
+              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                The matching score is computed dynamically out of 100 points, consisting of:
+              </p>
+              <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-secondary); margin-top: 8px;">
+                <li>🔥 <strong>Vector Cosine Distance (50%):</strong> Evaluated using Gemini text embeddings of job descriptions against your resume bullet points.</li>
+                <li>🎯 <strong>Keyword Overlap (50%):</strong> Direct intersection of technical skill tags extracted from the job description and your facts profile.</li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- ── Generation Section ── -->
+          <section id="generation-section" class="card" aria-label="Tailored Materials Generation" style="display: none; padding: 24px;">
+            <h2 class="section-title" style="margin-bottom: 16px;">Tailored Document Generation</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+              For every application scoring above the autonomy threshold, Career Copilot automatically compiles personalized materials grounded strictly in your facts:
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="card" style="padding: 16px; background-color: var(--bg-hover);">
+                <h3 style="font-size: 14px; font-weight: 600; color: var(--accent-blue); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="file-text" class="icon-sm"></i> Resume Tailoring
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                  Reranks and emphasizes your verified facts that directly align with the job description requirements. Never invents or hallucinates skills.
+                </p>
+              </div>
+              <div class="card" style="padding: 16px; background-color: var(--bg-hover);">
+                <h3 style="font-size: 14px; font-weight: 600; color: var(--accent-blue); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="mail" class="icon-sm"></i> Cover Letter Synthesizer
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                  Generates professional cover letters emphasizing your core projects and certifications matching the specific role, validated by the Groundedness Verifier.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── Profile Section ── -->
+          <section id="profile-section" class="card" aria-label="Candidate Profile" style="display: none; padding: 24px;">
+            <h2 class="section-title" style="margin-bottom: 20px;">Candidate Profile Settings</h2>
+            
+            <form id="profileForm" style="display: flex; flex-direction: column; gap: 16px; max-width: 600px; margin-bottom: 32px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="profileName">Full Name</label>
+                  <input type="text" id="profileName" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="profileEmail">Email</label>
+                  <input type="email" id="profileEmail" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                </div>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="profilePhone">Phone</label>
+                  <input type="text" id="profilePhone" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label class="control-label" for="profileWorkAuth">Work Authorization</label>
+                  <select id="profileWorkAuth" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+                    <option value="US_CITIZEN">US Citizen</option>
+                    <option value="GREEN_CARD">Green Card Holder</option>
+                    <option value="H1B">H1B Visa Holder</option>
+                    <option value="OPT">OPT (Student/Graduate)</option>
+                    <option value="CPT">CPT</option>
+                    <option value="OTHER">Other (e.g. India Authorized)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label class="control-label" for="profileLocations">Preferred Locations (Comma separated)</label>
+                <input type="text" id="profileLocations" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="align-self: flex-start; padding: 8px 24px;">Save Profile</button>
+            </form>
+
+            <div class="controls-divider" style="height: 1px; width: 100%; margin: 24px 0; background-color: var(--border-color);"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="section-title" style="font-size: 16px; margin-bottom: 0;">Verified Resume Facts</h3>
+              <button id="addFactBtn" type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                <i data-lucide="plus" class="icon-sm"></i> Add Fact
+              </button>
+            </div>
+            <div id="settingsFactsList" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+
+          <!-- ── Settings Section ── -->
+          <section id="settings-section" class="settings-section-container" style="display: none;" aria-label="Settings Dashboard">
+            <div class="settings-dashboard-grid">
+              
+              <!-- Center Settings Forms / Panels -->
+              <div class="settings-content-pane">
+                
+                <!-- GENERAL TAB -->
+                <div class="settings-tab-content active" id="settings-tab-general">
+                  <div class="settings-header">
+                    <h2>General Settings</h2>
+                    <p>Configure agent metadata, look and feel, and global defaults.</p>
+                  </div>
+                  
+                  <div class="settings-card">
+                    <h3>Agent Identity</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="gen-agent-name">Agent Name</label>
+                        <input type="text" id="gen-agent-name" value="Career Copilot Alpha" placeholder="Enter name...">
+                        <span class="form-hint">Used for notifications and reports.</span>
+                      </div>
+                      <div class="form-group">
+                        <label for="gen-timezone">Timezone</label>
+                        <select id="gen-timezone">
+                          <option value="UTC">UTC (GMT+00:00)</option>
+                          <option value="EST">EST (GMT-05:00)</option>
+                          <option value="PST" selected>PST (GMT-08:00)</option>
+                          <option value="IST">IST (GMT+05:30)</option>
+                        </select>
+                        <span class="form-hint">Time zone used for task scheduling.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Interface Preferences</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="gen-language">Language</label>
+                        <select id="gen-language">
+                          <option value="en" selected>English (US)</option>
+                          <option value="es">Español</option>
+                          <option value="de">Deutsch</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label>Theme</label>
+                        <div class="segmented-control" id="gen-theme-control">
+                          <button type="button" class="segmented-btn active" data-val="dark">Dark</button>
+                          <button type="button" class="segmented-btn" data-val="light">Light</button>
+                          <button type="button" class="segmented-btn" data-val="cyberpunk">Cyberpunk</button>
+                          <button type="button" class="segmented-btn" data-val="system">System</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Autosave Changes</span>
+                        <span class="switch-desc">Save settings automatically upon modification.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="gen-autosave" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Data Operations</h3>
+                    <p class="section-desc">Back up, export or restore your agent's configuration.</p>
+                    <div class="action-buttons-row">
+                      <button type="button" class="btn btn-secondary" id="gen-btn-export">
+                        <i data-lucide="download" class="icon-sm"></i> Export Settings
+                      </button>
+                      <button type="button" class="btn btn-secondary" id="gen-btn-import-trigger">
+                        <i data-lucide="upload" class="icon-sm"></i> Import Settings
+                      </button>
+                      <input type="file" id="gen-btn-import" style="display: none;" accept=".json">
+                      <button type="button" class="btn btn-secondary" id="gen-btn-reset">
+                        Reset to Defaults
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="settings-card danger-zone">
+                    <h3>Danger Zone</h3>
+                    <p class="section-desc">Actions here can halt background processes and disconnect active jobs.</p>
+                    <div class="danger-actions-row">
+                      <button type="button" class="btn btn-danger-outline" id="gen-btn-pause">
+                        <i data-lucide="pause-circle" class="icon-sm"></i> Pause Agent
+                      </button>
+                      <button type="button" class="btn btn-danger-outline" id="gen-btn-restart">
+                        <i data-lucide="refresh-cw" class="icon-sm"></i> Restart Agent
+                      </button>
+                      <button type="button" class="btn btn-danger" id="gen-btn-shutdown">
+                        <i data-lucide="power" class="icon-sm"></i> Shutdown Agent
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- AI TAB -->
+                <div class="settings-tab-content" id="settings-tab-ai">
+                  <div class="settings-header">
+                    <h2>AI Orchestration</h2>
+                    <p>Customize the models, parameters, and tokens powering the agent's decisions.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Model Provider & Settings</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="ai-provider">Primary LLM Provider</label>
+                        <select id="ai-provider">
+                          <option value="gemini" selected>Google Gemini</option>
+                          <option value="openai">OpenAI</option>
+                          <option value="anthropic">Anthropic Claude</option>
+                          <option value="openrouter">OpenRouter API</option>
+                          <option value="ollama">Ollama (Local)</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="ai-model">Primary Model</label>
+                        <select id="ai-model">
+                          <option value="gemini-1.5-flash" selected>Gemini 1.5 Flash (Fast, Cost-Effective)</option>
+                          <option value="gemini-1.5-pro">Gemini 1.5 Pro (High Reasoning)</option>
+                          <option value="gpt-4o">GPT-4o</option>
+                          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="ai-fallback">Fallback Model</label>
+                        <select id="ai-fallback">
+                          <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                          <option value="gemini-1.5-pro" selected>Gemini 1.5 Pro</option>
+                          <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        </select>
+                        <span class="form-hint">Used if the primary model rate-limits or fails.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Inference Control Parameters</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label>Reasoning Effort</label>
+                        <div class="segmented-control" id="ai-reasoning-control">
+                          <button type="button" class="segmented-btn" data-val="low">Low</button>
+                          <button type="button" class="segmented-btn active" data-val="medium">Medium</button>
+                          <button type="button" class="segmented-btn" data-val="high">High</button>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label for="ai-temp">Temperature: <span id="ai-temp-val">0.2</span></label>
+                        <input type="range" id="ai-temp" min="0" max="2" step="0.1" value="0.2">
+                      </div>
+                      <div class="form-group">
+                        <label for="ai-max-tokens">Max Output Tokens</label>
+                        <input type="number" id="ai-max-tokens" value="4096" min="512" max="16384">
+                      </div>
+                      <div class="form-grid-row-2">
+                        <div class="form-group">
+                          <label for="ai-timeout">Timeout (seconds)</label>
+                          <input type="number" id="ai-timeout" value="30" min="5" max="120">
+                        </div>
+                        <div class="form-group">
+                          <label for="ai-retries">Max Retries</label>
+                          <input type="number" id="ai-retries" value="3" min="0" max="10">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Vector Cache</span>
+                        <span class="switch-desc">Cache embedding models outputs to decrease API costs.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="ai-cache" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Response Streaming</span>
+                        <span class="switch-desc">Render character-by-character generation in real time.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="ai-streaming" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Editable System Instructions</h3>
+                    <div class="form-group">
+                      <label for="ai-system-prompt">System Prompt</label>
+                      <textarea id="ai-system-prompt" rows="8">You are Career Copilot, an autonomous Job Application Agent.
+Your task is to review available job applications and match candidate facts profile to job descriptions.
+Never make up facts or certificates. Frame all letters and answer documents within the limits of the candidate facts profile.
+Keep output tone highly professional, precise, and concise.</textarea>
+                    </div>
+                    
+                    <label class="prompt-preview-label">Prompt Preview Context</label>
+                    <div class="prompt-preview-box">
+                      <pre><code>[SYSTEM PROMPT]
+=== CANDIDATE PROFILE ===
+Name: John Doe
+Skills: Java, Spring Boot, PostgreSQL, Docker
+Location: San Francisco, CA
+=========================
+[JOB SPECIFICATION]
+Company: Northstar Systems
+Role: Senior Backend Engineer
+Required: 3+ yrs Java Exp, Redis Streams</code></pre>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>State & Memory Context</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="ai-memory-size">Memory Size (Items)</label>
+                        <input type="number" id="ai-memory-size" value="10" min="0" max="100">
+                        <span class="form-hint">Number of previous application logs to keep in memory.</span>
+                      </div>
+                      <div class="form-group">
+                        <label for="ai-context-strategy">Context Window Strategy</label>
+                        <select id="ai-context-strategy">
+                          <option value="truncate" selected>Truncate Oldest Conversations</option>
+                          <option value="summarize">Summarize Thread History</option>
+                          <option value="refuse">Refuse when limits reached</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DISCOVERY TAB -->
+                <div class="settings-tab-content" id="settings-tab-discovery">
+                  <div class="settings-header">
+                    <h2>Job Discovery Settings</h2>
+                    <p>Customize crawling parameters, target job boards, keywords, and criteria.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Target Job Platforms</h3>
+                    <div class="switches-grid">
+                      <div class="mini-switch-card">
+                        <span>LinkedIn Crawler</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-linkedin" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Greenhouse API Feed</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-greenhouse" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Lever API Feed</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-lever" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Workday Portal crawler</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-workday"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Ashby API Feed</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-ashby" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Indeed Crawler</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-indeed"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Glassdoor Scraper</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-glassdoor"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Wellfound (AngelList)</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-wellfound" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Naukri Crawler</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-naukri"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Direct Company Sites</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="disc-plat-direct" checked><span class="switch-slider"></span></label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Search Scope & Frequencies</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="disc-freq">Search Frequency</label>
+                        <select id="disc-freq">
+                          <option value="hourly">Every Hour</option>
+                          <option value="6h" selected>Every 6 Hours</option>
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="disc-max-pages">Maximum Search Pages</label>
+                        <input type="number" id="disc-max-pages" value="5" min="1" max="50">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Job Content Filtering Rules</h3>
+                    <div class="form-group">
+                      <label>Job Title Keywords (Press enter/comma to add)</label>
+                      <div class="tag-input-container" id="disc-tags-title-keywords">
+                        <div class="tags-wrapper"></div>
+                        <input type="text" class="tag-input-field" placeholder="Add title...">
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label>Excluded Keywords</label>
+                      <div class="tag-input-container tag-input-red" id="disc-tags-title-excluded">
+                        <div class="tags-wrapper"></div>
+                        <input type="text" class="tag-input-field" placeholder="Add exclusions...">
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label>Required Skills (Hard match filters)</label>
+                      <div class="tag-input-container" id="disc-tags-skills-required">
+                        <div class="tags-wrapper"></div>
+                        <input type="text" class="tag-input-field" placeholder="Add required skills...">
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label>Excluded Skills</label>
+                      <div class="tag-input-container tag-input-red" id="disc-tags-skills-excluded">
+                        <div class="tags-wrapper"></div>
+                        <input type="text" class="tag-input-field" placeholder="Add excluded skills...">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Location & Work Mode</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="disc-countries">Countries</label>
+                        <input type="text" id="disc-countries" value="United States, Canada">
+                      </div>
+                      <div class="form-group">
+                        <label for="disc-states">States/Provinces</label>
+                        <input type="text" id="disc-states" value="CA, WA, NY">
+                      </div>
+                      <div class="form-group">
+                        <label for="disc-cities">Cities</label>
+                        <input type="text" id="disc-cities" value="San Francisco, Seattle, New York">
+                      </div>
+                      <div class="form-group">
+                        <label for="disc-radius">Search Radius (miles)</label>
+                        <input type="number" id="disc-radius" value="25" min="5" max="250">
+                      </div>
+                    </div>
+                    <div class="work-mode-selection" style="margin-top: 12px;">
+                      <label>Work Type Allowed</label>
+                      <div style="display: flex; gap: 24px; margin-top: 6px;">
+                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" id="disc-mode-remote" checked> Remote</label>
+                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" id="disc-mode-hybrid" checked> Hybrid</label>
+                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" id="disc-mode-onsite"> Onsite</label>
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label for="disc-visa">Visa Sponsorship Policy</label>
+                      <select id="disc-visa">
+                        <option value="none">Apply regardless of sponsorship</option>
+                        <option value="require-no" selected>Only apply if NO sponsorship needed</option>
+                        <option value="require-yes">Only apply if sponsorship is offered</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Compensation & Levels</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="disc-salary-min">Minimum Annual Salary ($)</label>
+                        <input type="number" id="disc-salary-min" value="120000" step="5000">
+                      </div>
+                      <div class="form-group">
+                        <label for="disc-salary-max">Maximum Annual Salary ($)</label>
+                        <input type="number" id="disc-salary-max" value="250000" step="5000">
+                      </div>
+                    </div>
+                    <div class="work-mode-selection" style="margin-top: 12px;">
+                      <label>Experience Levels (Select multiple)</label>
+                      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px;">
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-lvl-intern"> Internship</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-lvl-entry"> Entry Level</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-lvl-mid"> Mid-Senior</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-lvl-senior" checked> Senior Level</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-lvl-lead" checked> Lead / Staff</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-lvl-exec"> Exec / Director</label>
+                      </div>
+                    </div>
+                    <div class="work-mode-selection" style="margin-top: 12px;">
+                      <label>Job Types</label>
+                      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px;">
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-type-full" checked> Full-Time</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-type-part"> Part-Time</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-type-contract"> Contract</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-type-temp"> Temporary</label>
+                      </div>
+                    </div>
+                    <div class="work-mode-selection" style="margin-top: 12px;">
+                      <label>Company Size Categories</label>
+                      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px;">
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-sz-startup" checked> Startup (1-50)</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-sz-mid" checked> Mid-size (51-500)</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-sz-large" checked> Enterprise (500+)</label>
+                        <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="disc-sz-faang"> Big Tech / FAANG</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Company Whitelists & Blacklists</h3>
+                    <div class="form-group">
+                      <label>Whitelist (Always apply to these even if score is slightly low)</label>
+                      <div class="tag-input-container" id="disc-tags-companies-whitelist">
+                        <div class="tags-wrapper"></div>
+                        <input type="text" class="tag-input-field" placeholder="Add companies...">
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label>Blacklist (Never apply under any circumstances)</label>
+                      <div class="tag-input-container tag-input-red" id="disc-tags-companies-blacklist">
+                        <div class="tags-wrapper"></div>
+                        <input type="text" class="tag-input-field" placeholder="Add blacklisted companies...">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Ingestion Mechanics</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="disc-posting-age">Recent Posting Filter</label>
+                        <select id="disc-posting-age">
+                          <option value="24h">Past 24 hours</option>
+                          <option value="3d" selected>Past 3 days</option>
+                          <option value="1w">Past 1 week</option>
+                          <option value="all">Any time</option>
+                        </select>
+                      </div>
+                      <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: var(--space-8);">
+                        <div class="form-switch-row" style="width: 100%; border: none; padding: 0;">
+                          <div class="form-switch-info">
+                            <span class="switch-label">Semantic Duplicate Detection</span>
+                          </div>
+                          <label class="switch-label-wrap">
+                            <input type="checkbox" id="disc-dup" checked>
+                            <span class="switch-slider"></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- MATCHING ENGINE TAB -->
+                <div class="settings-tab-content" id="settings-tab-matching">
+                  <div class="settings-header">
+                    <h2>Matching Engine Weights</h2>
+                    <p>Adjust how critical different factors are in calculating the final Match Score.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Adjust Weights (0-10)</h3>
+                    <div class="weights-sliders-list">
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Skill Match Weight</span>
+                        <input type="range" id="wt-skill" min="0" max="10" value="9">
+                        <span class="weight-value-output" id="wt-skill-val">9</span>
+                      </div>
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Salary Alignment Weight</span>
+                        <input type="range" id="wt-salary" min="0" max="10" value="8">
+                        <span class="weight-value-output" id="wt-salary-val">8</span>
+                      </div>
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Location Type Match (Remote/Hybrid)</span>
+                        <input type="range" id="wt-location" min="0" max="10" value="7">
+                        <span class="weight-value-output" id="wt-location-val">7</span>
+                      </div>
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Company Reputation Weight</span>
+                        <input type="range" id="wt-reputation" min="0" max="10" value="5">
+                        <span class="weight-value-output" id="wt-reputation-val">5</span>
+                      </div>
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Tech Stack Overlap</span>
+                        <input type="range" id="wt-tech" min="0" max="10" value="9">
+                        <span class="weight-value-output" id="wt-tech-val">9</span>
+                      </div>
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Career Growth Potential</span>
+                        <input type="range" id="wt-growth" min="0" max="10" value="6">
+                        <span class="weight-value-output" id="wt-growth-val">6</span>
+                      </div>
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Job Posting Age (Newness)</span>
+                        <input type="range" id="wt-age" min="0" max="10" value="3">
+                        <span class="weight-value-output" id="wt-age-val">3</span>
+                      </div>
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Health & Perks / Benefits</span>
+                        <input type="range" id="wt-benefits" min="0" max="10" value="4">
+                        <span class="weight-value-output" id="wt-benefits-val">4</span>
+                      </div>
+                      <div class="weight-slider-row">
+                        <span class="weight-label">Visa Sponsorship Support</span>
+                        <input type="range" id="wt-visa" min="0" max="10" value="8">
+                        <span class="weight-value-output" id="wt-visa-val">8</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Score Threshold Filters</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="wt-threshold">Minimum Match Score (Autonomy Limit)</label>
+                        <input type="range" id="wt-threshold" min="0" max="100" value="85">
+                        <span class="form-hint">Roles matching below this score are enqueued for manual review.</span>
+                      </div>
+                      <div class="form-group">
+                        <label for="wt-ignore-score">Ignore below Score</label>
+                        <input type="range" id="wt-ignore-score" min="0" max="100" value="60">
+                        <span class="form-hint">Roles matching below this score are automatically rejected and discarded.</span>
+                      </div>
+                    </div>
+
+                    <div class="form-switch-row" style="margin-top: 16px;">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Show Score Breakdown</span>
+                        <span class="switch-desc">Display breakdown of weights in applications details.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="wt-show-breakdown" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Explain AI Match Decisions</span>
+                        <span class="switch-desc">Have the LLM draft a paragraph explaining the fit score.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="wt-explain-decisions" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Real-time Interactive Calculator Widget -->
+                  <div class="settings-card calc-widget">
+                    <h3>Preview Match Score Calculator</h3>
+                    <p class="section-desc" style="margin-bottom: 12px;">Test how your weights change scores in real time for a test job.</p>
+                    <div class="calc-grid">
+                      <div class="calc-input-col">
+                        <label for="calc-sample-job">Sample Job Description</label>
+                        <select id="calc-sample-job">
+                          <option value="backend">Northstar Systems - Senior Backend Engineer (92/100)</option>
+                          <option value="ml">Meridian AI - ML Platform Engineer (89/100)</option>
+                          <option value="junior">StartupCo - Junior Web Designer (42/100)</option>
+                        </select>
+                      </div>
+                      <div class="calc-output-col">
+                        <div class="calc-score-ring">
+                          <svg viewBox="0 0 36 36" class="circular-chart blue">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                            <path class="circle" id="calc-score-circle" stroke-dasharray="88, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                          </svg>
+                          <div class="calc-score-text">
+                            <span id="calc-score-num">88</span>
+                            <span class="calc-score-lbl">Match Fit</span>
+                          </div>
+                        </div>
+                        <div class="calc-explanation">
+                          <p id="calc-score-explanation">High tech stack overlap (Java/Redis) combined with optimal salary matches candidate profile. Work authorization is checked and verified.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- APPLICATIONS TAB -->
+                <div class="settings-tab-content" id="settings-tab-applications">
+                  <div class="settings-header">
+                    <h2>Application Process Controls</h2>
+                    <p>Adjust limits, automation steps, answers strategies, and queues.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Autopilot Strategy Mode</h3>
+                    <div class="segmented-control mode-selector" id="app-mode-control" style="width: 100%;">
+                      <button type="button" class="segmented-btn" data-val="manual">Manual Review</button>
+                      <button type="button" class="segmented-btn" data-val="review">Review Before Apply</button>
+                      <button type="button" class="segmented-btn" data-val="semi">Semi-Autonomous</button>
+                      <button type="button" class="segmented-btn active" data-val="autonomous">Fully Autonomous</button>
+                    </div>
+                    <div class="mode-description" id="app-mode-desc" style="margin-top: 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                      🔥 <strong>Fully Autonomous:</strong> The agent automatically tailors resumes, writes cover letters, answers screening questions, and submits applications for any job matching above the autonomy threshold without notifying you first.
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Submission Limits & Cooldowns</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="app-limit-daily">Daily Application Limit</label>
+                        <input type="number" id="app-limit-daily" value="5" min="1" max="100">
+                      </div>
+                      <div class="form-group">
+                        <label for="app-limit-hourly">Hourly Application Limit</label>
+                        <input type="number" id="app-limit-hourly" value="2" min="1" max="10">
+                      </div>
+                      <div class="form-group">
+                        <label for="app-limit-concurrent">Concurrent Application Workers</label>
+                        <input type="number" id="app-limit-concurrent" value="1" min="1" max="4">
+                      </div>
+                      <div class="form-group">
+                        <label for="app-cooldown">Cooldown between Submissions (sec)</label>
+                        <input type="number" id="app-cooldown" value="300" min="10" max="3600">
+                      </div>
+                    </div>
+
+                    <div class="form-switch-row" style="margin-top: 16px;">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Retry Failed Applications</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="app-retry-failed" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="app-retry-delay">Retry Delay (minutes)</label>
+                        <input type="number" id="app-retry-delay" value="30" min="5" max="1440">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Document and Answer Strategies</h3>
+                    <div class="switches-grid" style="margin-bottom: var(--space-16);">
+                      <div class="mini-switch-card">
+                        <span>Auto Tailor & Upload Resume</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="app-auto-resume" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Auto Synthesize Cover Letter</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="app-auto-letter" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Auto-Generate Answers</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="app-auto-answers" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Answer Screening Questions</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="app-screen-questions" checked><span class="switch-slider"></span></label>
+                      </div>
+                    </div>
+
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="app-strat-salary">Expected Salary Strategy</label>
+                        <select id="app-strat-salary">
+                          <option value="min">Min advertised salary range</option>
+                          <option value="mid" selected>Midpoint of advertised range</option>
+                          <option value="max">Max advertised salary range</option>
+                          <option value="custom">Provide Custom expected salary</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="app-strat-notice">Notice Period Strategy</label>
+                        <select id="app-strat-notice">
+                          <option value="immediate" selected>Immediate / 0 Days</option>
+                          <option value="2weeks">2 Weeks</option>
+                          <option value="1month">1 Month</option>
+                          <option value="custom">Match job listing timeline</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="app-strat-relocation">Relocation Strategy</label>
+                        <select id="app-strat-relocation">
+                          <option value="yes">Accept relocation cost</option>
+                          <option value="no" selected>No, reject relocation</option>
+                          <option value="negotiable">Open/Negotiable</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="app-strat-portfolio">Portfolio Strategy</label>
+                        <select id="app-strat-portfolio">
+                          <option value="website" selected>Personal Website First</option>
+                          <option value="github">GitHub Profile First</option>
+                          <option value="linkedin">LinkedIn Profile Only</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Application Queues Visualizer -->
+                  <div class="settings-card queue-card">
+                    <h3>Active Application Queues</h3>
+                    <p class="section-desc" style="margin-bottom: 12px;">Review jobs enqueued in the pipeline states.</p>
+                    
+                    <div class="queue-tabs">
+                      <button type="button" class="queue-tab active" data-queue="pending">Pending (2)</button>
+                      <button type="button" class="queue-tab" data-queue="retry">Retry (1)</button>
+                      <button type="button" class="queue-tab" data-queue="failed">Failed (1)</button>
+                      <button type="button" class="queue-tab" data-queue="priority">Priority (0)</button>
+                    </div>
+
+                    <div class="queue-list-container" id="queue-list">
+                      <!-- Populated via JS -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RESUME & PROFILE TAB -->
+                <div class="settings-tab-content" id="settings-tab-resume">
+                  <div class="settings-header">
+                    <h2>Resume & Profiles</h2>
+                    <p>Manage multiple resumes, portfolios, cover letters, and master profile metadata.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                      <h3 style="margin-bottom: 0;">Resume Profiles</h3>
+                      <button type="button" class="btn btn-secondary" id="res-btn-add" style="padding: 4px 10px; font-size: 12px;">
+                        <i data-lucide="plus" class="icon-sm"></i> Add Resume
+                      </button>
+                    </div>
+                    
+                    <div class="resume-list-container">
+                      <div class="resume-item-row active">
+                        <div class="res-meta">
+                          <span class="res-title">Java Backend Engineer Profile</span>
+                          <span class="res-filename">john_doe_java_backend.pdf</span>
+                          <span class="res-tag active-badge">Active Default</span>
+                        </div>
+                        <div class="res-actions">
+                          <button type="button" class="btn" title="Download Resume"><i data-lucide="download" class="icon-sm"></i></button>
+                          <button type="button" class="btn" title="Edit Resume details"><i data-lucide="pencil" class="icon-sm"></i></button>
+                          <button type="button" class="btn btn-danger-icon" title="Delete Resume"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                        </div>
+                      </div>
+                      
+                      <div class="resume-item-row">
+                        <div class="res-meta">
+                          <span class="res-title">AI Platform & ML Engineer Profile</span>
+                          <span class="res-filename">john_doe_ai_ml_engineer.pdf</span>
+                        </div>
+                        <div class="res-actions">
+                          <button type="button" class="btn" title="Download Resume"><i data-lucide="download" class="icon-sm"></i></button>
+                          <button type="button" class="btn" title="Edit Resume details"><i data-lucide="pencil" class="icon-sm"></i></button>
+                          <button type="button" class="btn btn-danger-icon" title="Delete Resume"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                        </div>
+                      </div>
+
+                      <div class="resume-item-row">
+                        <div class="res-meta">
+                          <span class="res-title">React Full Stack Developer Profile</span>
+                          <span class="res-filename">john_doe_fullstack.pdf</span>
+                        </div>
+                        <div class="res-actions">
+                          <button type="button" class="btn" title="Download Resume"><i data-lucide="download" class="icon-sm"></i></button>
+                          <button type="button" class="btn" title="Edit Resume details"><i data-lucide="pencil" class="icon-sm"></i></button>
+                          <button type="button" class="btn btn-danger-icon" title="Delete Resume"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-switch-row" style="margin-top: 16px;">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Auto-Select Resume by Fit</span>
+                        <span class="switch-desc">Let the AI select the resume profile that has the highest match score with the target job.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="res-auto-select" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Online Portfolios & Profiles</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="res-web">Portfolio Website URL</label>
+                        <input type="url" id="res-web" value="https://johndoe.dev">
+                      </div>
+                      <div class="form-group">
+                        <label for="res-github">GitHub Profile URL</label>
+                        <input type="url" id="res-github" value="https://github.com/johndoe">
+                      </div>
+                      <div class="form-group">
+                        <label for="res-linkedin">LinkedIn Profile URL</label>
+                        <input type="url" id="res-linkedin" value="https://linkedin.com/in/johndoe">
+                      </div>
+                      <div class="form-group">
+                        <label for="res-leetcode">LeetCode URL</label>
+                        <input type="url" id="res-leetcode" value="https://leetcode.com/johndoe">
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label for="res-certificates">Certifications (Comma separated)</label>
+                      <input type="text" id="res-certificates" value="AWS Certified Solutions Architect, Oracle Java Enterprise Certified">
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Cover Letter Templates</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="res-cover-template">Default Template Style</label>
+                        <select id="res-cover-template">
+                          <option value="standard" selected>Standard Professional (Formal & Traditional)</option>
+                          <option value="bold">Bold & Direct (Startup Focused)</option>
+                          <option value="exec">Executive (Senior & Management Focused)</option>
+                          <option value="tech">Tech Heavy (Specifies exact architectures)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="template-preview-box" style="margin-top: 12px; background-color: var(--bg-hover); padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                      <pre style="font-size: 11px; white-space: pre-wrap; color: var(--text-secondary);">Dear Hiring Team at [Company],
+
+I am writing to express my strong interest in the [Job Title] role. Grounded in my professional record, I have successfully developed high-performance applications in the domain of [Core Technology]. Specifically, at [Last Company], I engineered solutions that increased throughput by [Metric].
+
+I look forward to discussing how my skills match your requirements.</pre>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Profile Version History</h3>
+                    <div class="version-history-list">
+                      <div class="version-row">
+                        <span class="v-date">2026-07-12 14:30</span>
+                        <span class="v-desc">Updated Java Backend resume facts. (Current Active)</span>
+                      </div>
+                      <div class="version-row">
+                        <span class="v-date">2026-07-10 09:12</span>
+                        <span class="v-desc">Added AWS Certified Solution Architect.</span>
+                      </div>
+                      <div class="version-row">
+                        <span class="v-date">2026-07-01 18:45</span>
+                        <span class="v-desc">Initial Master Profile Import.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- AUTOMATION TAB -->
+                <div class="settings-tab-content" id="settings-tab-automation">
+                  <div class="settings-header">
+                    <h2>Automation Engine Configuration</h2>
+                    <p>Setup running hours, worker capacities, circuit breakers, and scheduling options.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Autopilot Engine Toggle</h3>
+                    <div class="form-switch-row" style="border: none; padding: 0;">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Autopilot Active</span>
+                        <span class="switch-desc">Enables autonomous crawl-to-apply schedules.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="auto-engine-active" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Scheduling Calendar</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="auto-hours">Daily Running Hours</label>
+                        <select id="auto-hours">
+                          <option value="24" selected>24 Hours (Full Autopilot)</option>
+                          <option value="working">Working Hours Only (9 AM - 5 PM PST)</option>
+                          <option value="night">Night Mode Only (10 PM - 6 AM PST)</option>
+                          <option value="custom">Custom Schedule</option>
+                        </select>
+                      </div>
+                      <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" id="auto-weekends" checked> Work on Weekends</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Automation Circuit Breakers</h3>
+                    <p class="section-desc">Platform crawlers will trigger a breaker (HALT) if repeated login failures or bot-detection is encountered.</p>
+                    <div class="breakers-vertical-list" id="auto-breakers-list">
+                      <!-- Rendered by JS -->
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="auto-btn-reset-breakers" style="margin-top: 12px; color: var(--accent-red); border-color: var(--accent-red);">
+                      <i data-lucide="refresh-cw" class="icon-sm"></i> Reset All Circuit Breakers
+                    </button>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Task Queue & Worker Status</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="auto-workers">Parallel Worker Threads</label>
+                        <input type="range" id="auto-workers" min="1" max="4" value="1">
+                        <span class="form-hint">Number of headless browser instances simulating submissions concurrently.</span>
+                      </div>
+                      <div class="form-group">
+                        <label for="auto-recovery">Failure Recovery Delay (sec)</label>
+                        <input type="number" id="auto-recovery" value="600" min="60" max="3600">
+                      </div>
+                    </div>
+                    <div class="worker-metrics-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+                      <div class="metric-mini-card">
+                        <span class="m-title">Last Successful Run</span>
+                        <span class="m-val" id="auto-last-run">Today, 20:05:12</span>
+                      </div>
+                      <div class="metric-mini-card">
+                        <span class="m-title">Next Scheduled Run</span>
+                        <span class="m-val" id="auto-next-run">Today, 20:15:00</span>
+                      </div>
+                      <div class="metric-mini-card">
+                        <span class="m-title">Heartbeat Status</span>
+                        <span class="m-val m-green">ONLINE</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- NOTIFICATIONS TAB -->
+                <div class="settings-tab-content" id="settings-tab-notifications">
+                  <div class="settings-header">
+                    <h2>Notification & Channels Settings</h2>
+                    <p>Receive live metrics, alerts, and summaries where you work.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Channels</h3>
+                    <div class="switches-grid">
+                      <div class="mini-switch-card">
+                        <span>Desktop Push Alerts</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-chan-desktop" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Email Summaries</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-chan-email" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Discord Webhook</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-chan-discord"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Slack Notification Webhook</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-chan-slack"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Telegram Bot Integration</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-chan-telegram"><span class="switch-slider"></span></label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Channel Credentials</h3>
+                    <div class="form-group">
+                      <label for="notif-email">Target Email Address</label>
+                      <input type="email" id="notif-email" value="user@example.com">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label for="notif-slack-url">Slack Webhook URL</label>
+                      <input type="url" id="notif-slack-url" placeholder="https://hooks.slack.com/services/...">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label for="notif-discord-url">Discord Webhook URL</label>
+                      <input type="url" id="notif-discord-url" placeholder="https://discord.com/api/webhooks/...">
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Notification Triggers</h3>
+                    <div class="switches-grid">
+                      <div class="mini-switch-card">
+                        <span>Daily Summary</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-trig-daily" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Weekly Digest</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-trig-weekly"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Submission Failure Alerts</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-trig-failures" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Application Submitted</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-trig-submitted" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Jobs Discovered Alerts</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-trig-discovered"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>AI API Error Notifications</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="notif-trig-ai" checked><span class="switch-slider"></span></label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SAFETY TAB -->
+                <div class="settings-tab-content" id="settings-tab-safety">
+                  <div class="settings-header">
+                    <h2>Safety Guardrails & Spending Limits</h2>
+                    <p>Configure critical parameters to prevent duplicate applications, infinite retries, and high costs.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Apply Confirmations</h3>
+                    <div class="form-switch-row" style="border: none; padding: 0;">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Manual Confirmation Above Salary</span>
+                        <span class="switch-desc">Require user approval if the job offers a high salary limit.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="saf-confirm-salary" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                    <div class="form-grid" style="margin-top: 12px;">
+                      <div class="form-group">
+                        <label for="saf-confirm-salary-limit">Salary Limit Trigger ($)</label>
+                        <input type="number" id="saf-confirm-salary-limit" value="200000" step="10000">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Submission Guardrails</h3>
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Ask Before Submitting</span>
+                        <span class="switch-desc">Prompts you to confirm every application before it goes live.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="saf-ask-before" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Enforce Match Score Boundary</span>
+                        <span class="switch-desc">Never apply to jobs below the minimum matching threshold.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="saf-enforce-threshold" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Blocklist Companies Protection</span>
+                        <span class="switch-desc">Ensure the agent never applies to blacklisted companies.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="saf-enforce-blacklist" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Prevent Duplicate Applications</span>
+                        <span class="switch-desc">Verify with submission database history before applying.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="saf-prevent-duplicates" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Prevent Infinite Retry Loops</span>
+                        <span class="switch-desc">Abort retries if a specific portal throws consecutive errors.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="saf-prevent-infinite-retry" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-switch-row">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Audit Every AI Decision</span>
+                        <span class="switch-desc">Stream matching evaluations and prompts details to logs.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="saf-audit-decisions" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Simulation & Modes</h3>
+                    <div class="switches-grid">
+                      <div class="mini-switch-card">
+                        <span>Dry Run Mode (No submissions)</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="saf-mode-dry" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Browser Simulation Mode</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="saf-mode-simulation"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Human-Like Safe Speed</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="saf-mode-safe" checked><span class="switch-slider"></span></label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Inference Spending Limits</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="saf-budget-daily">Daily AI Spending Cap ($ USD)</label>
+                        <input type="number" id="saf-budget-daily" value="5.00" step="0.50" min="0.50" max="100.00">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Big Red Emergency Stop -->
+                  <div class="settings-card emergency-card" style="border: 1px solid var(--accent-red); background-color: rgba(240, 90, 90, 0.05); padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <h3 style="color: var(--accent-red); margin-bottom: 4px;">Emergency Autopilot Stop</h3>
+                        <p class="section-desc" style="margin-bottom: 0;">Halts all crawler workers and halts the queue immediately.</p>
+                      </div>
+                      <button type="button" class="btn btn-danger" id="saf-btn-emergency" style="padding: 10px 24px; font-weight: 600;">
+                        <i data-lucide="octagon-alert" class="icon-sm"></i> EMERGENCY STOP
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- INTEGRATIONS TAB -->
+                <div class="settings-tab-content" id="settings-tab-integrations">
+                  <div class="settings-header">
+                    <h2>Connected Platforms & Integrations</h2>
+                    <p>Provide credentials and tokens for job portals, file drives, and LLM backends.</p>
+                  </div>
+
+                  <div class="integrations-list-grid">
+                    <!-- Greenhouse -->
+                    <div class="integration-card connected">
+                      <div class="int-header">
+                        <div class="int-brand">
+                          <i data-lucide="sprout" class="int-icon icon-sm" style="color: #45D483;"></i>
+                          <span class="int-name">Greenhouse</span>
+                        </div>
+                        <span class="int-badge connected">Connected</span>
+                      </div>
+                      <p class="int-desc">Crawls job listing boards and parses application questionnaires.</p>
+                      <div class="int-footer">
+                        <span class="int-sync">Last synced: 10m ago</span>
+                        <button type="button" class="btn btn-secondary int-action">Reconnect</button>
+                      </div>
+                    </div>
+
+                    <!-- LinkedIn -->
+                    <div class="integration-card connected">
+                      <div class="int-header">
+                        <div class="int-brand">
+                          <i data-lucide="linkedin" class="int-icon icon-sm" style="color: #5B8CFF;"></i>
+                          <span class="int-name">LinkedIn</span>
+                        </div>
+                        <span class="int-badge connected">Connected</span>
+                      </div>
+                      <p class="int-desc">Monitors LinkedIn jobs and executes Easy Apply automation flow.</p>
+                      <div class="int-footer">
+                        <span class="int-sync">Last synced: 2h ago</span>
+                        <button type="button" class="btn btn-secondary int-action">Reconnect</button>
+                      </div>
+                    </div>
+
+                    <!-- Workday -->
+                    <div class="integration-card disconnected">
+                      <div class="int-header">
+                        <div class="int-brand">
+                          <i data-lucide="briefcase" class="int-icon icon-sm" style="color: var(--text-muted);"></i>
+                          <span class="int-name">Workday Portal</span>
+                        </div>
+                        <span class="int-badge disconnected">Disconnected</span>
+                      </div>
+                      <p class="int-desc">Simulates browser signups on custom Workday client portal systems.</p>
+                      <div class="int-footer flex-column-gap">
+                        <input type="password" placeholder="Client account password..." class="int-key-input">
+                        <button type="button" class="btn btn-primary int-action">Connect</button>
+                      </div>
+                    </div>
+
+                    <!-- Google Drive -->
+                    <div class="integration-card connected">
+                      <div class="int-header">
+                        <div class="int-brand">
+                          <i data-lucide="hard-drive" class="int-icon icon-sm" style="color: #F5C84B;"></i>
+                          <span class="int-name">Google Drive</span>
+                        </div>
+                        <span class="int-badge connected">Connected</span>
+                      </div>
+                      <p class="int-desc">Uploads tailored PDF resumes and cover letters to drive cloud.</p>
+                      <div class="int-footer">
+                        <span class="int-sync">Last synced: Yesterday</span>
+                        <button type="button" class="btn btn-secondary int-action">Disconnect</button>
+                      </div>
+                    </div>
+
+                    <!-- OpenAI -->
+                    <div class="integration-card connected">
+                      <div class="int-header">
+                        <div class="int-brand">
+                          <i data-lucide="cpu" class="int-icon icon-sm" style="color: #45D483;"></i>
+                          <span class="int-name">OpenAI API</span>
+                        </div>
+                        <span class="int-badge connected">Connected</span>
+                      </div>
+                      <p class="int-desc">Alternative LLM connection for GPT-4o model processing.</p>
+                      <div class="int-footer flex-column-gap">
+                        <input type="password" value="••••••••••••••••••••" class="int-key-input" disabled>
+                        <button type="button" class="btn btn-secondary int-action">Update Key</button>
+                      </div>
+                    </div>
+
+                    <!-- Gemini API -->
+                    <div class="integration-card connected">
+                      <div class="int-header">
+                        <div class="int-brand">
+                          <i data-lucide="sparkles" class="int-icon icon-sm" style="color: #5B8CFF;"></i>
+                          <span class="int-name">Gemini API</span>
+                        </div>
+                        <span class="int-badge connected">Connected</span>
+                      </div>
+                      <p class="int-desc">Powers semantic scoring, tailored letters, and screening answers.</p>
+                      <div class="int-footer flex-column-gap">
+                        <input type="password" value="••••••••••••••••••••" class="int-key-input" disabled>
+                        <button type="button" class="btn btn-secondary int-action">Update Key</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- OBSERVABILITY LOGS TAB -->
+                <div class="settings-tab-content" id="settings-tab-logs">
+                  <div class="settings-header">
+                    <h2>System Observability Logs</h2>
+                    <p>View detailed runtime, matching, and API logs. Filter and search logs locally.</p>
+                  </div>
+
+                  <div class="settings-card log-viewer-card">
+                    <div class="log-controls-row">
+                      <select id="log-filter-source">
+                        <option value="all">All Sources</option>
+                        <option value="ai">AI Logs</option>
+                        <option value="applications">Applications Logs</option>
+                        <option value="discovery">Discovery Logs</option>
+                        <option value="matching">Matching Logs</option>
+                        <option value="api">API Logs</option>
+                        <option value="error">Error Logs</option>
+                      </select>
+                      <select id="log-filter-level">
+                        <option value="all">All Levels</option>
+                        <option value="info">INFO</option>
+                        <option value="warn">WARN</option>
+                        <option value="error">ERROR</option>
+                      </select>
+                      <input type="text" id="log-search-input" placeholder="Search logs...">
+                      <button type="button" class="btn btn-secondary" id="log-btn-export" title="Export Logs"><i data-lucide="download" class="icon-sm"></i></button>
+                    </div>
+
+                    <div class="log-terminal-container">
+                      <table class="log-table">
+                        <thead>
+                          <tr>
+                            <th class="col-log-time">Time</th>
+                            <th class="col-log-src">Source</th>
+                            <th class="col-log-lvl">Level</th>
+                            <th class="col-log-msg">Message</th>
+                          </tr>
+                        </thead>
+                        <tbody id="log-rows-container">
+                          <!-- Populated by JS -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ADVANCED TAB -->
+                <div class="settings-tab-content" id="settings-tab-advanced">
+                  <div class="settings-header">
+                    <h2>Advanced Technical Settings</h2>
+                    <p>Advanced parameters for proxy networking, rate limits, browser headers, and developer configurations.</p>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Browser Automation Properties</h3>
+                    <div class="form-switch-row" style="border: none; padding: 0;">
+                      <div class="form-switch-info">
+                        <span class="switch-label">Headless Browser Mode</span>
+                        <span class="switch-desc">Run automation stealthily without opening visual Chrome windows.</span>
+                      </div>
+                      <label class="switch-label-wrap">
+                        <input type="checkbox" id="adv-headless" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label for="adv-user-agent">Custom User Agent</label>
+                      <input type="text" id="adv-user-agent" value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 12px;">
+                      <label for="adv-cookies">Cookie Management (JSON String)</label>
+                      <textarea id="adv-cookies" rows="3" placeholder='[{"name": "session", "value": "xyz", "domain": "linkedin.com"}]'></textarea>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Proxy Server List</h3>
+                    <div class="form-group">
+                      <label for="adv-proxies">Proxies (One per line: http://user:pass@host:port)</label>
+                      <textarea id="adv-proxies" rows="3" placeholder="http://198.51.100.1:8080&#10;http://203.0.113.50:3128"></textarea>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Global API Rate Limits</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="adv-rate-limit">Global Requests per Minute (RPM)</label>
+                        <input type="number" id="adv-rate-limit" value="60" min="5" max="500">
+                      </div>
+                      <div class="form-group">
+                        <label for="adv-memory-limit">Max Memory Allocation (MB)</label>
+                        <input type="number" id="adv-memory-limit" value="512" min="128" max="4096">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Circuit Breaker Configuration</h3>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="adv-cb-threshold">Failure Threshold Rate (%)</label>
+                        <input type="number" id="adv-cb-threshold" value="50" min="10" max="100">
+                      </div>
+                      <div class="form-group">
+                        <label for="adv-cb-recovery">Recovery Open Timeout (sec)</label>
+                        <input type="number" id="adv-cb-recovery" value="300" min="10" max="3600">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card">
+                    <h3>Developer & Debug Mode</h3>
+                    <div class="switches-grid">
+                      <div class="mini-switch-card">
+                        <span>Developer Console Mode</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="adv-dev-mode"><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Verbose System Logging</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="adv-verbose-log" checked><span class="switch-slider"></span></label>
+                      </div>
+                      <div class="mini-switch-card">
+                        <span>Enable Experimental Features</span>
+                        <label class="switch-label-wrap"><input type="checkbox" id="adv-experimental"><span class="switch-slider"></span></label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-card danger-zone">
+                    <h3>Destructive Database Reset</h3>
+                    <p class="section-desc">These actions will wipe cached information, matching historical files, or completely reset configuration parameters.</p>
+                    <div class="danger-actions-row">
+                      <button type="button" class="btn btn-danger-outline" id="adv-btn-clear-cache">Clear App Cache</button>
+                      <button type="button" class="btn btn-danger-outline" id="adv-btn-reset-db">Reset Database</button>
+                      <button type="button" class="btn btn-danger" id="adv-btn-factory-reset">Factory Reset</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Settings Status Panel -->
+              <aside class="settings-status-sidebar">
+                <div class="status-card-inner">
+                  <h3>Agent State Summary</h3>
+                  
+                  <div class="status-state-glowing-row">
+                    <span class="pulse-glow-dot green" id="set-status-dot"></span>
+                    <span class="state-text-label">AI Status: <strong id="set-status-state">RUNNING</strong></span>
+                  </div>
+
+                  <div class="status-metric-list">
+                    <div class="status-metric-item">
+                      <span class="lbl">Current Task</span>
+                      <span class="val truncate-task" id="set-status-task">Greenhouse sync board "google"...</span>
+                    </div>
+                    <div class="status-divider"></div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Jobs Found Today</span>
+                      <span class="val" id="set-status-found">47</span>
+                    </div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Applications Sent</span>
+                      <span class="val" id="set-status-sent">3</span>
+                    </div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Pending Queue</span>
+                      <span class="val" id="set-status-pending">2</span>
+                    </div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Failures / Retries</span>
+                      <span class="val" id="set-status-fail-retry">0 / 1</span>
+                    </div>
+                    <div class="status-divider"></div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Avg Match Score</span>
+                      <span class="val" id="set-status-score">84%</span>
+                    </div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Today's Token Usage</span>
+                      <span class="val">104.2k tokens</span>
+                    </div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Today's API Cost</span>
+                      <span class="val" id="set-status-cost">$0.45 USD</span>
+                    </div>
+                    <div class="status-divider"></div>
+                    <div class="status-metric-item">
+                      <span class="lbl">AI Provider</span>
+                      <span class="val" id="set-status-provider">Google Gemini</span>
+                    </div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Active Model</span>
+                      <span class="val" id="set-status-model">Gemini 1.5 Flash</span>
+                    </div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Avg Response Time</span>
+                      <span class="val">180ms</span>
+                    </div>
+                    <div class="status-metric-item">
+                      <span class="lbl">Last Synced</span>
+                      <span class="val" id="set-status-sync">Just now</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+              
+            </div>
+          </section>
+
+          <!-- ── Audit Log ── -->
+          <section id="audit-section" class="card audit-panel" aria-label="Automation audit log">
+            <button id="auditToggle" type="button" class="audit-toggle" aria-expanded="false" aria-controls="auditLogWrap">
+              <div class="audit-toggle-label">
+                <i data-lucide="scroll-text" class="icon-sm" aria-hidden="true"></i>
+                Audit Log
+                <span id="auditCount" class="audit-count-badge">0</span>
+              </div>
+              <i data-lucide="chevron-down" class="chevron-icon icon-sm" aria-hidden="true"></i>
+            </button>
+
+            <div id="auditLogWrap" class="audit-log-wrap" hidden>
+              <ul id="auditLog" class="audit-list" aria-live="polite" aria-label="Audit events">
+                <li class="audit-empty">No events recorded yet.</li>
+              </ul>
+            </div>
+          </section>
+
+        </main>
+      </div>
+
+      <!-- ═══════════════════════ INSPECTOR ═══════════════════════ -->
+      <aside class="inspector" id="inspector">
+        <div class="inspector-header">
+          <h3 class="inspector-title" id="inspectorTitle">Details</h3>
+          <button class="inspector-close-btn" id="inspectorCloseBtn" aria-label="Close inspector" title="Close inspector">
+            <i data-lucide="x" class="icon-sm"></i>
+          </button>
+        </div>
+        <div class="inspector-body" id="inspectorBody">
+          
+          <!-- Dynamic Empty State Panel (AI branding, shortcuts, decisions timeline) -->
+          <div class="inspector-empty" id="inspectorEmpty">
+            <div class="ai-brand-badge">
+              <div class="ai-pulse-ring"></div>
+              <div class="ai-icon-circle">
+                <img src="logo.png" class="ai-badge-logo-img" alt="Career Copilot Logo">
+              </div>
+            </div>
+            <p class="inspector-empty-title">AI Autopilot Active</p>
+            <p class="inspector-empty-desc">Form-filler is monitoring the Greenhouse stream. Click any application row for full matching audit.</p>
+            
+            <div class="inspector-shortcuts">
+              <div class="shortcut-row">
+                <span class="shortcut-label">Command Palette</span>
+                <kbd class="shortcut-key">Ctrl K</kbd>
+              </div>
+            </div>
+
+            <div class="inspector-empty-section">
+              <span class="inspector-empty-section-title">Live AI Reasoning Stream</span>
+              <div class="live-timeline" id="liveTimeline">
+                <!-- Populated dynamically by app.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Detail Panel -->
+          <div class="inspector-detail" id="inspectorDetail" hidden>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Company</span>
+              <span class="inspector-field-value" id="inspectorCompany">—</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Role</span>
+              <span class="inspector-field-value" id="inspectorRole">—</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Match Confidence</span>
+              <div class="inspector-score-wrap" id="inspectorScoreWrap">—</div>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Autopilot Status</span>
+              <span class="inspector-field-value" id="inspectorStatus">—</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Automation Log</span>
+              <span class="inspector-field-value inspector-field-reason" id="inspectorReason">—</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Timestamp</span>
+              <span class="inspector-field-value" id="inspectorTime">—</span>
+            </div>
+
+            <!-- OTP Input Section -->
+            <div id="inspectorOtpSection" style="margin-top: 16px; padding: 12px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px;" hidden>
+              <div style="font-weight: 600; color: var(--accent-blue); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="shield-alert" style="width: 16px; height: 16px;"></i> Verification Code Required
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+                Greenhouse requires a verification code sent to your email. Enter the 8-digit code to proceed:
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="otp-input" placeholder="12345678" style="flex: 1; padding: 6px 10px; font-size: 13px; font-family: monospace; letter-spacing: 2px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-light);">
+                <button type="button" id="otp-submit-btn" style="padding: 6px 12px; font-size: 13px; background: var(--accent-blue); border: none; border-radius: 4px; color: #fff; cursor: pointer; font-weight: 600;">Submit</button>
+              </div>
+            </div>
+
+            <div class="inspector-separator"></div>
+
+            <div class="inspector-section">
+              <span class="inspector-section-title">AI Generated Materials</span>
+              <div class="inspector-docs" id="inspectorDocs">
+                <div class="inspector-doc-item">
+                  <i data-lucide="file-text" class="icon-sm"></i>
+                  <span>Tailored Resume</span>
+                  <span class="inspector-doc-status">Pending</span>
+                </div>
+                <div class="inspector-doc-item">
+                  <i data-lucide="mail" class="icon-sm"></i>
+                  <span>Cover Letter</span>
+                  <span class="inspector-doc-status">Pending</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="inspector-separator"></div>
+
+            <div class="inspector-section">
+              <span class="inspector-section-title">Verified Profile Facts</span>
+              <div class="inspector-facts-list" id="inspectorFacts">
+                <div class="fact-tag"><i data-lucide="check" class="icon-xs"></i> 3+ yrs Java Exp</div>
+                <div class="fact-tag"><i data-lucide="check" class="icon-xs"></i> Distributed Monoliths</div>
+                <div class="fact-tag"><i data-lucide="check" class="icon-xs"></i> Redis Streams</div>
+              </div>
+            </div>
+
+            <div class="inspector-separator"></div>
+
+            <div class="inspector-section">
+              <span class="inspector-section-title">Application Audit Trail</span>
+              <ul class="inspector-audit-list" id="inspectorAuditTrail" style="list-style: none; padding: 0; margin: 8px 0 0 0; font-size: 11px; display: flex; flex-direction: column; gap: 6px; color: var(--text-secondary); max-height: 180px; overflow-y: auto;">
+                <li style="padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); color: var(--text-muted);">No audit trail recorded.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div><!-- /.app-shell -->
+
+    <!-- ═══════════════════════ COMMAND PALETTE ═══════════════════════ -->
+    <div class="command-palette-overlay" id="commandPaletteOverlay" hidden>
+      <div class="command-palette" id="commandPalette" role="dialog" aria-label="Command palette">
+        <div class="command-palette-input-wrap">
+          <i data-lucide="search" class="icon-sm command-palette-search-icon"></i>
+          <input type="text" class="command-palette-input" id="commandPaletteInput" placeholder="Search applications, commands…" autocomplete="off" spellcheck="false">
+          <button class="command-palette-close-btn" id="commandPaletteCloseBtn" title="Close command palette">Close</button>
+        </div>
+        <div class="command-palette-results" id="commandPaletteResults">
+          <!-- Populated by app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ FACT MODAL ═══════════════════════ -->
+    <div class="command-palette-overlay" id="factModalOverlay" hidden>
+      <div class="command-palette" id="factModal" role="dialog" aria-label="Fact Editor" style="max-width: 500px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <h3 id="factModalTitle" style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Add/Edit Fact</h3>
+        
+        <form id="factForm" style="display: flex; flex-direction: column; gap: 12px;">
+          <input type="hidden" id="factId">
+          
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factType">Fact Type</label>
+            <select id="factType" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+              <option value="EXPERIENCE">Experience</option>
+              <option value="EDUCATION">Education</option>
+            </select>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factTitle">Title / Degree</label>
+            <input type="text" id="factTitle" required style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factEmployer">Employer / School</label>
+            <input type="text" id="factEmployer" required style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <label class="control-label" for="factStartDate">Start Date (YYYY-MM-DD)</label>
+              <input type="text" id="factStartDate" placeholder="YYYY-MM-DD" required style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <label class="control-label" for="factEndDate">End Date (Optional)</label>
+              <input type="text" id="factEndDate" placeholder="YYYY-MM-DD or present" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factBulletText">Description / Details</label>
+            <textarea id="factBulletText" rows="3" required style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none; resize: vertical;"></textarea>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="control-label" for="factSkills">Skills (Comma separated)</label>
+            <input type="text" id="factSkills" placeholder="Java, Spring Boot, React" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-input); padding: 8px 12px; color: var(--text-primary); outline: none;">
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 12px;">
+            <button type="button" id="factCancelBtn" class="btn btn-secondary" style="padding: 8px 16px;">Cancel</button>
+            <button type="submit" class="btn btn-primary" style="padding: 8px 24px;">Save Fact</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ DOCUMENT MODAL ═══════════════════════ -->
+    <div class="command-palette-overlay" id="docModalOverlay" hidden>
+      <div class="command-palette" id="docModal" role="dialog" aria-label="Document Viewer" style="max-width: 700px; padding: 28px; display: flex; flex-direction: column; gap: 20px; max-height: 85vh; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <h3 id="docModalTitle" style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin: 0;">Document Viewer</h3>
+          <button id="docModalCloseBtn" class="btn" style="padding: 4px; background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: inline-flex; align-items: center; justify-content: center;"><i data-lucide="x" class="icon-sm"></i></button>
+        </div>
+        <div id="docModalContent" style="background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; font-family: inherit; font-size: 14.5px; line-height: 1.6; color: var(--text-primary); overflow-y: auto; white-space: pre-wrap; flex-grow: 1; min-height: 250px; text-align: left;">
+          <!-- Content populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    <script src="src/workflow.js" defer></script>
+    <script src="src/app.js"></script>
+  </body>
+</html>
