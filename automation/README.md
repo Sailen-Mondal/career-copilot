@@ -1,51 +1,49 @@
 # Automation Worker
 
-The automation worker is intentionally separate from the app core.
+The Automation Worker is an isolated TypeScript and Playwright browser automation service designed to process job application form-filling tasks asynchronously via Redis Streams.
 
-## First Target
+## Architecture
 
-Shadow mode only:
+The worker runs independently from the backend Spring Boot core:
 
-1. Receive a queued application command.
-2. Open the target apply URL.
-3. Fill known fields using deterministic mappings.
-4. Skip on CAPTCHA, MFA, unsupported custom questions, or unknown sensitive fields.
-5. Save screenshot and structured field report.
-6. Never click submit in shadow mode.
+1. **Queue Listening**: Listens to application tasks on Redis Stream `cc:automation:jobs`.
+2. **Form Execution**: Spawns headless Playwright Chromium instances to navigate apply URLs and populate form fields in shadow mode.
+3. **Artifact Generation**: Captures screenshots of filled forms and produces execution audit logs.
+4. **Result Dispatch**: Publishes completion statuses and artifact paths back to Redis Stream `cc:automation:results`.
 
-## Live Mode Gate
+## Key Components
 
-Live mode should require all of these values from the app core:
+- **`redis-consumer`**: Manages Redis Stream subscription, consumer group offsets, and task polling loops.
+- **`shadow-worker`**: Orchestrates browser page lifecycle, form input injection, and field validation.
+- **`platform-detector`**: Identifies ATS platforms (e.g., Greenhouse, Lever, Workday) and selects selector strategies.
+- **`resume-writer`**: Formats and generates custom PDF resumes and cover letters prior to upload.
 
-- Match score is above threshold.
-- Groundedness check passed.
-- No unsupported custom fields were found.
-- Daily cap is not exhausted.
-- Platform circuit breaker is closed.
-- Kill switch is not active.
+## Safety & Compliance
 
-## Event Contract
+- **Shadow Mode Guard**: In shadow mode, the worker populates fields and verifies DOM structure but **never clicks final form submit buttons**.
+- **Comprehensive Logging**: Every action, field mapping result, and unhandled custom question is recorded in structured logs.
+- **Kill Switch Compliance**: Respects emergency pause signals dispatched via Redis commands.
 
-```json
-{
-  "applicationId": "uuid",
-  "jobUrl": "https://example.com/apply",
-  "mode": "shadow",
-  "profileSnapshotId": "uuid",
-  "resumeDocumentId": "uuid",
-  "coverLetterDocumentId": "uuid"
-}
+## Setup & Running
+
+### Local Environment
+
+```bash
+# Install dependencies
+npm install
+
+# Install Playwright browser binaries
+npx playwright install chromium
+
+# Start the worker process
+npm start
 ```
 
-## Output Contract
+### Docker Container
 
-```json
-{
-  "applicationId": "uuid",
-  "status": "shadow_completed",
-  "fieldsFilled": ["first_name", "last_name", "email", "resume"],
-  "unsupportedFields": [],
-  "screenshotPath": "screenshots/application-id.png",
-  "platformResponse": null
-}
+Build and containerize using the included Dockerfile:
+
+```bash
+docker build -t career-copilot-automation-worker .
+docker run -e REDIS_HOST=localhost -e REDIS_PORT=6379 career-copilot-automation-worker
 ```

@@ -1,13 +1,13 @@
 # Gradle
 .gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar   # Wrapper jar must be committed
+!gradle/wrapper/gradle-wrapper.jar
 
 # Java build outputs
 out/
 target/
 
-# Node / Playwright (automation/)
+# Node / Playwright
 node_modules/
 playwright-report/
 test-results/
@@ -19,13 +19,33 @@ test-results/
 
 # Logs
 *.log
+
 # IDEs
 .idea/
 *.iml
 .vscode/
 *.class
 
-# Agents & Temp files
-.agents/
+# Automation generated files
 app/bin/
 automation/screenshot.png
+automation/resume_*.pdf
+automation/resume_*.tex
+automation/cover_letter_*.txt
+
+# AI agent tooling (not part of the project)
+.agents/
+.agent/
+.claude/
+.codex/
+.cursor/
+.planning/
+.mcp.json
+AGENTS.md
+CLAUDE.md
+ralph.sh
+scratch/
+scripts/
+ORIGINAL_REQUEST.md
+PROJECT.md
+TEST_INFRA.md

@@ -19,6 +19,25 @@ public class MockLlmClient implements LlmClient {
 
     @Override
     public String generate(String systemPrompt, String userPrompt) {
+        if (systemPrompt != null && systemPrompt.contains("recruiter")) {
+            return "{\"scoreAdjustment\": 0, \"reasoning\": \"Mock matching completed successfully.\"}";
+        }
+        if (systemPrompt != null && systemPrompt.contains("form-filling")) {
+            Pattern idPattern = Pattern.compile("\"identifier\"\\s*:\\s*\"([^\"]+)\"");
+            Matcher idMatcher = idPattern.matcher(userPrompt);
+            StringBuilder sb = new StringBuilder("{");
+            boolean first = true;
+            while (idMatcher.find()) {
+                if (!first) {
+                    sb.append(",");
+                }
+                sb.append("\"").append(idMatcher.group(1)).append("\":\"Mock Answer\"");
+                first = false;
+            }
+            sb.append("}");
+            return sb.toString();
+        }
+
         // Extract all [fact:<UUID>] markers from the user prompt and echo them in output
         List<String> markers = new ArrayList<>();
         if (userPrompt != null) {

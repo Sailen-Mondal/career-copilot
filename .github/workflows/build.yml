@@ -30,6 +30,19 @@ jobs:
           # via @DynamicPropertySource so this value doesn't affect Testcontainers.
           API_KEY: ci-test-key
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+
+      - name: Typecheck automation worker
+        run: |
+          npm ci
+          npm run build
+        working-directory: automation
+
       - name: Upload test reports on failure
         if: failure()
         uses: actions/upload-artifact@v4
