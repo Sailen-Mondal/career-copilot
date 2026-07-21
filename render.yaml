@@ -10,16 +10,32 @@ services:
         value: prod
       - key: API_KEY
         generateValue: true
-      - key: SPRING_DATASOURCE_URL
+      - key: POSTGRES_HOST
         fromDatabase:
           name: career-copilot-db
-          property: connectionString
-      - key: SPRING_REDIS_HOST
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: career-copilot-db
+          property: port
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: career-copilot-db
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: career-copilot-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: career-copilot-db
+          property: password
+      - key: REDIS_HOST
         fromService:
           type: redis
           name: career-copilot-redis
           property: host
-      - key: SPRING_REDIS_PORT
+      - key: REDIS_PORT
         fromService:
           type: redis
           name: career-copilot-redis
